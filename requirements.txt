@@ -1,0 +1,12 @@
+requests
+pandas
+beautifulsoup4
+lxml
+python-dotenv
+Unidecode
+rapidfuzz
+PyYAML
+pydantic
+pytest
+duckdb
+pyarrow

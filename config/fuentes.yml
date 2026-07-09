@@ -1,0 +1,197 @@
+sources:
+  - source_id: atomo
+    name: Atomo Conviene
+    priority: 1
+    base_url: https://www.atomoconviene.com/atomo-ecommerce
+    offers_url: https://www.atomoconviene.com/atomo-ecommerce
+    source_type: official_ecommerce
+    proposed_method: official_html_cards
+    status: implemented
+    requires_js: true
+    requires_location: true
+    has_prices: true
+    has_promotions: true
+    confidence_score: 88
+    notes: Fuente oficial prioritaria para San Juan. Scraper HTML propio, sin SEPA.
+  - source_id: masonline
+    name: ChangoMas / MasOnline
+    priority: 1
+    base_url: https://www.masonline.com.ar/
+    offers_url: https://www.masonline.com.ar/folletos
+    source_type: official_ecommerce
+    proposed_method: vtex_public_api_product_clusters
+    status: implemented
+    requires_js: true
+    requires_location: true
+    has_prices: true
+    has_promotions: true
+    confidence_score: 95
+    notes: Tienda oficial. Puede requerir ubicacion o codigo postal para disponibilidad/precio final.
+  - source_id: laanonima
+    name: La Anonima San Juan
+    priority: 1
+    base_url: https://www.laanonima.com.ar/
+    offers_url: https://www.laanonima.com.ar/empresa/sucursales/381-san-juan
+    source_type: official_ecommerce_catalog
+    proposed_method: official_catalog_links
+    status: source_verified_catalog_only
+    requires_js: true
+    requires_location: true
+    has_prices: false
+    has_promotions: true
+    confidence_score: 88
+    notes: Sucursal oficial 381 San Juan, Scalabrini Ortiz 1285 y Av. Circunvalacion. Pendiente extraer precios de supermercado si la web los expone por sucursal.
+  - source_id: vea
+    name: Vea
+    priority: 2
+    base_url: https://www.vea.com.ar/
+    offers_url: https://www.vea.com.ar/ofertas
+    source_type: official_ecommerce
+    proposed_method: vtex_public_api
+    status: implemented
+    requires_js: true
+    requires_location: true
+    has_prices: true
+    has_promotions: true
+    confidence_score: 95
+    notes: Sitio oficial VTEX. Precios y promociones desde canal oficial online.
+  - source_id: carrefour
+    name: Carrefour
+    priority: 2
+    base_url: https://www.carrefour.com.ar/
+    offers_url: https://www.carrefour.com.ar/ofertas
+    source_type: official_ecommerce
+    proposed_method: vtex_public_api
+    status: implemented
+    requires_js: true
+    requires_location: true
+    has_prices: true
+    has_promotions: true
+    confidence_score: 95
+    notes: Sitio oficial VTEX. Se usa solo canal oficial online.
+  - source_id: cabral
+    name: Cabral Mayorista
+    priority: 2
+    base_url: https://cabralmayorista.com/
+    offers_url: https://cabralmayorista.com/sucursales/
+    source_type: official_website_social
+    proposed_method: official_website_catalog_or_social_probe
+    status: source_verified_pending_prices
+    requires_js: false
+    requires_location: false
+    has_prices: false
+    has_promotions: true
+    confidence_score: 82
+    notes: Web oficial confirma sucursales Central, Nuche y Rivadavia en San Juan. Pendiente detectar catalogos/precios publicos.
+  - source_id: la_cumbre
+    name: La Cumbre Sanjuanina
+    priority: 2
+    base_url: https://lacumbresanjuanina.com.ar/
+    offers_url: https://lacumbresanjuanina.com.ar/
+    source_type: official_website_store
+    proposed_method: official_website_store_probe
+    status: source_verified_pending_prices
+    requires_js: true
+    requires_location: false
+    has_prices: false
+    has_promotions: true
+    confidence_score: 82
+    notes: Web oficial informa tienda online y locales en Circunvalacion 1513 Sur y Aberastain 1117 Norte. Pendiente probar tienda propia.
+  - source_id: yaguar
+    name: Yaguar Mayorista San Juan
+    priority: 2
+    base_url: https://yaguar.com.ar/san-juan/
+    offers_url: https://yaguar.com.ar/san-juan/catalogos-y-ofertas/
+    source_type: official_catalog_ecommerce
+    proposed_method: official_catalog_links
+    status: catalog_only
+    requires_js: false
+    requires_location: true
+    has_prices: false
+    has_promotions: true
+    confidence_score: 88
+    notes: Pagina oficial de San Juan con catalogos, promociones bancarias, direccion y horarios.
+  - source_id: cafe_america
+    name: Cafe America Mayorista
+    priority: 2
+    base_url: https://www.americamayorista.com/
+    offers_url: https://www.americamayorista.com/ofertasimperdibles
+    source_type: official_catalog
+    proposed_method: official_catalog_links
+    status: catalog_only
+    requires_js: false
+    requires_location: false
+    has_prices: false
+    has_promotions: true
+    confidence_score: 82
+    notes: Sitio oficial informa sucursales en Santa Lucia, Capital, Rawson y Rivadavia; revisar ofertas publicas.
+  - source_id: la_nobleza
+    name: La Nobleza Mayorista
+    priority: 3
+    base_url: https://www.instagram.com/lanoblezamayorista/
+    offers_url: https://www.facebook.com/lanoblezamayorista/
+    source_type: official_social
+    proposed_method: official_social_flyer_monitor
+    status: source_verified_pending_prices
+    requires_js: true
+    requires_location: false
+    has_prices: false
+    has_promotions: true
+    confidence_score: 68
+    notes: Sin web propia detectada. Canales sociales oficiales publican Av. Alem 848 Sur y Pueyrredon 145 Sur.
+  - source_id: la_estrella
+    name: La Estrella Mayorista
+    priority: 3
+    base_url: https://www.instagram.com/laestrellamayorista.ar/
+    offers_url: https://www.facebook.com/p/La-Estrella-Mayorista-61560457916462/
+    source_type: official_social
+    proposed_method: official_social_flyer_monitor
+    status: source_verified_pending_prices
+    requires_js: true
+    requires_location: false
+    has_prices: false
+    has_promotions: true
+    confidence_score: 65
+    notes: Canales sociales oficiales informan Av. Paula A. de Sarmiento 890 Norte, Rivadavia/San Juan.
+  - source_id: basualdo
+    name: Basualdo Mayorista
+    priority: 3
+    base_url: https://linktr.ee/basualdomayorista
+    offers_url: https://linktr.ee/basualdomayorista
+    source_type: official_linkhub_social
+    proposed_method: official_linkhub_catalog_links
+    status: source_verified_catalog_only
+    requires_js: false
+    requires_location: false
+    has_prices: false
+    has_promotions: true
+    confidence_score: 70
+    notes: Linktree oficial informa sucursal San Juan en Av. Guillermo Rawson Sur 1402 y folleto nacional.
+  - source_id: makro
+    name: Makro San Juan
+    priority: 4
+    base_url: https://makro.com.ar/
+    offers_url: https://makro.com.ar/ofertas/san-juan/
+    source_type: official_catalog
+    proposed_method: official_catalog_links
+    status: catalog_only
+    requires_js: true
+    requires_location: true
+    has_prices: false
+    has_promotions: true
+    confidence_score: 78
+    notes: Priorizar ofertas/catalogos oficiales si no hay producto-precio estructurado.
+  - source_id: maxiconsumo
+    name: Maxiconsumo
+    priority: 4
+    base_url: https://www.maxiconsumo.com/sucursal_san_juan
+    offers_url: https://www.maxiconsumo.com/sucursal_san_juan/ofertas
+    source_type: official_ecommerce
+    proposed_method: magento_html_san_juan
+    status: implemented
+    requires_js: false
+    requires_location: true
+    has_prices: true
+    has_promotions: true
+    confidence_score: 72
+    notes: Fuente oficial secundaria; usar si la sucursal San Juan mantiene datos claros.

@@ -1,0 +1,802 @@
+<!doctype html>
+<html lang="es" class="h-full">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Planificador de Compra San Juan</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ["Inter", "ui-sans-serif", "system-ui", "Segoe UI", "sans-serif"]
+          }
+        }
+      }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root { color-scheme: light; }
+    .dark { color-scheme: dark; }
+    body { letter-spacing: 0; }
+    article, aside, section { min-width: 0; }
+    .chart-box { height: 300px; }
+    .route-box { max-height: 420px; }
+    .results-box { max-height: 60vh; }
+    .results-box table { min-width: 760px; }
+    th { position: sticky; top: 0; z-index: 1; }
+  </style>
+</head>
+<body class="h-full bg-zinc-100 text-zinc-950 transition-colors dark:bg-zinc-950 dark:text-zinc-50">
+  <main class="min-h-full">
+    <header class="border-b border-zinc-200 bg-white/95 shadow-sm backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/95">
+      <div class="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div class="flex items-center gap-3">
+            <div class="flex h-11 w-11 items-center justify-center rounded-md bg-zinc-950 text-base font-semibold text-white shadow-sm dark:bg-emerald-500 dark:text-zinc-950">SJ</div>
+            <div>
+              <h1 class="text-2xl font-semibold">Planificador de Compra San Juan</h1>
+              <p id="statusText" class="mt-1 text-sm text-zinc-600 dark:text-zinc-400">Cargando precios oficiales, promociones y fuentes auditadas...</p>
+            </div>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <a href="index.html" class="flex h-10 items-center rounded-md bg-zinc-950 px-3 text-sm font-medium text-white shadow-sm dark:bg-zinc-100 dark:text-zinc-950">Precios</a>
+            <a href="promociones.html" class="flex h-10 items-center rounded-md border border-zinc-300 bg-white px-3 text-sm font-medium shadow-sm hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800">Promociones</a>
+            <button id="themeButton" type="button" class="h-10 rounded-md border border-zinc-300 bg-white px-3 text-sm font-medium shadow-sm hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800">Modo oscuro</button>
+            <button id="refreshButton" type="button" class="h-10 rounded-md bg-emerald-600 px-3 text-sm font-medium text-white shadow-sm hover:bg-emerald-700">Recargar datos</button>
+          </div>
+        </div>
+
+        <section class="mt-4 grid gap-3 md:grid-cols-[2fr_1fr_1fr_1fr_1fr]">
+          <label class="block">
+            <span class="mb-1 block text-xs font-semibold uppercase text-zinc-500 dark:text-zinc-400">Producto</span>
+            <input id="searchInput" type="search" placeholder="yerba, aceite, leche..." class="h-10 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 dark:border-zinc-700 dark:bg-zinc-900 dark:focus:ring-emerald-950">
+          </label>
+          <label class="block">
+            <span class="mb-1 block text-xs font-semibold uppercase text-zinc-500 dark:text-zinc-400">Cadena</span>
+            <select id="chainFilter" class="h-10 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm dark:border-zinc-700 dark:bg-zinc-900"></select>
+          </label>
+          <label class="block">
+            <span class="mb-1 block text-xs font-semibold uppercase text-zinc-500 dark:text-zinc-400">Ciudad</span>
+            <select id="cityFilter" class="h-10 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm dark:border-zinc-700 dark:bg-zinc-900"></select>
+          </label>
+          <label class="block">
+            <span class="mb-1 block text-xs font-semibold uppercase text-zinc-500 dark:text-zinc-400">Categoría</span>
+            <select id="categoryFilter" class="h-10 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm dark:border-zinc-700 dark:bg-zinc-900"></select>
+          </label>
+          <label class="block">
+            <span class="mb-1 block text-xs font-semibold uppercase text-zinc-500 dark:text-zinc-400">Orden</span>
+            <select id="sortMode" class="h-10 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm dark:border-zinc-700 dark:bg-zinc-900">
+              <option value="best_general_price">Mejor precio</option>
+              <option value="price_list">Precio lista</option>
+              <option value="confidence_score">Confiabilidad</option>
+              <option value="capture_date">Fecha captura</option>
+            </select>
+          </label>
+        </section>
+      </div>
+    </header>
+
+    <section class="mx-auto max-w-7xl space-y-5 px-4 py-5 sm:px-6 lg:px-8">
+      <section class="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
+        <article class="rounded-md border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <p class="text-xs font-semibold uppercase text-zinc-500 dark:text-zinc-400">Resultados</p>
+          <p id="kpiResults" class="mt-2 text-2xl font-semibold">0</p>
+        </article>
+        <article class="rounded-md border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <p class="text-xs font-semibold uppercase text-zinc-500 dark:text-zinc-400">Mejor precio</p>
+          <p id="kpiBest" class="mt-2 text-2xl font-semibold">-</p>
+        </article>
+        <article class="rounded-md border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <p class="text-xs font-semibold uppercase text-zinc-500 dark:text-zinc-400">Ahorro detectado</p>
+          <p id="kpiSavings" class="mt-2 text-2xl font-semibold text-emerald-700 dark:text-emerald-300">-</p>
+        </article>
+        <article class="rounded-md border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <p class="text-xs font-semibold uppercase text-zinc-500 dark:text-zinc-400">Cadenas</p>
+          <p id="kpiChains" class="mt-2 text-2xl font-semibold">0</p>
+        </article>
+        <article class="rounded-md border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <p class="text-xs font-semibold uppercase text-zinc-500 dark:text-zinc-400">Confianza prom.</p>
+          <p id="kpiConfidence" class="mt-2 text-2xl font-semibold">0</p>
+        </article>
+        <article class="rounded-md border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <p class="text-xs font-semibold uppercase text-zinc-500 dark:text-zinc-400">Actualización</p>
+          <p id="kpiFreshness" class="mt-2 text-lg font-semibold">-</p>
+        </article>
+      </section>
+
+      <section class="grid gap-5 lg:grid-cols-[.95fr_1.05fr]">
+        <article class="rounded-md border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <div class="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <h2 class="text-base font-semibold">Ruta eficiente de compra</h2>
+              <p class="text-sm text-zinc-600 dark:text-zinc-400">Arm&aacute; una lista y compar&aacute; ahorro contra comprar todo en una sola cadena.</p>
+            </div>
+            <a href="promociones.html" class="mt-2 inline-flex h-9 items-center justify-center rounded-md border border-emerald-200 px-3 text-sm font-medium text-emerald-700 hover:bg-emerald-50 dark:border-emerald-900 dark:text-emerald-300 dark:hover:bg-emerald-950 sm:mt-0">Ver promociones</a>
+          </div>
+          <div class="mt-4 grid gap-3 sm:grid-cols-[1fr_auto_auto]">
+            <label class="block">
+              <span class="mb-1 block text-xs font-semibold uppercase text-zinc-500 dark:text-zinc-400">Lista guardada</span>
+              <select id="savedListSelect" class="h-10 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm dark:border-zinc-700 dark:bg-zinc-950"></select>
+            </label>
+            <label class="block">
+              <span class="mb-1 block text-xs font-semibold uppercase text-zinc-500 dark:text-zinc-400">Nombre</span>
+              <input id="listNameInput" type="text" value="Compra 1" class="h-10 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 dark:border-zinc-700 dark:bg-zinc-950 dark:focus:ring-emerald-950 sm:w-40">
+            </label>
+            <div class="flex items-end gap-2">
+              <button id="saveListButton" type="button" class="h-10 rounded-md bg-zinc-950 px-3 text-sm font-medium text-white shadow-sm hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-950 dark:hover:bg-white">Guardar</button>
+              <button id="deleteListButton" type="button" class="h-10 w-10 rounded-md border border-zinc-300 bg-white text-sm font-semibold hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800" aria-label="Eliminar lista">x</button>
+            </div>
+          </div>
+          <p id="saveFeedback" class="mt-2 min-h-5 text-xs font-medium text-emerald-700 dark:text-emerald-300"></p>
+
+          <div class="mt-3 grid gap-3 sm:grid-cols-[1fr_110px_auto]">
+            <label class="block">
+              <span class="mb-1 block text-xs font-semibold uppercase text-zinc-500 dark:text-zinc-400">Item</span>
+              <input id="basketItemInput" list="productDictionary" type="search" placeholder="Cafe 750gr, leche larga vida..." class="h-10 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 dark:border-zinc-700 dark:bg-zinc-950 dark:focus:ring-emerald-950">
+              <datalist id="productDictionary"></datalist>
+            </label>
+            <label class="block">
+              <span class="mb-1 block text-xs font-semibold uppercase text-zinc-500 dark:text-zinc-400">Cant.</span>
+              <input id="basketQtyInput" type="number" min="1" step="1" value="1" class="h-10 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 dark:border-zinc-700 dark:bg-zinc-950 dark:focus:ring-emerald-950">
+            </label>
+            <div class="flex items-end">
+              <button id="addItemButton" type="button" class="h-10 w-full rounded-md border border-emerald-200 bg-emerald-50 px-3 text-sm font-medium text-emerald-800 hover:bg-emerald-100 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-200 dark:hover:bg-emerald-900 sm:w-auto">Agregar</button>
+            </div>
+          </div>
+
+          <div id="basketItems" class="mt-3 divide-y divide-zinc-100 rounded-md border border-zinc-200 bg-zinc-50 dark:divide-zinc-800 dark:border-zinc-800 dark:bg-zinc-950"></div>
+
+          <div class="mt-3 flex flex-wrap items-center gap-2">
+            <button id="planButton" type="button" class="h-10 rounded-md bg-emerald-600 px-4 text-sm font-medium text-white shadow-sm hover:bg-emerald-700">Calcular ruta</button>
+            <button id="samplePlanButton" type="button" class="h-10 rounded-md border border-zinc-300 bg-white px-3 text-sm font-medium hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800">Lista ejemplo</button>
+          </div>
+        </article>
+
+        <article class="rounded-md border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <h2 class="text-base font-semibold">Resultado de ruta</h2>
+          <div id="routeSummary" class="route-box mt-3 overflow-auto text-sm">
+            <div class="rounded-md border border-dashed border-zinc-300 p-4 text-zinc-600 dark:border-zinc-700 dark:text-zinc-400">
+              Carg&aacute; tu lista para ver tiendas recomendadas, total estimado y ahorro por eficiencia.
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section class="grid gap-5 lg:grid-cols-[1.25fr_.75fr]">
+        <article class="rounded-md border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <div class="mb-3 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h2 class="text-base font-semibold">Precio promedio por cadena</h2>
+              <p id="priceChartNote" class="text-sm text-zinc-600 dark:text-zinc-400">Datos filtrados</p>
+            </div>
+          </div>
+          <div class="chart-box"><canvas id="priceChart"></canvas></div>
+        </article>
+        <article class="rounded-md border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <h2 class="text-base font-semibold">Ahorro por cadena</h2>
+          <p id="savingsChartNote" class="text-sm text-zinc-600 dark:text-zinc-400">Descuentos detectados</p>
+          <div class="chart-box"><canvas id="savingsChart"></canvas></div>
+        </article>
+      </section>
+
+      <section class="grid gap-5 lg:grid-cols-[1fr_380px]">
+        <article class="rounded-md border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <div class="border-b border-zinc-200 p-4 dark:border-zinc-800">
+            <h2 class="text-base font-semibold">Ranking de productos</h2>
+            <p id="resultNote" class="text-sm text-zinc-600 dark:text-zinc-400">Ordenado por mejor precio general</p>
+          </div>
+          <div class="results-box overflow-auto">
+            <table class="min-w-full text-left text-sm">
+              <thead class="bg-zinc-100 text-xs uppercase text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+                <tr>
+                  <th class="px-4 py-3">Producto</th>
+                  <th class="px-4 py-3">Cadena</th>
+                  <th class="px-4 py-3">Lista</th>
+                  <th class="px-4 py-3">Mejor</th>
+                  <th class="px-4 py-3">Ref.</th>
+                  <th class="px-4 py-3">Fuente</th>
+                </tr>
+              </thead>
+              <tbody id="resultsBody" class="divide-y divide-zinc-100 dark:divide-zinc-800"></tbody>
+            </table>
+          </div>
+        </article>
+
+        <aside class="space-y-5">
+          <article class="rounded-md border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+            <h2 class="text-base font-semibold">Fuentes operativas</h2>
+            <div id="sourcesList" class="mt-3 space-y-2"></div>
+          </article>
+          <article class="rounded-md border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+            <h2 class="text-base font-semibold">Catálogos oficiales</h2>
+            <div id="catalogList" class="mt-3 space-y-2 text-sm"></div>
+          </article>
+          <article class="rounded-md border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+            <h2 class="text-base font-semibold">Auditoría</h2>
+            <dl id="auditList" class="mt-3 grid grid-cols-2 gap-2 text-sm"></dl>
+          </article>
+        </aside>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const state = { prices: [], sources: [], audit: {}, catalogs: [], filtered: [], charts: {}, dictionary: [], basket: [], savedLists: [] };
+    const listStorageKey = "proyecto-super-saved-lists-v1";
+    const money = new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS", maximumFractionDigits: 2 });
+    const number = new Intl.NumberFormat("es-AR");
+    const colors = ["#059669", "#0284c7", "#d97706", "#dc2626", "#7c3aed", "#0f766e", "#475569", "#be123c", "#16a34a", "#2563eb"];
+
+    const el = id => document.getElementById(id);
+    const normalize = value => String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+    const formatMoney = value => Number.isFinite(Number(value)) ? money.format(Number(value)) : "-";
+    const priceOf = item => Number(item.best_general_price || item.price_list);
+    const discountOf = item => {
+      const list = Number(item.price_list);
+      const best = Number(item.best_general_price);
+      return Number.isFinite(list) && Number.isFinite(best) && list > best ? list - best : 0;
+    };
+
+    function loadScript(src) {
+      return new Promise(resolve => {
+        if ([...document.scripts].some(script => script.src === src)) {
+          setTimeout(() => resolve(typeof window.Chart !== "undefined"), 500);
+          return;
+        }
+        const script = document.createElement("script");
+        script.src = src;
+        script.onload = () => resolve(true);
+        script.onerror = () => resolve(false);
+        document.head.appendChild(script);
+        setTimeout(() => resolve(typeof window.Chart !== "undefined"), 6000);
+      });
+    }
+
+    async function ensureChartJs() {
+      if (typeof window.Chart !== "undefined") return true;
+      const cdns = [
+        "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js",
+        "https://unpkg.com/chart.js@4.4.1/dist/chart.umd.js"
+      ];
+      for (const src of cdns) {
+        await loadScript(src);
+        if (typeof window.Chart !== "undefined") return true;
+      }
+      return false;
+    }
+
+    function setTheme(next) {
+      document.documentElement.classList.toggle("dark", next === "dark");
+      localStorage.setItem("super-theme", next);
+      el("themeButton").textContent = next === "dark" ? "Modo claro" : "Modo oscuro";
+      renderCharts();
+    }
+
+    async function loadJson(path, fallback) {
+      try {
+        const response = await fetch(path, { cache: "no-store" });
+        if (!response.ok) throw new Error(response.statusText);
+        return await response.json();
+      } catch (error) {
+        console.warn("No se pudo cargar", path, error);
+        return fallback;
+      }
+    }
+
+    function fillSelect(id, values, label) {
+      const select = el(id);
+      const current = select.value;
+      select.innerHTML = `<option value="">${label}</option>`;
+      values.filter(Boolean).sort((a, b) => a.localeCompare(b)).forEach(value => {
+        const option = document.createElement("option");
+        option.value = value;
+        option.textContent = value;
+        select.appendChild(option);
+      });
+      select.value = current;
+    }
+
+    function initializeFilters() {
+      fillSelect("chainFilter", [...new Set(state.prices.map(item => item.chain))], "Todas");
+      fillSelect("cityFilter", [...new Set(state.prices.map(item => item.city))], "Todas");
+      fillSelect("categoryFilter", [...new Set(state.prices.map(item => item.category))], "Todas");
+    }
+
+    function applyFilters() {
+      const query = normalize(el("searchInput").value);
+      const chain = el("chainFilter").value;
+      const city = el("cityFilter").value;
+      const category = el("categoryFilter").value;
+      const sortMode = el("sortMode").value;
+      state.filtered = state.prices.filter(item => {
+        const text = normalize([item.product_name_raw, item.brand, item.category, item.chain].join(" "));
+        return (!query || text.includes(query))
+          && (!chain || item.chain === chain)
+          && (!city || item.city === city)
+          && (!category || item.category === category);
+      });
+      state.filtered.sort((a, b) => {
+        if (sortMode === "confidence_score") return Number(b.confidence_score || 0) - Number(a.confidence_score || 0);
+        if (sortMode === "capture_date") return String(b.capture_date || "").localeCompare(String(a.capture_date || ""));
+        const av = Number(a[sortMode]);
+        const bv = Number(b[sortMode]);
+        return (Number.isFinite(av) ? av : Number.MAX_SAFE_INTEGER) - (Number.isFinite(bv) ? bv : Number.MAX_SAFE_INTEGER);
+      });
+      renderAll();
+    }
+
+    function groupedAverage(rows, key) {
+      const map = new Map();
+      rows.forEach(row => {
+        const label = row[key] || "Sin dato";
+        const price = Number(row.best_general_price);
+        if (!Number.isFinite(price)) return;
+        if (!map.has(label)) map.set(label, []);
+        map.get(label).push(price);
+      });
+      return [...map.entries()].map(([label, values]) => ({
+        label,
+        avg: values.reduce((a, b) => a + b, 0) / values.length,
+        count: values.length
+      })).sort((a, b) => a.avg - b.avg);
+    }
+
+    function groupedCount(rows, key) {
+      const map = new Map();
+      rows.forEach(row => {
+        const label = row[key] || "Sin dato";
+        map.set(label, (map.get(label) || 0) + 1);
+      });
+      return [...map.entries()].map(([label, value]) => ({ label, value })).sort((a, b) => b.value - a.value);
+    }
+
+    function chartOptions() {
+      const dark = document.documentElement.classList.contains("dark");
+      const grid = dark ? "rgba(255,255,255,.08)" : "rgba(24,24,27,.08)";
+      const text = dark ? "#e4e4e7" : "#3f3f46";
+      return {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { labels: { color: text } } },
+        scales: {
+          x: { ticks: { color: text }, grid: { color: grid } },
+          y: { ticks: { color: text, callback: value => formatMoney(value) }, grid: { color: grid } }
+        }
+      };
+    }
+
+    function drawChart(name, canvasId, config) {
+      if (!el(canvasId) || !window.Chart) return;
+      if (state.charts[name]) state.charts[name].destroy();
+      state.charts[name] = new Chart(el(canvasId), config);
+    }
+
+    function drawFallbackBar(canvasId, rows, valueKey = "avg") {
+      const canvas = el(canvasId);
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      const width = canvas.width || canvas.clientWidth || 600;
+      const height = canvas.height || canvas.clientHeight || 300;
+      canvas.width = width;
+      canvas.height = height;
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = document.documentElement.classList.contains("dark") ? "#18181b" : "#ffffff";
+      ctx.fillRect(0, 0, width, height);
+      if (!rows.length) return;
+      const max = Math.max(...rows.map(item => Number(item[valueKey]) || 0), 1);
+      const pad = 34;
+      const gap = 8;
+      const barW = Math.max(12, (width - pad * 2 - gap * (rows.length - 1)) / rows.length);
+      rows.forEach((item, index) => {
+        const value = Number(item[valueKey]) || 0;
+        const barH = ((height - pad * 2) * value) / max;
+        const x = pad + index * (barW + gap);
+        const y = height - pad - barH;
+        ctx.fillStyle = colors[index % colors.length];
+        ctx.fillRect(x, y, barW, barH);
+        ctx.fillStyle = document.documentElement.classList.contains("dark") ? "#d4d4d8" : "#52525b";
+        ctx.font = "11px system-ui";
+        ctx.save();
+        ctx.translate(x + 2, height - 8);
+        ctx.rotate(-Math.PI / 5);
+        ctx.fillText(String(item.label).slice(0, 18), 0, 0);
+        ctx.restore();
+      });
+    }
+
+    function renderCharts() {
+      if (!state.prices.length) return;
+      const avgData = groupedAverage(state.filtered, "chain").slice(0, 10);
+      el("priceChartNote").textContent = `${avgData.length} cadenas con precios filtrados`;
+      const savingsMap = new Map();
+      state.filtered.forEach(item => {
+        const value = discountOf(item);
+        if (!value) return;
+        const label = item.chain || "Sin dato";
+        savingsMap.set(label, (savingsMap.get(label) || 0) + value);
+      });
+      const savingsData = [...savingsMap.entries()].map(([label, value]) => ({ label, value })).sort((a, b) => b.value - a.value).slice(0, 10);
+      el("savingsChartNote").textContent = `${number.format(savingsData.length)} cadenas con ahorro detectado`;
+      if (!window.Chart) {
+        drawFallbackBar("priceChart", avgData, "avg");
+        drawFallbackBar("savingsChart", savingsData, "value");
+        return;
+      }
+      drawChart("price", "priceChart", {
+        type: "bar",
+        data: { labels: avgData.map(item => item.label), datasets: [{ label: "Precio promedio", data: avgData.map(item => item.avg), backgroundColor: colors }] },
+        options: chartOptions()
+      });
+      drawChart("savings", "savingsChart", {
+        type: "bar",
+        data: { labels: savingsData.map(item => item.label), datasets: [{ label: "Ahorro detectado", data: savingsData.map(item => item.value), backgroundColor: colors }] },
+        options: chartOptions()
+      });
+    }
+
+    function renderKpis() {
+      const prices = state.filtered.map(item => Number(item.best_general_price)).filter(Number.isFinite).sort((a, b) => a - b);
+      const chains = new Set(state.filtered.map(item => item.chain).filter(Boolean));
+      const conf = state.filtered.map(item => Number(item.confidence_score)).filter(Number.isFinite);
+      const savings = state.filtered.reduce((total, item) => total + discountOf(item), 0);
+      el("kpiResults").textContent = number.format(state.filtered.length);
+      el("kpiBest").textContent = prices.length ? formatMoney(prices[0]) : "-";
+      el("kpiSavings").textContent = savings ? formatMoney(savings) : "-";
+      el("kpiChains").textContent = chains.size;
+      el("kpiConfidence").textContent = conf.length ? Math.round(conf.reduce((a, b) => a + b, 0) / conf.length) : 0;
+      el("kpiFreshness").textContent = state.audit.latest_capture_date || "-";
+    }
+
+    function renderTable() {
+      const rows = state.filtered.slice(0, 250);
+      el("resultNote").textContent = `${number.format(rows.length)} visibles de ${number.format(state.filtered.length)} resultados filtrados`;
+      el("resultsBody").innerHTML = rows.map(item => `
+        <tr class="hover:bg-zinc-50 dark:hover:bg-zinc-800/70">
+          <td class="min-w-80 px-4 py-3">
+            <div class="font-medium">${item.product_name_raw || ""}</div>
+            <div class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">${[item.brand, item.category].filter(Boolean).join(" · ")}</div>
+            ${item.promo_1_text ? `<div class="mt-1 text-xs font-medium text-emerald-700 dark:text-emerald-300">${item.promo_1_text}</div>` : ""}
+          </td>
+          <td class="px-4 py-3">
+            <div>${item.chain || "-"}</div>
+            <div class="text-xs text-zinc-500 dark:text-zinc-400">${item.city || ""}</div>
+          </td>
+          <td class="px-4 py-3">${formatMoney(item.price_list)}</td>
+          <td class="px-4 py-3 font-semibold text-emerald-700 dark:text-emerald-300">${formatMoney(item.best_general_price)}</td>
+          <td class="px-4 py-3">${item.reference_price ? `${formatMoney(item.reference_price)} / ${item.reference_unit}` : "-"}</td>
+          <td class="px-4 py-3">
+            <span class="rounded-md bg-zinc-100 px-2 py-1 text-xs dark:bg-zinc-800">${item.source_id || "-"}</span>
+            <div class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">${item.confidence_score || 0}/100 · ${item.capture_date || ""}</div>
+          </td>
+        </tr>
+      `).join("") || `<tr><td colspan="6" class="px-4 py-8 text-center text-zinc-500">No hay resultados para los filtros actuales.</td></tr>`;
+    }
+
+    function renderSources() {
+      const counts = groupedCount(state.prices, "source_id");
+      el("sourcesList").innerHTML = state.sources.map(source => {
+        const count = counts.find(item => item.label === source.source_id)?.value || 0;
+        return `
+          <div class="rounded-md border border-zinc-200 p-3 dark:border-zinc-800">
+            <div class="flex items-start justify-between gap-2">
+              <div>
+                <p class="font-medium">${source.name}</p>
+                <p class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">${source.status || ""}</p>
+              </div>
+              <span class="rounded-md bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">${source.confidence_score || 0}</span>
+            </div>
+            <p class="mt-2 text-xs text-zinc-500 dark:text-zinc-400">${number.format(count)} registros</p>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderCatalogs() {
+      const rows = state.catalogs.slice(0, 8);
+      el("catalogList").innerHTML = rows.map(item => `
+        <a class="block rounded-md border border-zinc-200 p-3 hover:border-emerald-300 dark:border-zinc-800 dark:hover:border-emerald-700" href="${item.url}" target="_blank" rel="noopener">
+          <div class="font-medium">${item.chain || item.source_id}</div>
+          <div class="mt-1 line-clamp-2 text-xs text-zinc-500 dark:text-zinc-400">${item.title || item.url}</div>
+        </a>
+      `).join("") || `<p class="text-sm text-zinc-500 dark:text-zinc-400">Sin catálogos exportados todavía.</p>`;
+    }
+
+    function renderAudit() {
+      const rows = [
+        ["Precios", state.audit.prices_count],
+        ["Productos", state.audit.products_count],
+        ["Sucursales", state.audit.stores_count],
+        ["Fuentes", state.audit.sources_count],
+        ["Captura", state.audit.latest_capture_date || "-"]
+      ];
+      el("auditList").innerHTML = rows.map(([key, value]) => `
+        <dt class="text-zinc-500 dark:text-zinc-400">${key}</dt>
+        <dd class="font-medium">${value ?? "-"}</dd>
+      `).join("");
+    }
+
+    function safeText(value) {
+      return String(value ?? "").replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#039;" }[char]));
+    }
+
+    function buildDictionary() {
+      const map = new Map();
+      state.prices.forEach(item => {
+        const name = String(item.product_name_raw || "").trim();
+        if (!name) return;
+        const key = normalize(name);
+        const current = map.get(key);
+        if (!current || priceOf(item) < priceOf(current)) map.set(key, item);
+      });
+      state.dictionary = [...map.values()]
+        .sort((a, b) => String(a.product_name_raw || "").localeCompare(String(b.product_name_raw || "")))
+        .slice(0, 350);
+      el("productDictionary").innerHTML = state.dictionary.map(item => {
+        const label = `${item.product_name_raw} - ${item.chain || ""} ${formatMoney(priceOf(item))}`;
+        return `<option value="${safeText(item.product_name_raw)}" label="${safeText(label)}"></option>`;
+      }).join("");
+    }
+
+    function basketItems() {
+      return state.basket
+        .filter(item => item.term && Number(item.qty) > 0)
+        .slice(0, 30);
+    }
+
+    function renderBasketItems() {
+      const rows = basketItems();
+      el("basketItems").innerHTML = rows.map((item, index) => `
+        <div class="grid gap-2 p-3 sm:grid-cols-[1fr_90px_40px] sm:items-center">
+          <div>
+            <p class="font-medium">${safeText(item.term)}</p>
+            <p class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">Item ${index + 1}</p>
+          </div>
+          <div class="rounded-md bg-white px-2 py-1 text-sm font-semibold dark:bg-zinc-900">cant. ${Number(item.qty)}</div>
+          <button type="button" data-remove-index="${index}" class="h-9 w-9 rounded-md border border-zinc-300 bg-white text-sm font-semibold hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800" aria-label="Quitar item">x</button>
+        </div>
+      `).join("") || `<div class="p-4 text-sm text-zinc-500 dark:text-zinc-400">Agreg&aacute; items con cantidad para calcular una ruta realista.</div>`;
+      el("basketItems").querySelectorAll("[data-remove-index]").forEach(button => {
+        button.addEventListener("click", () => {
+          state.basket.splice(Number(button.dataset.removeIndex), 1);
+          renderBasketItems();
+          renderRoutePlan();
+        });
+      });
+    }
+
+    function addBasketItem(term = el("basketItemInput").value, qty = el("basketQtyInput").value) {
+      const cleanTerm = String(term || "").trim();
+      const quantity = Math.max(1, Math.round(Number(qty) || 1));
+      if (!cleanTerm) return;
+      const existing = state.basket.find(item => normalize(item.term) === normalize(cleanTerm));
+      if (existing) {
+        existing.qty += quantity;
+      } else {
+        state.basket.push({ term: cleanTerm, qty: quantity });
+      }
+      el("basketItemInput").value = "";
+      el("basketQtyInput").value = "1";
+      renderBasketItems();
+      renderRoutePlan();
+    }
+
+    function loadSavedLists() {
+      try {
+        state.savedLists = JSON.parse(localStorage.getItem(listStorageKey) || "[]");
+      } catch (error) {
+        state.savedLists = [];
+      }
+    }
+
+    function renderSavedLists() {
+      el("savedListSelect").innerHTML = `<option value="">Seleccionar lista</option>` + state.savedLists.map(item => `
+        <option value="${safeText(item.id)}">${safeText(item.name)}</option>
+      `).join("");
+    }
+
+    function saveCurrentList() {
+      const name = el("listNameInput").value.trim() || `Compra ${state.savedLists.length + 1}`;
+      const selectedId = el("savedListSelect").value;
+      const id = selectedId || `list_${Date.now()}`;
+      const payload = { id, name, items: basketItems() };
+      const index = state.savedLists.findIndex(item => item.id === id);
+      if (index >= 0) state.savedLists[index] = payload;
+      else state.savedLists.push(payload);
+      localStorage.setItem(listStorageKey, JSON.stringify(state.savedLists));
+      renderSavedLists();
+      el("savedListSelect").value = id;
+      el("saveFeedback").textContent = `${name} guardada con ${payload.items.length} items.`;
+    }
+
+    function loadSelectedList() {
+      const selected = state.savedLists.find(item => item.id === el("savedListSelect").value);
+      if (!selected) return;
+      state.basket = (selected.items || []).map(item => ({ term: item.term, qty: Math.max(1, Number(item.qty) || 1) }));
+      el("listNameInput").value = selected.name || "Compra";
+      renderBasketItems();
+      renderRoutePlan();
+    }
+
+    function deleteSelectedList() {
+      const selectedId = el("savedListSelect").value;
+      if (!selectedId) return;
+      state.savedLists = state.savedLists.filter(item => item.id !== selectedId);
+      localStorage.setItem(listStorageKey, JSON.stringify(state.savedLists));
+      el("savedListSelect").value = "";
+      el("saveFeedback").textContent = "Lista eliminada.";
+      renderSavedLists();
+    }
+
+    function createSampleList() {
+      state.basket = [
+        { term: "yerba mate", qty: 1 },
+        { term: "leche larga vida", qty: 2 },
+        { term: "aceite girasol 900", qty: 1 },
+        { term: "arroz largo fino", qty: 2 },
+        { term: "azucar", qty: 1 }
+      ];
+      el("listNameInput").value = "Compra ejemplo";
+      renderBasketItems();
+      renderRoutePlan();
+    }
+
+    function tokens(value) {
+      return normalize(value).split(/[^a-z0-9]+/).filter(Boolean);
+    }
+
+    function productScore(item, term) {
+      const query = normalize(term);
+      const queryTokens = tokens(term);
+      const name = normalize(item.product_name_raw);
+      const category = normalize(item.category);
+      const words = new Set(tokens(item.product_name_raw));
+      if (!queryTokens.every(token => words.has(token))) return -1;
+      let score = 10;
+      if (name.startsWith(query)) score += 8;
+      if (name.includes(query)) score += 4;
+      if (queryTokens.length > 1) score += queryTokens.length * 2;
+      if (queryTokens.includes("leche") && /lact|leche|queso|yogur/.test(category)) score += 8;
+      if (queryTokens.includes("leche") && /dulce de leche|alfajor|bon bon|bombon|gallet/.test(name)) score -= 9;
+      if (queryTokens.includes("arroz") && /alfajor|gallet|choco/.test(name)) score -= 8;
+      if (queryTokens.includes("aceite") && /almacen|aceite/.test(category)) score += 5;
+      if (queryTokens.includes("aceite") && /aerosol|spray/.test(name)) score -= 8;
+      if (queryTokens.includes("yerba") && /almacen|yerba/.test(category)) score += 5;
+      return score;
+    }
+
+    function bestMatchForTerm(term, chain = null) {
+      return state.prices
+        .map(item => ({ item, score: productScore(item, term) }))
+        .filter(row => row.score >= 0)
+        .filter(row => !chain || row.item.chain === chain)
+        .map(row => row.item)
+        .filter(item => Number.isFinite(priceOf(item)) && priceOf(item) > 0)
+        .sort((a, b) => productScore(b, term) - productScore(a, term) || priceOf(a) - priceOf(b))[0];
+    }
+
+    function bestSingleChainPlan(items) {
+      const chains = [...new Set(state.prices.map(item => item.chain).filter(Boolean))];
+      const options = [];
+      chains.forEach(chain => {
+        const rows = [];
+        for (const basketItem of items) {
+          const match = bestMatchForTerm(basketItem.term, chain);
+          if (!match) return;
+          rows.push({ basketItem, item: match });
+        }
+        if (rows.length === items.length) {
+          options.push({ chain, total: rows.reduce((sum, row) => sum + priceOf(row.item) * row.basketItem.qty, 0), rows });
+        }
+      });
+      return options.sort((a, b) => a.total - b.total)[0];
+    }
+
+    function renderRoutePlan() {
+      const items = basketItems();
+      if (!items.length) {
+        el("routeSummary").innerHTML = `<div class="rounded-md border border-dashed border-zinc-300 p-4 text-zinc-600 dark:border-zinc-700 dark:text-zinc-400">Carg&aacute; al menos un producto para calcular la ruta.</div>`;
+        return;
+      }
+      const routeRows = items.map(basketItem => ({ basketItem, item: bestMatchForTerm(basketItem.term) }));
+      const found = routeRows.filter(row => row.item);
+      if (!found.length) {
+        el("routeSummary").innerHTML = `<div class="rounded-md border border-dashed border-zinc-300 p-4 text-zinc-600 dark:border-zinc-700 dark:text-zinc-400">No encontr&eacute; coincidencias para esa lista con los datos actuales.</div>`;
+        return;
+      }
+      const routeTotal = found.reduce((sum, row) => sum + priceOf(row.item) * row.basketItem.qty, 0);
+      const stores = [...new Set(found.map(row => row.item.chain).filter(Boolean))];
+      const single = bestSingleChainPlan(items);
+      const savings = single ? Math.max(0, single.total - routeTotal) : 0;
+      const missing = routeRows.filter(row => !row.item).map(row => row.basketItem.term);
+      el("routeSummary").innerHTML = `
+        <div class="grid gap-3 sm:grid-cols-3">
+          <div class="rounded-md bg-emerald-50 p-3 dark:bg-emerald-950">
+            <p class="text-xs font-semibold uppercase text-emerald-700 dark:text-emerald-300">Ruta eficiente</p>
+            <p class="mt-1 text-xl font-semibold">${formatMoney(routeTotal)}</p>
+          </div>
+          <div class="rounded-md bg-zinc-100 p-3 dark:bg-zinc-800">
+            <p class="text-xs font-semibold uppercase text-zinc-500 dark:text-zinc-400">Tiendas</p>
+            <p class="mt-1 text-xl font-semibold">${stores.length}</p>
+          </div>
+          <div class="rounded-md bg-sky-50 p-3 dark:bg-sky-950">
+            <p class="text-xs font-semibold uppercase text-sky-700 dark:text-sky-300">Ahorro estimado</p>
+            <p class="mt-1 text-xl font-semibold">${single ? formatMoney(savings) : "-"}</p>
+          </div>
+        </div>
+        ${single ? `<p class="mt-3 text-xs text-zinc-500 dark:text-zinc-400">Comparado contra ${single.chain}, la mejor cadena &uacute;nica para esta lista (${formatMoney(single.total)}).</p>` : `<p class="mt-3 text-xs text-zinc-500 dark:text-zinc-400">No hay una cadena &uacute;nica con coincidencias para toda la lista.</p>`}
+        ${missing.length ? `<p class="mt-2 text-xs text-amber-700 dark:text-amber-300">Sin coincidencia: ${missing.join(", ")}</p>` : ""}
+        <div class="mt-4 divide-y divide-zinc-100 rounded-md border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
+          ${found.map(row => `
+            <div class="grid gap-2 p-3 sm:grid-cols-[1fr_auto]">
+              <div>
+                <p class="font-medium">${safeText(row.basketItem.term)} x ${row.basketItem.qty}: ${safeText(row.item.product_name_raw || "")}</p>
+                <p class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">${[row.item.chain, row.item.category, row.item.city].filter(Boolean).join(" · ")}</p>
+              </div>
+              <div class="text-left sm:text-right">
+                <p class="font-semibold text-emerald-700 dark:text-emerald-300">${formatMoney(priceOf(row.item) * row.basketItem.qty)}</p>
+                <p class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">${formatMoney(priceOf(row.item))} c/u</p>
+              </div>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function renderAll() {
+      renderKpis();
+      renderTable();
+      renderCharts();
+      renderSources();
+      renderCatalogs();
+      renderAudit();
+    }
+
+    async function init() {
+      await ensureChartJs();
+      const [prices, sources, audit, catalogs] = await Promise.all([
+        loadJson("../data/export/precios_actuales.json", []),
+        loadJson("../data/export/fuentes.json", []),
+        loadJson("../data/export/auditoria.json", {}),
+        loadJson("../data/export/catalogos_oficiales.json", [])
+      ]);
+      state.prices = prices;
+      state.sources = sources;
+      state.audit = audit;
+      state.catalogs = catalogs;
+      state.filtered = prices.slice();
+      initializeFilters();
+      buildDictionary();
+      loadSavedLists();
+      renderSavedLists();
+      renderBasketItems();
+      renderAll();
+      el("statusText").textContent = `${number.format(prices.length)} precios exportados · ${number.format(catalogs.length)} catálogos oficiales · Última captura ${audit.latest_capture_date || "-"}`;
+    }
+
+    ["searchInput", "chainFilter", "cityFilter", "categoryFilter", "sortMode"].forEach(id => {
+      el(id).addEventListener("input", applyFilters);
+      el(id).addEventListener("change", applyFilters);
+    });
+    el("themeButton").addEventListener("click", () => setTheme(document.documentElement.classList.contains("dark") ? "light" : "dark"));
+    el("refreshButton").addEventListener("click", init);
+    el("planButton").addEventListener("click", renderRoutePlan);
+    el("samplePlanButton").addEventListener("click", createSampleList);
+    el("addItemButton").addEventListener("click", () => addBasketItem());
+    el("basketItemInput").addEventListener("keydown", event => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        addBasketItem();
+      }
+    });
+    el("saveListButton").addEventListener("click", saveCurrentList);
+    el("savedListSelect").addEventListener("change", loadSelectedList);
+    el("deleteListButton").addEventListener("click", deleteSelectedList);
+    setTheme(localStorage.getItem("super-theme") || "light");
+    init();
+  </script>
+</body>
+</html>

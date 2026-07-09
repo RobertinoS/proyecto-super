@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Environment / secrets
+.env
+*.env
+
+# OS files
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Raw data policy: no versionar archivos crudos pesados o temporales
+data/raw/*
+!data/raw/.gitkeep
+
+# Processed/export data: outputs generados
+data/processed/*
+!data/processed/.gitkeep
+data/export/*
+data/cache/
+
+# Local databases
+database/*.sqlite
+database/*.sqlite-*
+database/*.db
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak

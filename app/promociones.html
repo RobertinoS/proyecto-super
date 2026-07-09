@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="es" class="h-full">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Promociones San Juan</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ["Inter", "ui-sans-serif", "system-ui", "Segoe UI", "sans-serif"]
+          }
+        }
+      }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root { color-scheme: light; }
+    .dark { color-scheme: dark; }
+    body { letter-spacing: 0; }
+    .chart-box { height: 300px; }
+    .promo-grid { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+  </style>
+</head>
+<body class="h-full bg-zinc-100 text-zinc-950 transition-colors dark:bg-zinc-950 dark:text-zinc-50">
+  <main class="min-h-full">
+    <header class="border-b border-zinc-200 bg-white/95 shadow-sm backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/95">
+      <div class="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div class="flex items-center gap-3">
+            <div class="flex h-11 w-11 items-center justify-center rounded-md bg-emerald-600 text-base font-semibold text-white shadow-sm">%</div>
+            <div>
+              <h1 class="text-2xl font-semibold">Promociones y Tarjetas</h1>
+              <p id="statusText" class="mt-1 text-sm text-zinc-600 dark:text-zinc-400">Cargando descuentos por sector y medios de pago oficiales...</p>
+            </div>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <a href="index.html" class="flex h-10 items-center rounded-md border border-zinc-300 bg-white px-3 text-sm font-medium shadow-sm hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800">Precios</a>
+            <a href="promociones.html" class="flex h-10 items-center rounded-md bg-zinc-950 px-3 text-sm font-medium text-white shadow-sm dark:bg-zinc-100 dark:text-zinc-950">Promociones</a>
+            <button id="themeButton" type="button" class="h-10 rounded-md border border-zinc-300 bg-white px-3 text-sm font-medium shadow-sm hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:bg-zinc-800">Modo oscuro</button>
+            <button id="refreshButton" type="button" class="h-10 rounded-md bg-emerald-600 px-3 text-sm font-medium text-white shadow-sm hover:bg-emerald-700">Recargar datos</button>
+          </div>
+        </div>
+
+        <section class="mt-4 grid gap-3 md:grid-cols-[1.5fr_1fr_1fr_1fr]">
+          <label class="block">
+            <span class="mb-1 block text-xs font-semibold uppercase text-zinc-500 dark:text-zinc-400">Buscar</span>
+            <input id="searchInput" type="search" placeholder="tarjeta, leche, limpieza..." class="h-10 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 dark:border-zinc-700 dark:bg-zinc-900 dark:focus:ring-emerald-950">
+          </label>
+          <label class="block">
+            <span class="mb-1 block text-xs font-semibold uppercase text-zinc-500 dark:text-zinc-400">Cadena</span>
+            <select id="chainFilter" class="h-10 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm dark:border-zinc-700 dark:bg-zinc-900"></select>
+          </label>
+          <label class="block">
+            <span class="mb-1 block text-xs font-semibold uppercase text-zinc-500 dark:text-zinc-400">Sector</span>
+            <select id="categoryFilter" class="h-10 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm dark:border-zinc-700 dark:bg-zinc-900"></select>
+          </label>
+          <label class="block">
+            <span class="mb-1 block text-xs font-semibold uppercase text-zinc-500 dark:text-zinc-400">Tipo</span>
+            <select id="typeFilter" class="h-10 w-full rounded-md border border-zinc-300 bg-white px-3 text-sm dark:border-zinc-700 dark:bg-zinc-900"></select>
+          </label>
+        </section>
+      </div>
+    </header>
+
+    <section class="mx-auto max-w-7xl space-y-5 px-4 py-5 sm:px-6 lg:px-8">
+      <section class="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <article class="rounded-md border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <p class="text-xs font-semibold uppercase text-zinc-500 dark:text-zinc-400">Promociones</p>
+          <p id="kpiPromos" class="mt-2 text-2xl font-semibold">0</p>
+        </article>
+        <article class="rounded-md border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <p class="text-xs font-semibold uppercase text-zinc-500 dark:text-zinc-400">Mayor descuento</p>
+          <p id="kpiBestDiscount" class="mt-2 text-2xl font-semibold text-emerald-700 dark:text-emerald-300">-</p>
+        </article>
+        <article class="rounded-md border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <p class="text-xs font-semibold uppercase text-zinc-500 dark:text-zinc-400">Ahorro visible</p>
+          <p id="kpiSavings" class="mt-2 text-2xl font-semibold">-</p>
+        </article>
+        <article class="rounded-md border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <p class="text-xs font-semibold uppercase text-zinc-500 dark:text-zinc-400">Opciones tarjeta</p>
+          <p id="kpiCards" class="mt-2 text-2xl font-semibold">0</p>
+        </article>
+        <article class="rounded-md border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <p class="text-xs font-semibold uppercase text-zinc-500 dark:text-zinc-400">Actualizacion</p>
+          <p id="kpiFreshness" class="mt-2 text-lg font-semibold">-</p>
+        </article>
+      </section>
+
+      <section class="grid gap-5 lg:grid-cols-[1.15fr_.85fr]">
+        <article class="rounded-md border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <h2 class="text-base font-semibold">Ahorro por sector</h2>
+          <p id="sectorChartNote" class="text-sm text-zinc-600 dark:text-zinc-400">Descuentos detectados en los datos filtrados</p>
+          <div class="chart-box"><canvas id="sectorChart"></canvas></div>
+        </article>
+        <article class="rounded-md border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <h2 class="text-base font-semibold">Promos por cadena</h2>
+          <p id="chainChartNote" class="text-sm text-zinc-600 dark:text-zinc-400">Distribucion filtrada</p>
+          <div class="chart-box"><canvas id="chainChart"></canvas></div>
+        </article>
+      </section>
+
+      <section class="grid gap-5 lg:grid-cols-[1fr_390px]">
+        <article class="rounded-md border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+          <div class="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h2 class="text-base font-semibold">Promociones por sector</h2>
+              <p id="promoNote" class="text-sm text-zinc-600 dark:text-zinc-400">Oportunidades ordenadas por descuento</p>
+            </div>
+          </div>
+          <div id="promoCards" class="promo-grid mt-4 grid gap-3"></div>
+        </article>
+
+        <aside class="space-y-5">
+          <article class="rounded-md border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+            <h2 class="text-base font-semibold">Tarjetas y medios de pago</h2>
+            <div id="cardOptions" class="mt-3 space-y-2"></div>
+          </article>
+          <article class="rounded-md border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+            <h2 class="text-base font-semibold">Catalogos oficiales</h2>
+            <div id="catalogList" class="mt-3 space-y-2 text-sm"></div>
+          </article>
+        </aside>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const state = { promotions: [], cards: [], catalogs: [], audit: {}, filtered: [], charts: {} };
+    const money = new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS", maximumFractionDigits: 2 });
+    const number = new Intl.NumberFormat("es-AR");
+    const colors = ["#059669", "#0284c7", "#d97706", "#dc2626", "#7c3aed", "#0f766e", "#475569", "#be123c", "#16a34a", "#2563eb"];
+
+    const el = id => document.getElementById(id);
+    const normalize = value => String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+    const formatMoney = value => Number.isFinite(Number(value)) ? money.format(Number(value)) : "-";
+    const safe = value => String(value ?? "").replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#039;" }[char]));
+
+    async function loadJson(path, fallback) {
+      try {
+        const response = await fetch(path, { cache: "no-store" });
+        if (!response.ok) throw new Error(response.statusText);
+        return await response.json();
+      } catch (error) {
+        console.warn("No se pudo cargar", path, error);
+        return fallback;
+      }
+    }
+
+    async function ensureChartJs() {
+      if (typeof window.Chart !== "undefined") return true;
+      const script = document.createElement("script");
+      script.src = "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js";
+      document.head.appendChild(script);
+      await new Promise(resolve => { script.onload = resolve; script.onerror = resolve; setTimeout(resolve, 5000); });
+      return typeof window.Chart !== "undefined";
+    }
+
+    function setTheme(next) {
+      document.documentElement.classList.toggle("dark", next === "dark");
+      localStorage.setItem("super-theme", next);
+      el("themeButton").textContent = next === "dark" ? "Modo claro" : "Modo oscuro";
+      renderCharts();
+    }
+
+    function fillSelect(id, values, label) {
+      const select = el(id);
+      const current = select.value;
+      select.innerHTML = `<option value="">${label}</option>`;
+      values.filter(Boolean).sort((a, b) => a.localeCompare(b)).forEach(value => {
+        const option = document.createElement("option");
+        option.value = value;
+        option.textContent = value;
+        select.appendChild(option);
+      });
+      select.value = current;
+    }
+
+    function initializeFilters() {
+      fillSelect("chainFilter", [...new Set(state.promotions.map(item => item.chain))], "Todas");
+      fillSelect("categoryFilter", [...new Set(state.promotions.map(item => item.category))], "Todos");
+      fillSelect("typeFilter", [...new Set(state.promotions.map(item => item.offer_type))], "Todos");
+    }
+
+    function applyFilters() {
+      const query = normalize(el("searchInput").value);
+      const chain = el("chainFilter").value;
+      const category = el("categoryFilter").value;
+      const type = el("typeFilter").value;
+      state.filtered = state.promotions.filter(item => {
+        const text = normalize([item.product_name, item.promo_text, item.chain, item.category, item.offer_type].join(" "));
+        return (!query || text.includes(query))
+          && (!chain || item.chain === chain)
+          && (!category || item.category === category)
+          && (!type || item.offer_type === type);
+      });
+      state.filtered.sort((a, b) => Number(b.discount_pct || -1) - Number(a.discount_pct || -1));
+      renderAll();
+    }
+
+    function groupedSum(rows, key, valueKey) {
+      const map = new Map();
+      rows.forEach(row => {
+        const value = Number(row[valueKey]);
+        if (!Number.isFinite(value)) return;
+        const label = row[key] || "Sin dato";
+        map.set(label, (map.get(label) || 0) + value);
+      });
+      return [...map.entries()].map(([label, value]) => ({ label, value })).sort((a, b) => b.value - a.value);
+    }
+
+    function groupedCount(rows, key) {
+      const map = new Map();
+      rows.forEach(row => {
+        const label = row[key] || "Sin dato";
+        map.set(label, (map.get(label) || 0) + 1);
+      });
+      return [...map.entries()].map(([label, value]) => ({ label, value })).sort((a, b) => b.value - a.value);
+    }
+
+    function chartOptions() {
+      const dark = document.documentElement.classList.contains("dark");
+      const grid = dark ? "rgba(255,255,255,.08)" : "rgba(24,24,27,.08)";
+      const text = dark ? "#e4e4e7" : "#3f3f46";
+      return {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { labels: { color: text } } },
+        scales: {
+          x: { ticks: { color: text }, grid: { color: grid } },
+          y: { ticks: { color: text, callback: value => formatMoney(value) }, grid: { color: grid } }
+        }
+      };
+    }
+
+    function drawChart(name, canvasId, config) {
+      if (!window.Chart) return;
+      if (state.charts[name]) state.charts[name].destroy();
+      state.charts[name] = new Chart(el(canvasId), config);
+    }
+
+    function renderCharts() {
+      if (!state.promotions.length) return;
+      const sectorData = groupedSum(state.filtered, "category", "discount_amount").slice(0, 10);
+      const chainData = groupedCount(state.filtered, "chain").slice(0, 9);
+      el("sectorChartNote").textContent = `${number.format(sectorData.length)} sectores con ahorro visible`;
+      el("chainChartNote").textContent = `${number.format(state.filtered.length)} promociones filtradas`;
+      if (!window.Chart) return;
+      drawChart("sector", "sectorChart", {
+        type: "bar",
+        data: { labels: sectorData.map(item => item.label), datasets: [{ label: "Ahorro visible", data: sectorData.map(item => item.value), backgroundColor: colors }] },
+        options: chartOptions()
+      });
+      drawChart("chain", "chainChart", {
+        type: "doughnut",
+        data: { labels: chainData.map(item => item.label), datasets: [{ data: chainData.map(item => item.value), backgroundColor: colors, borderWidth: 0 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: "bottom" } } }
+      });
+    }
+
+    function renderKpis() {
+      const discounts = state.filtered.map(item => Number(item.discount_pct)).filter(Number.isFinite).sort((a, b) => b - a);
+      const savings = state.filtered.reduce((sum, item) => sum + (Number(item.discount_amount) || 0), 0);
+      el("kpiPromos").textContent = number.format(state.filtered.length);
+      el("kpiBestDiscount").textContent = discounts.length ? `${discounts[0].toFixed(0)}%` : "-";
+      el("kpiSavings").textContent = savings ? formatMoney(savings) : "-";
+      el("kpiCards").textContent = number.format(state.cards.length);
+      el("kpiFreshness").textContent = state.audit.latest_capture_date || "-";
+    }
+
+    function promoBadge(item) {
+      if (Number.isFinite(Number(item.discount_pct))) return `${Number(item.discount_pct).toFixed(0)}% off`;
+      if (item.offer_type === "tarjeta") return "Tarjeta";
+      if (item.offer_type === "catalogo") return "Catalogo";
+      return item.offer_type || "Promo";
+    }
+
+    function renderPromos() {
+      const rows = state.filtered.slice(0, 90);
+      el("promoNote").textContent = `${number.format(rows.length)} visibles de ${number.format(state.filtered.length)} promociones`;
+      el("promoCards").innerHTML = rows.map(item => `
+        <article class="rounded-md border border-zinc-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:border-emerald-700">
+          <div class="flex items-start justify-between gap-3">
+            <span class="rounded-md bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">${safe(promoBadge(item))}</span>
+            <span class="text-xs text-zinc-500 dark:text-zinc-400">${safe(item.offer_type || "")}</span>
+          </div>
+          <h3 class="mt-3 line-clamp-3 text-sm font-semibold">${safe(item.product_name || "Promocion oficial")}</h3>
+          <p class="mt-2 text-xs text-zinc-500 dark:text-zinc-400">${safe([item.chain, item.category].filter(Boolean).join(" · "))}</p>
+          <p class="mt-3 text-sm text-zinc-700 dark:text-zinc-300">${safe(item.promo_text || "")}</p>
+          <div class="mt-4 grid grid-cols-2 gap-2 text-sm">
+            <div class="rounded-md bg-zinc-100 p-2 dark:bg-zinc-800">
+              <p class="text-xs text-zinc-500 dark:text-zinc-400">Lista</p>
+              <p class="font-semibold">${formatMoney(item.price_list)}</p>
+            </div>
+            <div class="rounded-md bg-emerald-50 p-2 dark:bg-emerald-950">
+              <p class="text-xs text-emerald-700 dark:text-emerald-300">Mejor</p>
+              <p class="font-semibold">${formatMoney(item.conditional_price || item.best_price)}</p>
+            </div>
+          </div>
+          ${item.url ? `<a class="mt-3 inline-flex h-9 items-center rounded-md border border-zinc-300 px-3 text-sm font-medium hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-900" href="${safe(item.url)}" target="_blank" rel="noopener">Ver fuente</a>` : ""}
+        </article>
+      `).join("") || `<div class="rounded-md border border-dashed border-zinc-300 p-5 text-center text-sm text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">No hay promociones para los filtros actuales.</div>`;
+    }
+
+    function renderCardOptions() {
+      const rows = state.cards.slice(0, 12);
+      el("cardOptions").innerHTML = rows.map(item => `
+        <a class="block rounded-md border border-zinc-200 p-3 hover:border-emerald-300 dark:border-zinc-800 dark:hover:border-emerald-700" href="${safe(item.url || "#")}" target="_blank" rel="noopener">
+          <div class="flex items-start justify-between gap-2">
+            <p class="font-medium">${safe(item.chain || item.source_id || "Fuente oficial")}</p>
+            <span class="rounded-md bg-zinc-100 px-2 py-1 text-xs dark:bg-zinc-800">${safe(item.confidence_score || "")}</span>
+          </div>
+          <p class="mt-1 text-sm text-zinc-700 dark:text-zinc-300">${safe(item.title || "")}</p>
+          ${item.product_name ? `<p class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">${safe(item.product_name)}</p>` : ""}
+        </a>
+      `).join("") || `<p class="text-sm text-zinc-500 dark:text-zinc-400">No hay opciones de tarjeta detectadas todavia.</p>`;
+    }
+
+    function renderCatalogs() {
+      const rows = state.catalogs.slice(0, 10);
+      el("catalogList").innerHTML = rows.map(item => `
+        <a class="block rounded-md border border-zinc-200 p-3 hover:border-emerald-300 dark:border-zinc-800 dark:hover:border-emerald-700" href="${safe(item.url)}" target="_blank" rel="noopener">
+          <div class="font-medium">${safe(item.chain || item.source_id)}</div>
+          <div class="mt-1 line-clamp-2 text-xs text-zinc-500 dark:text-zinc-400">${safe(item.title || item.url)}</div>
+        </a>
+      `).join("") || `<p class="text-sm text-zinc-500 dark:text-zinc-400">Sin catalogos exportados todavia.</p>`;
+    }
+
+    function renderAll() {
+      renderKpis();
+      renderCharts();
+      renderPromos();
+      renderCardOptions();
+      renderCatalogs();
+    }
+
+    async function init() {
+      await ensureChartJs();
+      const [promotions, cards, catalogs, audit] = await Promise.all([
+        loadJson("../data/export/promociones.json", []),
+        loadJson("../data/export/tarjetas.json", []),
+        loadJson("../data/export/catalogos_oficiales.json", []),
+        loadJson("../data/export/auditoria.json", {})
+      ]);
+      state.promotions = promotions;
+      state.cards = cards;
+      state.catalogs = catalogs;
+      state.audit = audit;
+      state.filtered = promotions.slice();
+      initializeFilters();
+      renderAll();
+      el("statusText").textContent = `${number.format(promotions.length)} promociones · ${number.format(cards.length)} opciones de pago · Ultima captura ${audit.latest_capture_date || "-"}`;
+    }
+
+    ["searchInput", "chainFilter", "categoryFilter", "typeFilter"].forEach(id => {
+      el(id).addEventListener("input", applyFilters);
+      el(id).addEventListener("change", applyFilters);
+    });
+    el("themeButton").addEventListener("click", () => setTheme(document.documentElement.classList.contains("dark") ? "light" : "dark"));
+    el("refreshButton").addEventListener("click", init);
+    setTheme(localStorage.getItem("super-theme") || "light");
+    init();
+  </script>
+</body>
+</html>

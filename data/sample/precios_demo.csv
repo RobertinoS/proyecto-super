@@ -1,0 +1,32 @@
+comercio,sucursal,localidad,producto,marca,categoria,presentacion,precio,fecha_relevamiento,fuente
+Vea,Capital Centro,Capital,Yerba mate suave,Playadito,Almacen,1 kg,3490.00,2026-07-09,csv_demo_local
+Carrefour,San Juan Centro,Capital,Yerba mate suave,Playadito,Almacen,1 kg,3650.00,2026-07-09,csv_demo_local
+ChangoMas,Hiper San Juan,Capital,Yerba mate suave,Playadito,Almacen,1 kg,3399.00,2026-07-09,csv_demo_local
+Atomo Conviene,Rivadavia,Rivadavia,Yerba mate suave,Playadito,Almacen,1 kg,3425.50,2026-07-09,csv_demo_local
+Autoservicio Norte,Santa Lucia,Santa Lucia,Yerba mate suave,Playadito,Almacen,1 kg,3580.00,2026-07-09,csv_demo_local
+Vea,Rawson,Rawson,Cafe molido clasico,La Morenita,Desayuno,750 g,6290.00,2026-07-09,csv_demo_local
+Carrefour,San Juan Centro,Capital,Cafe molido clasico,La Morenita,Desayuno,750 g,6450.00,2026-07-09,csv_demo_local
+ChangoMas,Hiper San Juan,Capital,Cafe molido clasico,La Morenita,Desayuno,750 g,6199.00,2026-07-09,csv_demo_local
+Atomo Conviene,Rivadavia,Rivadavia,Cafe molido clasico,La Morenita,Desayuno,750 g,6350.00,2026-07-09,csv_demo_local
+Vea,Capital Centro,Capital,Leche larga vida entera,La Serenisima,Lacteos,1 l,1290.00,2026-07-09,csv_demo_local
+Carrefour,Rawson,Rawson,Leche larga vida entera,La Serenisima,Lacteos,1 l,1249.00,2026-07-09,csv_demo_local
+ChangoMas,Hiper San Juan,Capital,Leche larga vida entera,La Serenisima,Lacteos,1 l,1199.00,2026-07-09,csv_demo_local
+Atomo Conviene,Santa Lucia,Santa Lucia,Leche larga vida entera,La Serenisima,Lacteos,1 l,1225.00,2026-07-09,csv_demo_local
+Vea,Rawson,Rawson,Aceite girasol,Cocinero,Almacen,900 ml,2190.00,2026-07-09,csv_demo_local
+Carrefour,San Juan Centro,Capital,Aceite girasol,Cocinero,Almacen,900 ml,2290.00,2026-07-09,csv_demo_local
+ChangoMas,Hiper San Juan,Capital,Aceite girasol,Cocinero,Almacen,900 ml,2150.00,2026-07-09,csv_demo_local
+Atomo Conviene,Rivadavia,Rivadavia,Aceite girasol,Cocinero,Almacen,900 ml,2115.00,2026-07-09,csv_demo_local
+Autoservicio Rawson,Rawson Sur,Rawson,Aceite girasol,Cocinero,Almacen,900 ml,2240.00,2026-07-09,csv_demo_local
+Vea,Capital Centro,Capital,Arroz largo fino,Gallo,Almacen,1 kg,1590.00,2026-07-09,csv_demo_local
+Carrefour,Rawson,Rawson,Arroz largo fino,Gallo,Almacen,1 kg,1490.00,2026-07-09,csv_demo_local
+ChangoMas,Hiper San Juan,Capital,Arroz largo fino,Gallo,Almacen,1 kg,1525.00,2026-07-09,csv_demo_local
+Atomo Conviene,Santa Lucia,Santa Lucia,Arroz largo fino,Gallo,Almacen,1 kg,1450.00,2026-07-09,csv_demo_local
+Vea,Rivadavia,Rivadavia,Azucar comun,Ledesma,Almacen,1 kg,1120.00,2026-07-09,csv_demo_local
+Carrefour,San Juan Centro,Capital,Azucar comun,Ledesma,Almacen,1 kg,1099.00,2026-07-09,csv_demo_local
+ChangoMas,Hiper San Juan,Capital,Azucar comun,Ledesma,Almacen,1 kg,1050.00,2026-07-09,csv_demo_local
+Atomo Conviene,Rawson,Rawson,Azucar comun,Ledesma,Almacen,1 kg,1085.00,2026-07-09,csv_demo_local
+Vea,Capital Centro,Capital,Fideos spaghetti,Matarazzo,Almacen,500 g,890.00,2026-07-09,csv_demo_local
+Carrefour,San Juan Centro,Capital,Fideos spaghetti,Matarazzo,Almacen,500 g,940.00,2026-07-09,csv_demo_local
+ChangoMas,Hiper San Juan,Capital,Fideos spaghetti,Matarazzo,Almacen,500 g,870.00,2026-07-09,csv_demo_local
+Atomo Conviene,Rivadavia,Rivadavia,Fideos spaghetti,Matarazzo,Almacen,500 g,915.00,2026-07-09,csv_demo_local
+Autoservicio Santa Lucia,Casa Central,Santa Lucia,Fideos spaghetti,Matarazzo,Almacen,500 g,925.00,2026-07-09,csv_demo_local
