@@ -23,6 +23,13 @@ data/processed/precios_san_juan_sepa.csv
         -> scripts/04_matching_productos.py
         -> data/processed/precios_matcheados.csv
         -> dashboard/index.html
+
+Sprint 4 lista de compra:
+data/processed/precios_matcheados.csv + data/sample/lista_compra_demo.csv
+        -> scripts/05_calcular_lista_compra.py
+        -> data/processed/comparacion_lista_compra.csv
+        -> data/processed/mejor_compra_por_producto.csv
+        -> dashboard/index.html
 ```
 
 ## Requisitos
@@ -117,11 +124,43 @@ El CSV agrega:
 
 Luego abrir `dashboard/index.html` y cargar `data/processed/precios_matcheados.csv`.
 
+## Sprint 4: listas de compra y ahorro
+
+El modulo de lista calcula el costo total por comercio usando `grupo_comparacion` y `precio_unitario_comparable`. Tambien detecta faltantes y recomienda el comercio mas barato para cada item si se permite dividir la compra.
+
+Lista demo versionable:
+
+```text
+data/sample/lista_compra_demo.csv
+```
+
+Calcular ranking de comercios y mejor compra por producto:
+
+```bash
+python scripts/05_calcular_lista_compra.py
+```
+
+Salidas esperadas:
+
+```text
+data/processed/comparacion_lista_compra.csv
+data/processed/mejor_compra_por_producto.csv
+data/processed/lista_compra_reporte.json
+```
+
+Uso en dashboard:
+
+1. Abrir `dashboard/index.html`.
+2. Cargar `data/processed/precios_matcheados.csv` en el selector de precios.
+3. Cargar `data/sample/lista_compra_demo.csv` en el selector de lista.
+4. Revisar ranking por comercio, cobertura, faltantes, ahorro y mejor compra por producto.
+
 ## Datos versionables
 
 - `data/sample/precios_demo.csv`: demo Sprint 1.
 - `data/sample/sepa/sepa_precios_simulado.csv`: fuente tipo SEPA simulada para pruebas reproducibles.
 - `data/sample/product_dictionary.csv`: diccionario editable de equivalencias Sprint 3.
+- `data/sample/lista_compra_demo.csv`: lista demo versionable Sprint 4.
 
 ## Politica de datos
 
@@ -152,4 +191,4 @@ Ademas del dashboard standalone de Sprint 1/2, el repo conserva el sistema avanz
 
 ## Proximo sprint recomendado
 
-Sprint 4: listas de compra, carrito comparativo y ranking de ahorro por comercio/ruta.
+Sprint 5: promociones, descuentos de tarjeta y planificacion de ruta de compra.
