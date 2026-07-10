@@ -1,0 +1,13 @@
+producto_original,producto_normalizado,categoria_normalizada,marca_normalizada,unidad_base,cantidad_base,grupo_comparacion
+yerba mate suave,yerba mate suave,almacen,playadito,kg,1,yerba_mate_playadito_1kg
+yerba mate,yerba mate suave,almacen,playadito,kg,1,yerba_mate_playadito_1kg
+yerba playadito,yerba mate suave,almacen,playadito,kg,1,yerba_mate_playadito_1kg
+playadito yerba mate,yerba mate suave,almacen,playadito,kg,1,yerba_mate_playadito_1kg
+cafe molido clasico,cafe molido clasico,desayuno,la morenita,kg,0.75,cafe_molido_la_morenita_750g
+cafe la morenita,cafe molido clasico,desayuno,la morenita,kg,0.75,cafe_molido_la_morenita_750g
+leche larga vida entera,leche larga vida entera,lacteos,la serenisima,l,1,leche_entera_la_serenisima_1l
+leche entera la serenisima,leche larga vida entera,lacteos,la serenisima,l,1,leche_entera_la_serenisima_1l
+aceite girasol,aceite girasol,almacen,cocinero,l,0.9,aceite_girasol_cocinero_900ml
+arroz largo fino,arroz largo fino,almacen,gallo,kg,1,arroz_largo_fino_gallo_1kg
+azucar comun,azucar comun,almacen,ledesma,kg,1,azucar_comun_ledesma_1kg
+fideos spaghetti,fideos spaghetti,almacen,matarazzo,kg,0.5,fideos_spaghetti_matarazzo_500g

@@ -1,18 +1,18 @@
 # Estado del proyecto
 
-Actualizado: 2026-07-09.
+Actualizado: 2026-07-10.
 
 ## Sprint actual
 
-Sprint 2 - Ingestion SEPA/manual para San Juan.
+Sprint 3 - Matching de productos y precio comparable.
 
 Rama:
 
 ```text
-sprint-2-sepa-ingestion
+sprint-3-product-matching
 ```
 
-Objetivo: integrar una fuente real o semirreal de precios para San Juan, priorizando SEPA como fuente inicial, sin romper el dashboard funcional del Sprint 1.
+Objetivo: agrupar productos equivalentes o similares por nombre, marca, categoria, presentacion y unidad para comparar precios por unidad base.
 
 ## Diagnostico ejecutivo
 
@@ -22,127 +22,95 @@ El repo Git dedicado esta en:
 C:\Users\Rober\Desktop\Proyecto Super
 ```
 
-El Sprint 1 quedo cerrado en `main` con commit limpio y el Sprint 2 se trabaja en una rama nueva. El dashboard local `dashboard/index.html` no fue reemplazado; sigue funcionando con CSV local y ahora tambien puede cargar el CSV generado por el flujo SEPA/manual.
+Sprint 1 y Sprint 2 estan preservados. El dashboard local no fue reemplazado: ahora acepta CSV normalizado simple o CSV matcheado. Si detecta columnas de matching, ordena por precio unitario comparable y muestra grupo, confianza y comercio ganador por grupo.
 
-## Base Sprint 1 preservada
-
-Activos clave:
-
-- `data/sample/precios_demo.csv`
-- `scripts/02_normalizar_precios.py`
-- `dashboard/index.html`
-- `data/processed/precios_normalizados.csv` generado localmente
-
-Capacidades:
-
-- Carga manual de CSV.
-- Validacion de columnas.
-- KPIs basicos.
-- Busqueda de producto.
-- Filtro por comercio.
-- Comparacion por comercio.
-- Tabla ordenada de menor a mayor precio.
-
-## Avance Sprint 2
-
-Fuentes oficiales investigadas:
-
-- Dataset oficial SEPA minorista.
-- Dataset oficial SEPA mayorista.
-- Metadata tecnica minorista con estructura de paquetes SEPA.
-
-Decision tecnica:
-
-- Mantener costo 0.
-- No usar credenciales ni APIs privadas.
-- Agregar modo manual para ZIP/CSV descargado.
-- Agregar modo `download-plan` preparado para descarga futura.
-- Usar `data/sample/sepa/` para datos simulados versionables.
-- Usar `data/raw/sepa/` para archivos reales no versionados.
-
-Nuevos artefactos:
-
-- `data/sample/sepa/sepa_precios_simulado.csv`
-- `scripts/01_descargar_o_importar_sepa.py`
-- `scripts/03_filtrar_san_juan.py`
-- `tests/test_sepa_ingestion.py`
-- `docs/SEPA_STRUCTURE.md`
-
-Salida Sprint 2:
-
-```text
-data/processed/precios_san_juan_sepa.csv
-```
-
-Reporte:
-
-```text
-data/processed/precios_san_juan_sepa_reporte.json
-```
-
-## Validaciones Sprint 2
-
-El filtro San Juan:
-
-- Lee CSV, TXT, directorios o ZIP.
-- Soporta delimitadores coma, punto y coma, tab y pipe.
-- Une archivos tipo SEPA separados por `id_comercio`, `id_bandera`, `id_sucursal`.
-- Valida campos minimos.
-- Convierte precio a numero.
-- Valida fecha o usa fallback.
-- Excluye filas fuera de San Juan.
-- Prioriza Capital, Rawson, Santa Lucia y Rivadavia.
-- Genera errores claros cuando corresponde.
-
-## Datos Sprint 2
-
-Archivo tipo SEPA simulado:
+## Flujo actual
 
 ```text
 data/sample/sepa/sepa_precios_simulado.csv
+        -> scripts/03_filtrar_san_juan.py
+        -> data/processed/precios_san_juan_sepa.csv
+        -> scripts/04_matching_productos.py
+        -> data/processed/precios_matcheados.csv
+        -> dashboard/index.html
 ```
 
-Contenido:
+## Artefactos Sprint 3
 
-- 34 filas fuente.
-- 32 filas San Juan generadas.
-- 2 filas fuera de San Juan excluidas.
-- Comercios: Vea, Carrefour, ChangoMas, Atomo Conviene y autoservicios grandes.
-- Localidades: Capital, Rawson, Santa Lucia y Rivadavia.
+- `scripts/04_matching_productos.py`
+- `data/sample/product_dictionary.csv`
+- `tests/test_product_matching.py`
+- `data/processed/precios_matcheados.csv` generado localmente
+- `data/processed/precios_matcheados_reporte.json` generado localmente
+
+## Decision tecnica
+
+- Solucion local, costo 0 y sin credenciales.
+- Primero reglas deterministicas y diccionario editable.
+- Sin modelos de IA ni APIs externas.
+- `grupo_comparacion` sale del diccionario cuando hay match manual.
+- Si no hay match manual, se usa fallback heuristico por categoria, marca, producto normalizado, cantidad y unidad.
+- `confianza_matching` es alta para diccionario (`0.95`) y menor para heuristica.
+
+## Validaciones Sprint 3
+
+El matching:
+
+- Normaliza mayusculas/minusculas.
+- Elimina tildes.
+- Limpia espacios y simbolos.
+- Interpreta `kg`, `kilo`, `kilos`, `1000 g`.
+- Interpreta `g`, `gr`, `gramos`.
+- Interpreta `l`, `litro`, `litros`, `1000 ml`.
+- Interpreta `ml`, `cc`.
+- Interpreta `x`, `por`, `pack`.
+- Calcula precio por `kg`, `l` o `un`.
+- Evita agrupar variantes parecidas pero no equivalentes, como comun/zero, entera/descremada e integral/largo fino.
+
+## Resultados actuales
+
+Con el sample SEPA:
+
+- Filas matcheadas: 32.
+- Grupos comparables: 7.
+- Entradas de diccionario: 12.
+- Confianza promedio: 0.95.
+
+Grupos detectados:
+
+- `aceite_girasol_cocinero_900ml`
+- `arroz_largo_fino_gallo_1kg`
+- `azucar_comun_ledesma_1kg`
+- `cafe_molido_la_morenita_750g`
+- `fideos_spaghetti_matarazzo_500g`
+- `leche_entera_la_serenisima_1l`
+- `yerba_mate_playadito_1kg`
 
 ## Pruebas ejecutadas
 
-Comandos:
-
 ```bash
-python -m py_compile scripts/01_descargar_o_importar_sepa.py scripts/02_normalizar_precios.py scripts/03_filtrar_san_juan.py
-python scripts/02_normalizar_precios.py
-python scripts/01_descargar_o_importar_sepa.py --mode download-plan
-python scripts/01_descargar_o_importar_sepa.py --mode manual --input data/sample/sepa/sepa_precios_simulado.csv
-python scripts/03_filtrar_san_juan.py --input data/raw/sepa/manual/sepa_precios_simulado.csv
+python -m py_compile scripts/04_matching_productos.py
+python scripts/03_filtrar_san_juan.py --input data/sample/sepa/sepa_precios_simulado.csv
+python scripts/04_matching_productos.py
 python -m pytest
 ```
 
 Resultados:
 
 - Compilacion Python: OK.
-- `scripts/02_normalizar_precios.py`: OK, 31 registros validos, 0 errores.
-- `scripts/01_descargar_o_importar_sepa.py --mode download-plan`: OK, genera manifiesto sin descargar.
-- `scripts/01_descargar_o_importar_sepa.py --mode manual`: OK, copia sample a `data/raw/sepa/manual/`.
-- `scripts/03_filtrar_san_juan.py`: OK, 34 filas leidas, 32 San Juan, 2 fuera de provincia excluidas, 0 errores.
-- `python -m pytest`: 10 passed.
-- Dashboard: abre por HTTP local, contiene cargador y filtros; el parser del dashboard lee `precios_san_juan_sepa.csv` con 32 filas, 7 productos, 7 comercios, promedio 2414.23, busqueda `yerba` con 6 resultados y orden ascendente correcto.
+- Filtro San Juan: OK, 32 filas San Juan.
+- Matching: OK, 32 filas, 7 grupos, confianza promedio 0.95.
+- `python -m pytest`: 17 passed.
 
 ## Riesgos y pendientes
 
-- SEPA depende de datos declarados por comercios; debe auditarse contra paginas oficiales de cadenas cuando sea posible.
-- El flujo de descarga automatica queda preparado pero no activo por defecto.
-- El dashboard carga archivos por selector debido a restricciones normales del navegador.
-- Falta matching avanzado de productos equivalentes y precio por unidad comparable.
-- Falta scoring de ahorro por lista de compra y ruta.
+- El diccionario debe crecer con productos reales y variantes encontradas en scraping.
+- Las equivalencias por sabor, variedad o calidad requieren reglas mas finas para evitar falsos positivos.
+- Falta distinguir promociones, packs temporales y descuentos de tarjeta en el precio comparable.
+- Falta calcular ahorro por lista de compra y ruta optima.
 
 ## Proximo sprint recomendado
 
-Sprint 3 - Matching, equivalencias y ahorro por lista.
+Sprint 4 - Listas de compra y ahorro.
 
-Objetivo: construir diccionario/catalogo propio de productos, normalizar presentaciones, comparar precio por unidad y calcular ahorro por lista de compra y comercio/ruta.
+Objetivo: permitir que el usuario arme o guarde listas, comparar costo total por comercio/ruta y estimar ahorro usando precios unitarios comparables.

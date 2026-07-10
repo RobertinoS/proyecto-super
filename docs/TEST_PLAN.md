@@ -179,3 +179,101 @@ python scripts/01_descargar_o_importar_sepa.py --mode manual --input data/sample
 python scripts/03_filtrar_san_juan.py --input data/raw/sepa/manual/sepa_precios_simulado.csv
 python -m pytest
 ```
+
+## Sprint 3: matching de productos
+
+### 12. Compilacion del script de matching
+
+Comando:
+
+```bash
+python -m py_compile scripts/04_matching_productos.py
+```
+
+Resultado esperado:
+
+- El script compila sin errores.
+
+### 13. Generacion de precios matcheados
+
+Comando:
+
+```bash
+python scripts/04_matching_productos.py
+```
+
+Resultado esperado:
+
+- Lee `data/processed/precios_san_juan_sepa.csv`.
+- Usa `data/sample/product_dictionary.csv`.
+- Genera `data/processed/precios_matcheados.csv`.
+- Genera `data/processed/precios_matcheados_reporte.json`.
+
+### 14. Equivalencias de unidades
+
+Prueba automatizada:
+
+```bash
+python -m pytest tests/test_product_matching.py
+```
+
+Resultado esperado:
+
+- `1 kg`, `1 kilo` y `1000 g` se normalizan a `1 kg`.
+- `1 litro` y `1000 ml` se normalizan a `1 l`.
+- `750 g` se convierte a `0.75 kg`.
+- `900 ml` se convierte a `0.9 l`.
+
+### 15. Precio unitario comparable
+
+Prueba automatizada:
+
+```bash
+python -m pytest tests/test_product_matching.py
+```
+
+Resultado esperado:
+
+- El precio comparable se calcula como `precio / cantidad_base`.
+- El cafe de 750 g se expresa como precio por kg.
+- El aceite de 900 ml se expresa como precio por litro.
+
+### 16. Control de falsos positivos
+
+Prueba automatizada:
+
+```bash
+python -m pytest tests/test_product_matching.py
+```
+
+Resultado esperado:
+
+- Coca Cola comun 2.25 l no se agrupa con Coca Cola Zero 2.25 l.
+- Leche entera 1 l no se agrupa con leche descremada 1 l.
+- Arroz largo fino 1 kg no se agrupa con arroz integral 1 kg.
+
+### 17. Dashboard con CSV matcheado
+
+Pasos:
+
+1. Abrir `dashboard/index.html`.
+2. Cargar `data/processed/precios_matcheados.csv`.
+3. Buscar `yerba`, `cafe`, `aceite` o `leche`.
+
+Resultado esperado:
+
+- Se muestra `grupo_comparacion`.
+- Se muestra `precio_unitario_comparable`.
+- Se muestra `confianza_matching`.
+- El panel superior muestra el comercio mas barato por grupo.
+- La tabla queda ordenada por precio comparable.
+
+## Suite Sprint 3
+
+Comandos:
+
+```bash
+python -m py_compile scripts/04_matching_productos.py
+python scripts/04_matching_productos.py
+python -m pytest
+```

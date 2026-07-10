@@ -17,6 +17,12 @@ data/sample/sepa/sepa_precios_simulado.csv o data/raw/sepa/manual/*.csv|*.zip
         -> scripts/03_filtrar_san_juan.py
         -> data/processed/precios_san_juan_sepa.csv
         -> dashboard/index.html
+
+Sprint 3 matching:
+data/processed/precios_san_juan_sepa.csv
+        -> scripts/04_matching_productos.py
+        -> data/processed/precios_matcheados.csv
+        -> dashboard/index.html
 ```
 
 ## Requisitos
@@ -84,10 +90,38 @@ data/processed/precios_san_juan_sepa_reporte.json
 
 Luego abrir `dashboard/index.html` y cargar `data/processed/precios_san_juan_sepa.csv`.
 
+## Sprint 3: matching de productos
+
+El matching agrupa productos equivalentes o posibles equivalentes por nombre normalizado, marca, categoria y presentacion. Es una solucion local, auditable y progresiva: primero usa un diccionario editable y luego aplica reglas simples.
+
+Generar precios matcheados:
+
+```bash
+python scripts/04_matching_productos.py
+```
+
+Salida esperada:
+
+```text
+data/processed/precios_matcheados.csv
+data/processed/precios_matcheados_reporte.json
+```
+
+El CSV agrega:
+
+- `cantidad_base`
+- `unidad_base`
+- `precio_unitario_comparable`
+- `grupo_comparacion`
+- `confianza_matching`
+
+Luego abrir `dashboard/index.html` y cargar `data/processed/precios_matcheados.csv`.
+
 ## Datos versionables
 
 - `data/sample/precios_demo.csv`: demo Sprint 1.
 - `data/sample/sepa/sepa_precios_simulado.csv`: fuente tipo SEPA simulada para pruebas reproducibles.
+- `data/sample/product_dictionary.csv`: diccionario editable de equivalencias Sprint 3.
 
 ## Politica de datos
 
@@ -118,4 +152,4 @@ Ademas del dashboard standalone de Sprint 1/2, el repo conserva el sistema avanz
 
 ## Proximo sprint recomendado
 
-Sprint 3: matching de productos, equivalencias por unidad/presentacion y ranking de ahorro por lista de compra.
+Sprint 4: listas de compra, carrito comparativo y ranking de ahorro por comercio/ruta.

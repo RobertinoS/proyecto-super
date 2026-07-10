@@ -1,5 +1,38 @@
 # Changelog
 
+## 2026-07-10 - Sprint 3 - Matching de productos
+
+Cambios:
+
+- Se creo el script de matching `scripts/04_matching_productos.py`.
+- Se agrego el diccionario editable `data/sample/product_dictionary.csv`.
+- Se agrego calculo de `cantidad_base`, `unidad_base`, `precio_unitario_comparable`, `grupo_comparacion` y `confianza_matching`.
+- Se actualizaron las pruebas con equivalencias de kg/1000 g, litro/1000 ml y precio unitario.
+- Se agrego prueba de falsos positivos para evitar agrupar comun/zero, entera/descremada e integral/largo fino.
+- Se actualizo `dashboard/index.html` para cargar CSV matcheado sin perder compatibilidad con CSVs anteriores.
+- Se actualizo documentacion de contrato, pruebas, estado y README.
+
+Archivos creados:
+
+- `data/sample/product_dictionary.csv`
+- `scripts/04_matching_productos.py`
+- `tests/test_product_matching.py`
+
+Archivos modificados:
+
+- `dashboard/index.html`
+- `README.md`
+- `docs/DATA_CONTRACT.md`
+- `docs/TEST_PLAN.md`
+- `docs/PROJECT_STATUS.md`
+- `docs/CHANGELOG.md`
+
+Pruebas:
+
+- `python -m py_compile scripts/04_matching_productos.py`: OK.
+- `python scripts/04_matching_productos.py`: OK, 32 filas, 7 grupos comparables.
+- `python -m pytest`: 17 passed.
+
 ## 2026-07-09 - Sprint 2 - Ingestion SEPA/manual San Juan
 
 Cambios:
