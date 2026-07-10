@@ -345,3 +345,51 @@ Columnas:
 | `precio_unitario_comparable` | numero/vacio | precio por unidad base del producto elegido |
 | `ahorro_vs_promedio` | numero/vacio | diferencia contra el promedio de ofertas encontradas |
 | `confianza_matching` | numero/vacio | confianza heredada del matching Sprint 3 |
+
+## Sprint 5: lista visual y persistencia local
+
+El dashboard no cambia el contrato de salida del script. La mejora esta en la interfaz:
+
+- permite crear y editar listas desde `dashboard/index.html`;
+- usa `grupo_comparacion` desde `precios_matcheados.csv`;
+- guarda la lista en `localStorage`;
+- exporta CSV compatible con `scripts/05_calcular_lista_compra.py`;
+- sigue aceptando `data/sample/lista_compra_demo.csv`.
+
+### CSV exportado desde dashboard
+
+El boton `Exportar CSV` genera las mismas columnas minimas del Sprint 4:
+
+```csv
+item_lista,grupo_comparacion,cantidad,unidad,prioridad
+```
+
+Reglas:
+
+- `cantidad` se exporta como numero en unidad base.
+- `unidad` se exporta como `kg`, `l` o `un`.
+- `grupo_comparacion` debe coincidir con un grupo presente en `precios_matcheados.csv`.
+
+### localStorage
+
+Clave:
+
+```text
+proyecto-super-lista-compra-v1
+```
+
+Estructura guardada:
+
+```json
+[
+  {
+    "item_lista": "Yerba Playadito 1 kg",
+    "grupo_comparacion": "yerba_mate_playadito_1kg",
+    "cantidad": 1,
+    "unidad": "kg",
+    "prioridad": "alta"
+  }
+]
+```
+
+La persistencia es local al navegador del usuario. No se envia informacion a ningun backend.

@@ -42,15 +42,16 @@
 
     * { box-sizing: border-box; }
     body { margin: 0; background: var(--bg); color: var(--ink); }
-    .shell { max-width: 1280px; margin: 0 auto; padding: 28px 18px 44px; }
+    .shell { max-width: 1320px; margin: 0 auto; padding: 28px 18px 44px; }
     .topbar { display: flex; justify-content: space-between; gap: 18px; align-items: flex-start; margin-bottom: 22px; }
     .eyebrow { margin: 0 0 8px; color: var(--brand); font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: 0; }
     h1 { margin: 0; font-size: clamp(26px, 4vw, 42px); line-height: 1.05; letter-spacing: 0; }
-    h2 { letter-spacing: 0; }
-    .subtitle { margin: 10px 0 0; color: var(--muted); max-width: 840px; line-height: 1.5; }
-    .status { min-width: 250px; border: 1px solid var(--line); background: var(--panel); border-radius: 8px; padding: 12px 14px; box-shadow: var(--shadow); color: var(--muted); font-size: 13px; }
+    h2, h3 { letter-spacing: 0; }
+    .subtitle { margin: 10px 0 0; color: var(--muted); max-width: 880px; line-height: 1.5; }
+    .status { min-width: 280px; border: 1px solid var(--line); background: var(--panel); border-radius: 8px; padding: 12px 14px; box-shadow: var(--shadow); color: var(--muted); font-size: 13px; }
     .grid { display: grid; gap: 16px; }
-    .two { grid-template-columns: 1.1fr .9fr; align-items: stretch; }
+    .two { grid-template-columns: 1.05fr .95fr; align-items: stretch; }
+    .builder-layout { grid-template-columns: minmax(0, .96fr) minmax(0, 1.04fr); align-items: start; }
     .cards { grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 16px 0; }
     .card, .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow); }
     .card { padding: 16px; min-height: 108px; }
@@ -58,12 +59,23 @@
     .card strong { display: block; margin-top: 8px; font-size: 25px; overflow-wrap: anywhere; }
     .panel { padding: 18px; }
     .panel h2 { margin: 0 0 12px; font-size: 18px; }
+    .panel h3 { margin: 0; font-size: 15px; }
     .uploader-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .upload { border: 1px dashed #94a3b8; border-radius: 8px; padding: 16px; background: var(--panel-soft); }
     .upload input { width: 100%; margin-top: 12px; }
     .upload p { margin: 8px 0 0; }
     .controls { display: grid; grid-template-columns: 1fr 240px; gap: 12px; margin-top: 14px; }
+    .builder-controls { display: grid; grid-template-columns: 1fr 132px 112px 104px; gap: 10px; align-items: end; margin: 12px 0; }
+    input, select, button { font: inherit; }
     input, select { width: 100%; min-height: 42px; border: 1px solid var(--line); border-radius: 8px; padding: 0 12px; font-size: 14px; background: var(--panel); color: var(--ink); }
+    input[type="number"] { padding-right: 6px; }
+    button { min-height: 38px; border: 1px solid var(--line); border-radius: 8px; padding: 0 12px; background: var(--panel); color: var(--ink); cursor: pointer; font-weight: 800; }
+    button:hover { border-color: var(--brand); color: var(--brand); }
+    .primary { border-color: transparent; background: linear-gradient(90deg, var(--brand), var(--brand-2)); color: white; }
+    .primary:hover { color: white; filter: brightness(1.03); }
+    .danger { color: var(--bad); border-color: rgba(185, 28, 28, 0.28); }
+    .ghost { background: var(--panel-soft); }
+    .button-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
     .bars { display: grid; gap: 10px; margin-top: 8px; }
     .bar-row { display: grid; grid-template-columns: 190px 1fr 165px; gap: 10px; align-items: center; font-size: 13px; }
     .bar-row strong { overflow-wrap: anywhere; }
@@ -74,7 +86,8 @@
     .confidence.low { background: rgba(180, 83, 9, 0.12); color: var(--warn); }
     .table-wrap { overflow: auto; border: 1px solid var(--line); border-radius: 8px; }
     table { width: 100%; border-collapse: collapse; min-width: 1120px; background: var(--panel); }
-    .compact-table { min-width: 860px; }
+    .compact-table { min-width: 780px; }
+    .mini-table { min-width: 640px; }
     th, td { padding: 11px 12px; border-bottom: 1px solid var(--line); text-align: left; font-size: 13px; vertical-align: top; }
     th { position: sticky; top: 0; background: var(--panel-soft); color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0; }
     tr:hover td { background: var(--panel-soft); }
@@ -82,20 +95,37 @@
     .unit-price { font-weight: 900; color: var(--brand-2); white-space: nowrap; }
     .muted { color: var(--muted); }
     .error { color: var(--bad); }
+    .success { color: var(--good); }
     .group { color: var(--ink); font-weight: 700; overflow-wrap: anywhere; }
     .empty { padding: 24px; color: var(--muted); text-align: center; border: 1px dashed var(--line); border-radius: 8px; }
     .section-gap { margin-top: 16px; }
+    .stack { display: grid; gap: 12px; }
+    .candidate-list { display: grid; gap: 10px; max-height: 430px; overflow: auto; padding-right: 2px; }
+    .candidate { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; border: 1px solid var(--line); background: var(--panel-soft); border-radius: 8px; padding: 12px; }
+    .candidate strong { display: block; margin-bottom: 4px; }
+    .candidate small { color: var(--muted); display: block; line-height: 1.35; }
+    .list-actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+    .list-input { max-width: 112px; }
+    .list-unit { max-width: 92px; }
+    .list-priority { max-width: 112px; }
+    .missing-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    .missing-card { border: 1px solid var(--line); border-radius: 8px; background: var(--panel-soft); padding: 12px; min-height: 118px; }
+    .missing-card strong { display: block; margin-bottom: 6px; }
+    .missing-card p { margin: 0; color: var(--muted); line-height: 1.45; font-size: 13px; }
 
-    @media (max-width: 980px) {
-      .topbar, .two, .uploader-grid { grid-template-columns: 1fr; display: grid; }
+    @media (max-width: 1080px) {
+      .topbar, .two, .builder-layout, .uploader-grid { grid-template-columns: 1fr; display: grid; }
       .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .controls { grid-template-columns: 1fr; }
+      .controls, .builder-controls { grid-template-columns: 1fr; }
       .status { min-width: 0; }
+      .missing-grid { grid-template-columns: 1fr; }
+      .list-actions { justify-content: flex-start; }
     }
 
     @media (max-width: 560px) {
       .cards { grid-template-columns: 1fr; }
       .bar-row { grid-template-columns: 1fr; gap: 6px; }
+      .candidate { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -105,24 +135,24 @@
       <div>
         <p class="eyebrow">BI local para compra inteligente</p>
         <h1>Comparador de precios de San Juan</h1>
-        <p class="subtitle">Carga precios matcheados y una lista de compra para estimar costo total, faltantes, ahorro potencial y mejor compra dividida por producto.</p>
+        <p class="subtitle">Carga precios matcheados, arma una lista desde la interfaz y calcula costo total, ahorro, faltantes y compra dividida sin editar CSV.</p>
       </div>
       <div class="status" id="statusBox">Esperando CSV de precios.</div>
     </header>
 
     <section class="grid two">
       <div class="panel">
-        <h2>Cargar datos</h2>
+        <h2>Precios cargados</h2>
         <div class="uploader-grid">
           <div class="upload">
-            <strong>Precios</strong>
+            <strong>CSV de precios</strong>
             <p class="muted">Usa `data/processed/precios_matcheados.csv`. Tambien acepta CSVs de sprints anteriores.</p>
             <input id="fileInput" type="file" accept=".csv,text/csv">
             <p id="fileError" class="error"></p>
           </div>
           <div class="upload">
-            <strong>Lista de compra</strong>
-            <p class="muted">Usa `data/sample/lista_compra_demo.csv` o una lista con los mismos campos.</p>
+            <strong>Lista CSV opcional</strong>
+            <p class="muted">Puedes cargar `data/sample/lista_compra_demo.csv` o armar la lista visualmente.</p>
             <input id="listInput" type="file" accept=".csv,text/csv">
             <p id="listError" class="error"></p>
           </div>
@@ -149,6 +179,72 @@
       <div class="card"><span>Mas barato detectado</span><strong id="kpiCheapest">-</strong></div>
     </section>
 
+    <section class="grid builder-layout section-gap">
+      <div class="panel">
+        <div class="topbar" style="margin-bottom: 12px;">
+          <div>
+            <h2>Armar lista</h2>
+            <p class="muted" id="builderNote">Carga precios matcheados para buscar grupos comparables y agregarlos a tu lista.</p>
+          </div>
+          <span class="pill" id="catalogPill">Catalogo pendiente</span>
+        </div>
+        <div class="builder-controls">
+          <input id="builderSearchInput" type="search" placeholder="Buscar para agregar: yerba, leche, aceite...">
+          <input id="defaultQuantityInput" type="number" min="0.001" step="0.001" value="1" aria-label="Cantidad">
+          <select id="defaultUnitSelect" aria-label="Unidad">
+            <option value="kg">kg</option>
+            <option value="g">g</option>
+            <option value="l">l</option>
+            <option value="ml">ml</option>
+            <option value="un">un</option>
+          </select>
+          <select id="defaultPrioritySelect" aria-label="Prioridad">
+            <option value="media">media</option>
+            <option value="alta">alta</option>
+            <option value="baja">baja</option>
+          </select>
+        </div>
+        <div class="candidate-list" id="productCandidates">
+          <div class="empty">Carga `precios_matcheados.csv` para ver productos agregables.</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="topbar" style="margin-bottom: 12px;">
+          <div>
+            <h2>Lista actual</h2>
+            <p class="muted" id="listEditorNote">Puedes editar cantidades, eliminar items, guardar localmente o exportar CSV.</p>
+          </div>
+          <span class="pill" id="storagePill">Sin guardar</span>
+        </div>
+        <div class="list-actions" style="margin-bottom: 12px;">
+          <button id="calculateListButton" class="primary" type="button">Calcular ranking</button>
+          <button id="saveListButton" type="button">Guardar</button>
+          <button id="restoreListButton" type="button">Recuperar</button>
+          <button id="exportListButton" type="button">Exportar CSV</button>
+          <button id="clearStoredListButton" type="button">Limpiar guardado</button>
+          <button id="clearListButton" class="danger" type="button">Vaciar lista</button>
+        </div>
+        <p id="listActionMessage" class="muted"></p>
+        <div class="table-wrap">
+          <table class="mini-table">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Cantidad</th>
+                <th>Unidad</th>
+                <th>Prioridad</th>
+                <th>Accion</th>
+              </tr>
+            </thead>
+            <tbody id="shoppingListRows">
+              <tr><td colspan="5"><div class="empty">Agrega productos desde el catalogo o carga una lista CSV.</div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
     <section class="grid cards" id="shoppingCards">
       <div class="card"><span>Items en lista</span><strong id="kpiListItems">0</strong></div>
       <div class="card"><span>Mejor comercio</span><strong id="kpiBestCommerce">-</strong></div>
@@ -160,8 +256,8 @@
       <div class="panel">
         <div class="topbar" style="margin-bottom: 12px;">
           <div>
-            <h2>Ranking por lista</h2>
-            <p class="muted" id="rankingNote">Carga precios matcheados y una lista para calcular totales por comercio.</p>
+            <h2>Ranking por comercio</h2>
+            <p class="muted" id="rankingNote">Arma una lista y calcula totales por comercio.</p>
           </div>
           <span class="pill" id="coveragePill">Lista pendiente</span>
         </div>
@@ -180,7 +276,7 @@
               </tr>
             </thead>
             <tbody id="listRankingRows">
-              <tr><td colspan="8"><div class="empty">Carga una lista de compra para comenzar.</div></td></tr>
+              <tr><td colspan="8"><div class="empty">Agrega productos a la lista para comenzar.</div></td></tr>
             </tbody>
           </table>
         </div>
@@ -189,7 +285,7 @@
       <div class="panel">
         <div class="topbar" style="margin-bottom: 12px;">
           <div>
-            <h2>Mejor compra por producto</h2>
+            <h2>Mejor compra dividida</h2>
             <p class="muted" id="splitNote">El sistema recomienda el comercio mas barato para cada item comparable.</p>
           </div>
           <span class="pill" id="splitPill">Compra dividida</span>
@@ -212,6 +308,19 @@
             </tbody>
           </table>
         </div>
+      </div>
+    </section>
+
+    <section class="panel section-gap">
+      <div class="topbar" style="margin-bottom: 12px;">
+        <div>
+          <h2>Faltantes</h2>
+          <p class="muted" id="missingNote">Cuando un comercio no cubre toda la lista, sus faltantes aparecen aca.</p>
+        </div>
+        <span class="pill" id="missingPill">Sin calculo</span>
+      </div>
+      <div class="missing-grid" id="missingRows">
+        <div class="empty">Calcula una lista para ver faltantes por comercio.</div>
       </div>
     </section>
 
@@ -254,6 +363,7 @@
       "presentacion", "precio", "fecha_relevamiento", "fuente"
     ];
     const listColumns = ["item_lista", "grupo_comparacion", "cantidad", "unidad", "prioridad"];
+    const storageKey = "proyecto-super-lista-compra-v1";
     const unitAliases = {
       kg: "kg", kilo: "kg", kilos: "kg",
       g: "g", gr: "g", grs: "g", gramo: "g", gramos: "g",
@@ -261,7 +371,7 @@
       ml: "ml", cc: "ml", un: "un", unidad: "un", unidades: "un"
     };
 
-    const state = { rows: [], filtered: [], list: [], comparison: [], split: [] };
+    const state = { rows: [], filtered: [], catalog: [], list: [], comparison: [], split: [] };
     const peso = new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS", maximumFractionDigits: 0 });
     const pesoPreciso = new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS", maximumFractionDigits: 2 });
     const number = new Intl.NumberFormat("es-AR");
@@ -325,19 +435,7 @@
     }
 
     function parseList(text) {
-      return rowsToObjects(text, listColumns, "lista").map((row, index) => {
-        const quantity = parseNumber(row.cantidad);
-        const converted = toBaseQuantity(quantity, row.unidad);
-        if (!row.grupo_comparacion) throw new Error(`Fila ${index + 2}: grupo_comparacion vacio.`);
-        if (!converted || !Number.isFinite(quantity) || quantity <= 0) throw new Error(`Fila ${index + 2}: cantidad o unidad invalida.`);
-        return {
-          item_lista: row.item_lista || row.grupo_comparacion,
-          grupo_comparacion: row.grupo_comparacion,
-          cantidad: converted.quantity,
-          unidad: converted.unit,
-          prioridad: row.prioridad || ""
-        };
-      });
+      return rowsToObjects(text, listColumns, "lista").map((row, index) => normalizeShoppingItem(row, index + 2));
     }
 
     function parseNumber(value) {
@@ -364,6 +462,26 @@
       if (normalized === "ml") return { quantity: quantity / 1000, unit: "l" };
       if (normalized === "un") return { quantity, unit: "un" };
       return null;
+    }
+
+    function formatQuantity(value) {
+      if (!Number.isFinite(Number(value))) return "";
+      return String(Number(value).toFixed(6)).replace(/0+$/, "").replace(/\.$/, "") || "0";
+    }
+
+    function normalizeShoppingItem(row, lineNumber = 0) {
+      const quantity = parseNumber(row.cantidad);
+      const converted = toBaseQuantity(quantity, row.unidad);
+      const group = String(row.grupo_comparacion || "").trim();
+      if (!group) throw new Error(`${lineNumber ? `Fila ${lineNumber}: ` : ""}grupo_comparacion vacio.`);
+      if (!converted) throw new Error(`${lineNumber ? `Fila ${lineNumber}: ` : ""}cantidad o unidad invalida.`);
+      return {
+        item_lista: String(row.item_lista || group).trim(),
+        grupo_comparacion: group,
+        cantidad: converted.quantity,
+        unidad: converted.unit,
+        prioridad: String(row.prioridad || "media").trim() || "media"
+      };
     }
 
     function safe(value) {
@@ -398,6 +516,127 @@
 
     function confidenceClass(row) {
       return Number.isFinite(row.confianza_num) && row.confianza_num < 0.75 ? "confidence low" : "confidence";
+    }
+
+    function buildCatalog(rows) {
+      const groups = new Map();
+      rows.filter(row => row.grupo_comparacion).forEach(row => {
+        const key = row.grupo_comparacion;
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key).push(row);
+      });
+      return [...groups.entries()].map(([group, groupRows]) => {
+        const best = groupRows.slice().sort((a, b) => (a.comparable_num || a.precio_num) - (b.comparable_num || b.precio_num))[0];
+        return {
+          grupo_comparacion: group,
+          item_lista: `${best.producto}${best.presentacion_normalizada || best.presentacion ? ` ${best.presentacion_normalizada || best.presentacion}` : ""}`.trim(),
+          producto: best.producto,
+          marca: best.marca,
+          categoria: best.categoria,
+          cantidad: parseNumber(best.cantidad_base) || 1,
+          unidad: normalizeUnit(best.unidad_base || "un") || "un",
+          bestRow: best,
+          offers: groupRows.length,
+          searchText: norm([group, best.producto, best.marca, best.categoria, best.presentacion, best.producto_normalizado].join(" "))
+        };
+      }).sort((a, b) => a.item_lista.localeCompare(b.item_lista));
+    }
+
+    function createShoppingItemFromCatalog(entry, quantity, unit, priority = "media") {
+      return normalizeShoppingItem({
+        item_lista: entry.item_lista,
+        grupo_comparacion: entry.grupo_comparacion,
+        cantidad: quantity,
+        unidad: unit,
+        prioridad: priority
+      });
+    }
+
+    function upsertListItem(list, item) {
+      const next = list.slice();
+      const index = next.findIndex(row => row.grupo_comparacion === item.grupo_comparacion);
+      if (index >= 0) {
+        next[index] = { ...next[index], cantidad: next[index].cantidad + item.cantidad, unidad: item.unidad, prioridad: item.prioridad };
+      } else {
+        next.push(item);
+      }
+      return next;
+    }
+
+    function updateListItem(list, index, updates) {
+      if (index < 0 || index >= list.length) return list.slice();
+      const next = list.slice();
+      next[index] = normalizeShoppingItem({ ...next[index], ...updates });
+      return next;
+    }
+
+    function removeListItemAt(list, index) {
+      return list.filter((_, current) => current !== index);
+    }
+
+    function csvEscape(value) {
+      const text = String(value ?? "");
+      return /[",\n\r]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+    }
+
+    function serializeListToCsv(list) {
+      const rows = [listColumns.join(",")];
+      list.forEach(item => {
+        rows.push([
+          item.item_lista,
+          item.grupo_comparacion,
+          formatQuantity(item.cantidad),
+          item.unidad,
+          item.prioridad || "media"
+        ].map(csvEscape).join(","));
+      });
+      return `${rows.join("\n")}\n`;
+    }
+
+    function storageAvailable() {
+      try {
+        return typeof localStorage !== "undefined";
+      } catch {
+        return false;
+      }
+    }
+
+    function persistList(list = state.list) {
+      if (!storageAvailable()) return false;
+      localStorage.setItem(storageKey, JSON.stringify(list));
+      return true;
+    }
+
+    function readStoredList() {
+      if (!storageAvailable()) return [];
+      const raw = localStorage.getItem(storageKey);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return [];
+      return parsed.map((item, index) => normalizeShoppingItem(item, index + 1));
+    }
+
+    function clearStoredList() {
+      if (!storageAvailable()) return false;
+      localStorage.removeItem(storageKey);
+      return true;
+    }
+
+    function downloadListCsv() {
+      if (!state.list.length) {
+        setListMessage("No hay items para exportar.", true);
+        return "";
+      }
+      const csv = serializeListToCsv(state.list);
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "lista_compra_exportada.csv";
+      link.click();
+      URL.revokeObjectURL(url);
+      setListMessage("Lista exportada como CSV compatible.", false);
+      return csv;
     }
 
     function updateFilters() {
@@ -497,6 +736,52 @@
       });
     }
 
+    function setListMessage(message, isError = false) {
+      $("listActionMessage").textContent = message;
+      $("listActionMessage").className = isError ? "error" : "muted";
+    }
+
+    function setList(list, message = "") {
+      state.list = list;
+      updateShoppingResults();
+      refreshStatus();
+      if (message) setListMessage(message);
+      render();
+    }
+
+    function addCatalogItem(group) {
+      const entry = state.catalog.find(item => item.grupo_comparacion === group);
+      if (!entry) return;
+      try {
+        const quantity = parseNumber($("defaultQuantityInput").value);
+        const unit = $("defaultUnitSelect").value;
+        const priority = $("defaultPrioritySelect").value;
+        const item = createShoppingItemFromCatalog(entry, quantity, unit, priority);
+        setList(upsertListItem(state.list, item), `${entry.item_lista} agregado a la lista.`);
+      } catch (error) {
+        setListMessage(error.message, true);
+      }
+    }
+
+    function editListItem(index, updates) {
+      try {
+        setList(updateListItem(state.list, index, updates), "Lista actualizada.");
+      } catch (error) {
+        setListMessage(error.message, true);
+        renderShoppingListEditor();
+      }
+    }
+
+    function removeListItem(index) {
+      setList(removeListItemAt(state.list, index), "Item eliminado.");
+    }
+
+    function calculateFromInterface() {
+      updateShoppingResults();
+      setListMessage(state.list.length ? "Ranking recalculado." : "Agrega items para calcular.", !state.list.length);
+      render();
+    }
+
     function renderKpis() {
       const rows = state.filtered;
       const matched = hasMatching(rows);
@@ -572,11 +857,56 @@
       `).join("") || `<div class="empty">Sin datos para mostrar.</div>`;
     }
 
+    function renderCatalog() {
+      const query = norm($("builderSearchInput").value);
+      const visible = state.catalog
+        .filter(item => !query || item.searchText.includes(query))
+        .slice(0, 40);
+      $("catalogPill").textContent = state.catalog.length ? `${state.catalog.length} grupos` : "Catalogo pendiente";
+      $("builderNote").textContent = state.catalog.length
+        ? "Busca un grupo y agregalo con la cantidad deseada."
+        : "Carga precios matcheados para buscar grupos comparables y agregarlos a tu lista.";
+      $("productCandidates").innerHTML = visible.map(item => `
+        <div class="candidate">
+          <div>
+            <strong>${safe(item.item_lista)}</strong>
+            <small>${safe(item.grupo_comparacion)}</small>
+            <small>${safe(item.marca || "Sin marca")} · ${safe(item.categoria || "Sin categoria")} · ${item.offers} ofertas · mejor ${safe(item.bestRow.comercio)} ${comparableText(item.bestRow)}</small>
+          </div>
+          <button type="button" data-add-group="${safe(item.grupo_comparacion)}" class="primary">Agregar</button>
+        </div>
+      `).join("") || `<div class="empty">${state.rows.length ? "No hay grupos para esa busqueda." : "Carga `precios_matcheados.csv` para ver productos agregables."}</div>`;
+    }
+
+    function renderShoppingListEditor() {
+      $("storagePill").textContent = state.list.length ? `${state.list.length} items` : "Sin guardar";
+      $("shoppingListRows").innerHTML = state.list.map((item, index) => `
+        <tr>
+          <td>
+            <span class="group">${safe(item.item_lista)}</span><br>
+            <span class="muted">${safe(item.grupo_comparacion)}</span>
+          </td>
+          <td><input class="list-input" type="number" min="0.001" step="0.001" value="${safe(formatQuantity(item.cantidad))}" data-list-quantity="${index}"></td>
+          <td>
+            <select class="list-unit" data-list-unit="${index}">
+              ${["kg", "l", "un"].map(unit => `<option value="${unit}" ${item.unidad === unit ? "selected" : ""}>${unit}</option>`).join("")}
+            </select>
+          </td>
+          <td>
+            <select class="list-priority" data-list-priority="${index}">
+              ${["alta", "media", "baja"].map(priority => `<option value="${priority}" ${item.prioridad === priority ? "selected" : ""}>${priority}</option>`).join("")}
+            </select>
+          </td>
+          <td><button class="danger" type="button" data-remove-index="${index}">Eliminar</button></td>
+        </tr>
+      `).join("") || `<tr><td colspan="5"><div class="empty">Agrega productos desde el catalogo o carga una lista CSV.</div></td></tr>`;
+    }
+
     function renderShoppingTables() {
       if (!state.list.length) {
-        $("rankingNote").textContent = "Carga precios matcheados y una lista para calcular totales por comercio.";
+        $("rankingNote").textContent = "Arma una lista y calcula totales por comercio.";
         $("coveragePill").textContent = "Lista pendiente";
-        $("listRankingRows").innerHTML = `<tr><td colspan="8"><div class="empty">Carga una lista de compra para comenzar.</div></td></tr>`;
+        $("listRankingRows").innerHTML = `<tr><td colspan="8"><div class="empty">Agrega productos a la lista para comenzar.</div></td></tr>`;
         $("splitRows").innerHTML = `<tr><td colspan="7"><div class="empty">Sin lista calculada.</div></td></tr>`;
         $("splitNote").textContent = "El sistema recomienda el comercio mas barato para cada item comparable.";
         return;
@@ -631,6 +961,23 @@
       }).join("") || `<tr><td colspan="7"><div class="empty">Sin lista calculada.</div></td></tr>`;
     }
 
+    function renderMissing() {
+      if (!state.list.length || !state.comparison.length) {
+        $("missingPill").textContent = "Sin calculo";
+        $("missingRows").innerHTML = `<div class="empty">Calcula una lista para ver faltantes por comercio.</div>`;
+        return;
+      }
+      const rows = state.comparison.filter(row => row.faltantes.length);
+      $("missingPill").textContent = rows.length ? `${rows.length} comercios` : "Sin faltantes";
+      $("missingNote").textContent = rows.length ? "Comercios con cobertura parcial de la lista." : "Todos los comercios comparables cubren la lista completa.";
+      $("missingRows").innerHTML = rows.map(row => `
+        <div class="missing-card">
+          <strong>${safe(row.comercio)}</strong>
+          <p>${safe(row.faltantes.join("; "))}</p>
+        </div>
+      `).join("") || `<div class="empty">No hay faltantes para la lista calculada.</div>`;
+    }
+
     function renderTable() {
       const rows = state.filtered.slice(0, 250);
       $("tableNote").textContent = `${number.format(rows.length)} visibles de ${number.format(state.filtered.length)} resultados filtrados.`;
@@ -662,7 +1009,10 @@
       renderKpis();
       renderShoppingKpis();
       renderBars();
+      renderCatalog();
+      renderShoppingListEditor();
       renderShoppingTables();
+      renderMissing();
       renderTable();
     }
 
@@ -673,6 +1023,7 @@
         try {
           state.rows = toObjects(event.target.result);
           state.filtered = state.rows.slice().sort((a, b) => (a.comparable_num || a.precio_num) - (b.comparable_num || b.precio_num));
+          state.catalog = buildCatalog(state.rows);
           updateFilters();
           updateShoppingResults();
           refreshStatus(file.name);
@@ -682,6 +1033,7 @@
         } catch (error) {
           state.rows = [];
           state.filtered = [];
+          state.catalog = [];
           state.comparison = [];
           state.split = [];
           $("fileError").textContent = error.message;
@@ -697,10 +1049,7 @@
       const reader = new FileReader();
       reader.onload = event => {
         try {
-          state.list = parseList(event.target.result);
-          updateShoppingResults();
-          refreshStatus();
-          render();
+          setList(parseList(event.target.result), `Lista cargada desde ${file.name}.`);
         } catch (error) {
           state.list = [];
           state.comparison = [];
@@ -713,6 +1062,20 @@
       reader.readAsText(file, "utf-8");
     }
 
+    function bootStoredList() {
+      try {
+        const stored = readStoredList();
+        if (stored.length) {
+          state.list = stored;
+          setListMessage("Lista recuperada del navegador.");
+        }
+      } catch {
+        setListMessage("No se pudo recuperar la lista guardada.", true);
+      }
+      refreshStatus();
+      render();
+    }
+
     $("fileInput").addEventListener("change", event => {
       const file = event.target.files && event.target.files[0];
       if (file) loadFile(file);
@@ -723,15 +1086,64 @@
     });
     $("searchInput").addEventListener("input", applyFilters);
     $("commerceFilter").addEventListener("change", applyFilters);
+    $("builderSearchInput").addEventListener("input", renderCatalog);
+    $("productCandidates").addEventListener("click", event => {
+      const button = event.target.closest("[data-add-group]");
+      if (button) addCatalogItem(button.getAttribute("data-add-group"));
+    });
+    $("shoppingListRows").addEventListener("change", event => {
+      const quantityIndex = event.target.getAttribute("data-list-quantity");
+      const unitIndex = event.target.getAttribute("data-list-unit");
+      const priorityIndex = event.target.getAttribute("data-list-priority");
+      if (quantityIndex !== null) editListItem(Number(quantityIndex), { cantidad: event.target.value });
+      if (unitIndex !== null) editListItem(Number(unitIndex), { unidad: event.target.value });
+      if (priorityIndex !== null) editListItem(Number(priorityIndex), { prioridad: event.target.value });
+    });
+    $("shoppingListRows").addEventListener("click", event => {
+      const button = event.target.closest("[data-remove-index]");
+      if (button) removeListItem(Number(button.getAttribute("data-remove-index")));
+    });
+    $("calculateListButton").addEventListener("click", calculateFromInterface);
+    $("saveListButton").addEventListener("click", () => {
+      const ok = persistList();
+      setListMessage(ok ? "Lista guardada en este navegador." : "localStorage no esta disponible.", !ok);
+      renderShoppingListEditor();
+    });
+    $("restoreListButton").addEventListener("click", () => {
+      try {
+        const stored = readStoredList();
+        setList(stored, stored.length ? "Lista recuperada del navegador." : "No hay lista guardada.");
+      } catch (error) {
+        setListMessage(error.message, true);
+      }
+    });
+    $("clearStoredListButton").addEventListener("click", () => {
+      const ok = clearStoredList();
+      setListMessage(ok ? "Lista guardada eliminada." : "localStorage no esta disponible.", !ok);
+      renderShoppingListEditor();
+    });
+    $("clearListButton").addEventListener("click", () => setList([], "Lista vaciada."));
+    $("exportListButton").addEventListener("click", downloadListCsv);
 
     globalThis.__proyectoSuperDashboard = {
       parseCsv,
       toObjects,
       parseList,
+      buildCatalog,
+      createShoppingItemFromCatalog,
+      upsertListItem,
+      updateListItem,
+      removeListItemAt,
+      serializeListToCsv,
+      persistList,
+      readStoredList,
+      clearStoredList,
       buildShoppingComparison,
       buildBestSplit,
       rowCostForItem
     };
+
+    bootStoredList();
   </script>
 </body>
 </html>
