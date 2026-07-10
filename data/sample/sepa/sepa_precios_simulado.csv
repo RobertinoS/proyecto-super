@@ -1,0 +1,35 @@
+id_comercio,id_bandera,id_sucursal,comercio_razon_social,bandera_descripcion,sucursal_nombre,provincia,localidad,direccion,id_producto,producto_nombre,marca,categoria,presentacion,precio,fecha_relevamiento,fuente
+1,10,1001,Cencosud S.A.,Vea,Capital Centro,AR-J,Capital,Av. Libertador 1200,779001,Yerba mate suave,Playadito,Almacen,1 kg,3490.00,2026-07-09,sepa_simulado
+1,10,1002,Cencosud S.A.,Vea,Rawson,AR-J,Rawson,Av. Espana Sur 840,779001,Yerba mate suave,Playadito,Almacen,1 kg,3525.00,2026-07-09,sepa_simulado
+2,20,2001,INC S.A.,Carrefour,San Juan Centro,AR-J,Capital,General Acha 650,779001,Yerba mate suave,Playadito,Almacen,1 kg,3650.00,2026-07-09,sepa_simulado
+3,30,3001,Wal Mart Argentina S.R.L.,ChangoMas,Hiper San Juan,AR-J,Capital,Av. Ignacio de la Roza Oeste 806,779001,Yerba mate suave,Playadito,Almacen,1 kg,3399.00,2026-07-09,sepa_simulado
+4,40,4001,Atomo Supermercados,Atomo Conviene,Rivadavia,AR-J,Rivadavia,Av. Libertador Oeste 4200,779001,Yerba mate suave,Playadito,Almacen,1 kg,3425.50,2026-07-09,sepa_simulado
+5,50,5001,Autoservicio Norte,Autoservicio Norte,Santa Lucia,AR-J,Santa Lucia,San Lorenzo Este 2200,779001,Yerba mate suave,Playadito,Almacen,1 kg,3580.00,2026-07-09,sepa_simulado
+1,10,1002,Cencosud S.A.,Vea,Rawson,AR-J,Rawson,Av. Espana Sur 840,779002,Cafe molido clasico,La Morenita,Desayuno,750 g,6290.00,2026-07-09,sepa_simulado
+2,20,2001,INC S.A.,Carrefour,San Juan Centro,AR-J,Capital,General Acha 650,779002,Cafe molido clasico,La Morenita,Desayuno,750 g,6450.00,2026-07-09,sepa_simulado
+3,30,3001,Wal Mart Argentina S.R.L.,ChangoMas,Hiper San Juan,AR-J,Capital,Av. Ignacio de la Roza Oeste 806,779002,Cafe molido clasico,La Morenita,Desayuno,750 g,6199.00,2026-07-09,sepa_simulado
+4,40,4001,Atomo Supermercados,Atomo Conviene,Rivadavia,AR-J,Rivadavia,Av. Libertador Oeste 4200,779002,Cafe molido clasico,La Morenita,Desayuno,750 g,6350.00,2026-07-09,sepa_simulado
+1,10,1001,Cencosud S.A.,Vea,Capital Centro,AR-J,Capital,Av. Libertador 1200,779003,Leche larga vida entera,La Serenisima,Lacteos,1 l,1290.00,2026-07-09,sepa_simulado
+2,20,2002,INC S.A.,Carrefour,Rawson,AR-J,Rawson,Republica del Libano 1550,779003,Leche larga vida entera,La Serenisima,Lacteos,1 l,1249.00,2026-07-09,sepa_simulado
+3,30,3001,Wal Mart Argentina S.R.L.,ChangoMas,Hiper San Juan,AR-J,Capital,Av. Ignacio de la Roza Oeste 806,779003,Leche larga vida entera,La Serenisima,Lacteos,1 l,1199.00,2026-07-09,sepa_simulado
+4,40,4002,Atomo Supermercados,Atomo Conviene,Santa Lucia,AR-J,Santa Lucia,Av. San Martin Este 2700,779003,Leche larga vida entera,La Serenisima,Lacteos,1 l,1225.00,2026-07-09,sepa_simulado
+1,10,1002,Cencosud S.A.,Vea,Rawson,AR-J,Rawson,Av. Espana Sur 840,779004,Aceite girasol,Cocinero,Almacen,900 ml,2190.00,2026-07-09,sepa_simulado
+2,20,2001,INC S.A.,Carrefour,San Juan Centro,AR-J,Capital,General Acha 650,779004,Aceite girasol,Cocinero,Almacen,900 ml,2290.00,2026-07-09,sepa_simulado
+3,30,3001,Wal Mart Argentina S.R.L.,ChangoMas,Hiper San Juan,AR-J,Capital,Av. Ignacio de la Roza Oeste 806,779004,Aceite girasol,Cocinero,Almacen,900 ml,2150.00,2026-07-09,sepa_simulado
+4,40,4001,Atomo Supermercados,Atomo Conviene,Rivadavia,AR-J,Rivadavia,Av. Libertador Oeste 4200,779004,Aceite girasol,Cocinero,Almacen,900 ml,2115.00,2026-07-09,sepa_simulado
+6,60,6001,Autoservicio Rawson,Autoservicio Rawson,Rawson Sur,AR-J,Rawson,Mendoza Sur 1880,779004,Aceite girasol,Cocinero,Almacen,900 ml,2240.00,2026-07-09,sepa_simulado
+1,10,1001,Cencosud S.A.,Vea,Capital Centro,AR-J,Capital,Av. Libertador 1200,779005,Arroz largo fino,Gallo,Almacen,1 kg,1590.00,2026-07-09,sepa_simulado
+2,20,2002,INC S.A.,Carrefour,Rawson,AR-J,Rawson,Republica del Libano 1550,779005,Arroz largo fino,Gallo,Almacen,1 kg,1490.00,2026-07-09,sepa_simulado
+3,30,3001,Wal Mart Argentina S.R.L.,ChangoMas,Hiper San Juan,AR-J,Capital,Av. Ignacio de la Roza Oeste 806,779005,Arroz largo fino,Gallo,Almacen,1 kg,1525.00,2026-07-09,sepa_simulado
+4,40,4002,Atomo Supermercados,Atomo Conviene,Santa Lucia,AR-J,Santa Lucia,Av. San Martin Este 2700,779005,Arroz largo fino,Gallo,Almacen,1 kg,1450.00,2026-07-09,sepa_simulado
+1,10,1003,Cencosud S.A.,Vea,Rivadavia,AR-J,Rivadavia,Av. Jose Ignacio de la Roza 4800,779006,Azucar comun,Ledesma,Almacen,1 kg,1120.00,2026-07-09,sepa_simulado
+2,20,2001,INC S.A.,Carrefour,San Juan Centro,AR-J,Capital,General Acha 650,779006,Azucar comun,Ledesma,Almacen,1 kg,1099.00,2026-07-09,sepa_simulado
+3,30,3001,Wal Mart Argentina S.R.L.,ChangoMas,Hiper San Juan,AR-J,Capital,Av. Ignacio de la Roza Oeste 806,779006,Azucar comun,Ledesma,Almacen,1 kg,1050.00,2026-07-09,sepa_simulado
+4,40,4003,Atomo Supermercados,Atomo Conviene,Rawson,AR-J,Rawson,Dr. Ortega 980,779006,Azucar comun,Ledesma,Almacen,1 kg,1085.00,2026-07-09,sepa_simulado
+1,10,1001,Cencosud S.A.,Vea,Capital Centro,AR-J,Capital,Av. Libertador 1200,779007,Fideos spaghetti,Matarazzo,Almacen,500 g,890.00,2026-07-09,sepa_simulado
+2,20,2001,INC S.A.,Carrefour,San Juan Centro,AR-J,Capital,General Acha 650,779007,Fideos spaghetti,Matarazzo,Almacen,500 g,940.00,2026-07-09,sepa_simulado
+3,30,3001,Wal Mart Argentina S.R.L.,ChangoMas,Hiper San Juan,AR-J,Capital,Av. Ignacio de la Roza Oeste 806,779007,Fideos spaghetti,Matarazzo,Almacen,500 g,870.00,2026-07-09,sepa_simulado
+4,40,4001,Atomo Supermercados,Atomo Conviene,Rivadavia,AR-J,Rivadavia,Av. Libertador Oeste 4200,779007,Fideos spaghetti,Matarazzo,Almacen,500 g,915.00,2026-07-09,sepa_simulado
+7,70,7001,Autoservicio Santa Lucia,Autoservicio Santa Lucia,Casa Central,AR-J,Santa Lucia,Av. Libertador Este 3300,779007,Fideos spaghetti,Matarazzo,Almacen,500 g,925.00,2026-07-09,sepa_simulado
+8,80,8001,Supermercado Mendoza,Supermercado Mendoza,Casa Central,AR-M,Godoy Cruz,San Martin 1020,779001,Yerba mate suave,Playadito,Almacen,1 kg,3550.00,2026-07-09,sepa_simulado
+9,90,9001,Supermercado Cordoba,Supermercado Cordoba,Casa Central,AR-X,Cordoba,Colon 1500,779003,Leche larga vida entera,La Serenisima,Lacteos,1 l,1210.00,2026-07-09,sepa_simulado

@@ -1,29 +1,62 @@
-# Política de retención y limpieza - data/raw
+# Politica de retencion y limpieza - datos
+
+Actualizado: 2026-07-09.
 
 ## Objetivo
 
-Definir reglas para el almacenamiento, limpieza y trazabilidad de archivos crudos utilizados en el Proyecto Super San Juan.
-
-La carpeta `data/raw` se utiliza únicamente para almacenar archivos originales descargados o cargados manualmente antes de su procesamiento.
-
-Los datos de ejemplo versionables deben vivir en:
-
-```text
-data/sample/
-```
+Definir reglas para almacenamiento, limpieza y trazabilidad de archivos crudos, samples y salidas procesadas del Proyecto Super San Juan.
 
 ## Reglas generales
 
-1. Los archivos crudos no deben versionarse en Git.
-2. La carpeta `data/raw` debe conservar únicamente archivos necesarios para reprocesamiento, auditoría inmediata o validación.
-3. Todo archivo procesado debe generar una salida normalizada en `data/processed`.
-4. Si un archivo crudo contiene datos duplicados, corruptos o fuera del alcance del proyecto, debe eliminarse.
-5. No se deben guardar credenciales, tokens, claves API ni información sensible dentro de `data/raw`.
-6. `data/sample/precios_demo.csv` es el dataset demo versionable del Sprint 1.
+1. Los archivos crudos reales no deben versionarse en Git.
+2. `data/raw/` se usa solo para archivos originales descargados o cargados manualmente antes del procesamiento.
+3. `data/raw/sepa/` se usa para ZIP/CSV SEPA reales o semirreales importados localmente.
+4. `data/processed/` se usa para salidas generadas reproducibles.
+5. `data/sample/` se usa para datos demo o simulados versionables.
+6. No se deben guardar credenciales, tokens, claves API ni informacion sensible.
+7. Si un archivo crudo contiene datos duplicados, corruptos o fuera de alcance, debe eliminarse luego de inventario.
 
-## Convención de nombres
+## Datos versionables permitidos
 
-Los archivos crudos deberán nombrarse con el siguiente formato:
+- `data/sample/precios_demo.csv`: dataset demo Sprint 1.
+- `data/sample/sepa/sepa_precios_simulado.csv`: dataset tipo SEPA simulado Sprint 2.
+- `.gitkeep` en carpetas vacias necesarias.
+
+## Datos no versionables
+
+- `data/raw/*`
+- `data/raw/sepa/manual/*`
+- `data/raw/sepa/extracted/*`
+- `data/processed/*`
+- `data/export/*`
+- `database/*.sqlite`
+- `logs/*`
+
+## Convencion de nombres recomendada
+
+Para archivos crudos:
 
 ```text
 fuente_localidad_fecha_descripcion.ext
+```
+
+Ejemplos:
+
+```text
+sepa_san_juan_20260709_minoristas.zip
+carrefour_san_juan_20260709_catalogo.json
+```
+
+## Retencion sugerida
+
+- Raw SEPA/manual: conservar solo lo necesario para reproducir la ultima corrida validada.
+- Processed: regenerar cuando sea necesario; no versionar outputs.
+- Samples: mantener chicos, ficticios o simulados y aptos para pruebas.
+
+## Limpieza
+
+Antes de borrar datos:
+
+1. Inventariar ruta, fecha, tamano y motivo.
+2. Confirmar que no es sample versionable.
+3. Confirmar que la salida procesada puede regenerarse o que ya no se necesita.
