@@ -30,6 +30,12 @@ data/processed/precios_matcheados.csv + data/sample/lista_compra_demo.csv
         -> data/processed/comparacion_lista_compra.csv
         -> data/processed/mejor_compra_por_producto.csv
         -> dashboard/index.html
+
+Sprint 5 lista visual:
+data/processed/precios_matcheados.csv
+        -> dashboard/index.html
+        -> armar/editar/guardar/exportar lista desde el navegador
+        -> ranking, faltantes, ahorro y compra dividida
 ```
 
 ## Requisitos
@@ -155,6 +161,25 @@ Uso en dashboard:
 3. Cargar `data/sample/lista_compra_demo.csv` en el selector de lista.
 4. Revisar ranking por comercio, cobertura, faltantes, ahorro y mejor compra por producto.
 
+## Sprint 5: lista visual en dashboard
+
+El dashboard permite armar la lista sin editar CSV manualmente. La interfaz usa el catalogo de `grupo_comparacion` detectado en `precios_matcheados.csv`, guarda la lista en `localStorage` y exporta un CSV compatible con `scripts/05_calcular_lista_compra.py`.
+
+Uso recomendado:
+
+1. Abrir `dashboard/index.html`.
+2. Cargar `data/processed/precios_matcheados.csv` en "CSV de precios".
+3. Buscar productos en "Armar lista".
+4. Elegir cantidad, unidad y prioridad.
+5. Presionar "Agregar" en los productos deseados.
+6. Editar cantidades o eliminar items en "Lista actual".
+7. Presionar "Calcular ranking".
+8. Revisar mejor comercio, ahorro estimado, faltantes y mejor compra dividida.
+9. Usar "Guardar" para conservar la lista en el navegador.
+10. Usar "Exportar CSV" para generar una lista compatible con el script.
+
+El dashboard tambien sigue aceptando `data/sample/lista_compra_demo.csv` desde el cargador de lista.
+
 ## Datos versionables
 
 - `data/sample/precios_demo.csv`: demo Sprint 1.
@@ -191,4 +216,4 @@ Ademas del dashboard standalone de Sprint 1/2, el repo conserva el sistema avanz
 
 ## Proximo sprint recomendado
 
-Sprint 5: promociones, descuentos de tarjeta y planificacion de ruta de compra.
+Sprint 6: promociones, descuentos de tarjeta y planificacion de ruta de compra.

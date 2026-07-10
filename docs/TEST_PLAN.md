@@ -361,3 +361,96 @@ python -m py_compile scripts/05_calcular_lista_compra.py
 python scripts/05_calcular_lista_compra.py
 python -m pytest
 ```
+
+## Sprint 5: lista visual en dashboard
+
+### 23. Estructura visual del dashboard
+
+Prueba automatizada:
+
+```bash
+python -m pytest tests/test_dashboard_shopping_list_ui.py
+```
+
+Resultado esperado:
+
+- Existen las secciones `Precios cargados`, `Armar lista`, `Lista actual`, `Ranking por comercio`, `Mejor compra dividida` y `Faltantes`.
+
+### 24. Constructor de lista
+
+Prueba automatizada:
+
+```bash
+python -m pytest tests/test_dashboard_shopping_list_ui.py
+```
+
+Resultado esperado:
+
+- El JS embebido carga precios matcheados.
+- Genera catalogo por `grupo_comparacion`.
+- Agrega producto a lista.
+- Edita cantidad.
+- Elimina producto.
+- Calcula ranking por comercio.
+- Detecta faltantes.
+- Calcula mejor compra dividida.
+
+### 25. Persistencia local
+
+Prueba automatizada:
+
+```bash
+python -m pytest tests/test_dashboard_shopping_list_ui.py
+```
+
+Resultado esperado:
+
+- La lista se guarda en `localStorage`.
+- La lista se recupera con la misma estructura.
+- La lista guardada se puede limpiar.
+
+### 26. Exportacion CSV
+
+Prueba automatizada:
+
+```bash
+python -m pytest tests/test_dashboard_shopping_list_ui.py
+```
+
+Resultado esperado:
+
+- El CSV exportado contiene `item_lista,grupo_comparacion,cantidad,unidad,prioridad`.
+- El CSV exportado es compatible con `scripts/05_calcular_lista_compra.py`.
+
+### 27. Validacion manual por navegador
+
+Pasos:
+
+1. Servir el proyecto con `python -m http.server 8026 --bind 127.0.0.1`.
+2. Abrir `http://127.0.0.1:8026/dashboard/`.
+3. Cargar `data/processed/precios_matcheados.csv`.
+4. Buscar un producto en `Armar lista`.
+5. Agregar un producto.
+6. Editar cantidad.
+7. Eliminar un producto.
+8. Guardar lista.
+9. Recuperar lista.
+10. Exportar CSV.
+11. Cargar `data/sample/lista_compra_demo.csv`.
+12. Calcular ranking.
+
+Resultado esperado:
+
+- El dashboard abre sin backend.
+- Se muestra mejor comercio.
+- Se muestra ahorro estimado.
+- Se muestran faltantes por comercio cuando corresponde.
+- Se muestra mejor compra dividida por producto.
+
+## Suite Sprint 5
+
+Comandos:
+
+```bash
+python -m pytest
+```

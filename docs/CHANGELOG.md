@@ -1,5 +1,40 @@
 # Changelog
 
+## 2026-07-10 - Sprint 5 - Lista visual en dashboard
+
+Cambios:
+
+- Se actualizo `dashboard/index.html` con un modulo visual para armar listas de compra.
+- Se agrego busqueda de productos/grupos comparables desde `precios_matcheados.csv`.
+- Se agrego alta de items con cantidad, unidad y prioridad.
+- Se agrego edicion de cantidad/unidad/prioridad y eliminacion de items.
+- Se agrego persistencia local con `localStorage`.
+- Se agrego recuperacion y limpieza de lista guardada.
+- Se agrego exportacion CSV compatible con `scripts/05_calcular_lista_compra.py`.
+- Se mantuvo compatibilidad con carga de `data/sample/lista_compra_demo.csv`.
+- Se agrego seccion visual de faltantes por comercio.
+- Se agregaron pruebas automatizadas del JS embebido del dashboard.
+- Se actualizaron README, contrato de datos, plan de pruebas y estado del proyecto.
+
+Archivos creados:
+
+- `tests/test_dashboard_shopping_list_ui.py`
+
+Archivos modificados:
+
+- `dashboard/index.html`
+- `README.md`
+- `docs/DATA_CONTRACT.md`
+- `docs/TEST_PLAN.md`
+- `docs/PROJECT_STATUS.md`
+- `docs/CHANGELOG.md`
+
+Pruebas:
+
+- `python -m pytest tests/test_dashboard_shopping_list_ui.py`: OK.
+- `python -m pytest`: 22 passed.
+- Dashboard servido por HTTP local y validado con CSV real `precios_matcheados.csv`: OK.
+
 ## 2026-07-10 - Sprint 4 - Listas de compra y ahorro
 
 Cambios:
