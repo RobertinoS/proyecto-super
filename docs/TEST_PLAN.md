@@ -1,6 +1,6 @@
 # Plan de pruebas
 
-Actualizado: 2026-07-09.
+Actualizado: 2026-07-10.
 
 ## Sprint 1: CSV local
 
@@ -275,5 +275,89 @@ Comandos:
 ```bash
 python -m py_compile scripts/04_matching_productos.py
 python scripts/04_matching_productos.py
+python -m pytest
+```
+
+## Sprint 4: listas de compra
+
+### 18. Compilacion del script de lista
+
+Comando:
+
+```bash
+python -m py_compile scripts/05_calcular_lista_compra.py
+```
+
+Resultado esperado:
+
+- El script compila sin errores.
+
+### 19. Calculo de ranking por comercio
+
+Comando:
+
+```bash
+python scripts/05_calcular_lista_compra.py
+```
+
+Resultado esperado:
+
+- Lee `data/processed/precios_matcheados.csv`.
+- Lee `data/sample/lista_compra_demo.csv`.
+- Genera `data/processed/comparacion_lista_compra.csv`.
+- Genera `data/processed/mejor_compra_por_producto.csv`.
+- Ordena comercios por mayor cobertura y menor costo total.
+
+### 20. Deteccion de faltantes
+
+Prueba automatizada:
+
+```bash
+python -m pytest tests/test_shopping_list.py
+```
+
+Resultado esperado:
+
+- Un comercio sin un grupo comparable informa el item faltante.
+- La cobertura queda por debajo de 100%.
+- Ese comercio no supera a uno con cobertura completa solo por tener menor costo parcial.
+
+### 21. Calculo de ahorro
+
+Prueba automatizada:
+
+```bash
+python -m pytest tests/test_shopping_list.py
+```
+
+Resultado esperado:
+
+- `diferencia_vs_mas_barato` compara contra el menor costo con igual cobertura maxima.
+- `ahorro_vs_mas_caro` compara contra el mayor costo con igual cobertura maxima.
+- `ahorro_vs_promedio` se calcula por item en la compra dividida.
+
+### 22. Dashboard con modo lista
+
+Pasos:
+
+1. Abrir `dashboard/index.html`.
+2. Cargar `data/processed/precios_matcheados.csv` en precios.
+3. Cargar `data/sample/lista_compra_demo.csv` en lista.
+
+Resultado esperado:
+
+- Se mantiene la comparacion individual de productos Sprint 3.
+- Se muestra ranking de comercios por costo total.
+- Se muestra cobertura y faltantes por comercio.
+- Se muestra la mejor compra por producto.
+- La tabla de precios sigue ordenada por `precio_unitario_comparable`.
+
+## Suite Sprint 4
+
+Comandos:
+
+```bash
+python -m py_compile scripts/05_calcular_lista_compra.py
+python scripts/05_calcular_lista_compra.py
 python -m pytest
 ```

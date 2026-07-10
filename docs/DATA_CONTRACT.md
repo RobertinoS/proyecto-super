@@ -1,6 +1,6 @@
 # Contrato de datos
 
-Actualizado: 2026-07-09.
+Actualizado: 2026-07-10.
 
 ## Columnas canonicas del dashboard
 
@@ -250,3 +250,98 @@ Precio comparable:
 - peso: precio por `kg`;
 - volumen: precio por `l`;
 - unidades o packs: precio por `un`.
+
+## Sprint 4: listas de compra
+
+Entrada de precios:
+
+```text
+data/processed/precios_matcheados.csv
+```
+
+Entrada de lista demo versionable:
+
+```text
+data/sample/lista_compra_demo.csv
+```
+
+Script:
+
+```text
+scripts/05_calcular_lista_compra.py
+```
+
+Salidas generadas:
+
+```text
+data/processed/comparacion_lista_compra.csv
+data/processed/mejor_compra_por_producto.csv
+data/processed/lista_compra_reporte.json
+```
+
+### Lista de compra
+
+Columnas minimas:
+
+| Columna | Tipo esperado | Regla |
+|---|---|---|
+| `item_lista` | texto | texto visible cargado por el usuario |
+| `grupo_comparacion` | texto | debe existir en `precios_matcheados.csv` para comparar |
+| `cantidad` | numero/texto numerico | mayor a cero |
+| `unidad` | texto | `kg`, `g`, `l`, `ml`, `cc`, `un` y aliases |
+| `prioridad` | texto | valor informativo para futuras reglas |
+
+Regla de cantidad:
+
+- `g` se convierte a `kg`.
+- `ml` y `cc` se convierten a `l`.
+- `kg`, `l` y `un` quedan como unidad base.
+
+Ejemplo:
+
+```csv
+item_lista,grupo_comparacion,cantidad,unidad,prioridad
+Fideos spaghetti 500g,fideos_spaghetti_matarazzo_500g,500,g,media
+```
+
+### Comparacion por comercio
+
+Archivo:
+
+```text
+data/processed/comparacion_lista_compra.csv
+```
+
+Columnas:
+
+| Columna | Tipo esperado | Regla |
+|---|---|---|
+| `comercio` | texto | comercio comparado |
+| `productos_encontrados` | entero | cantidad de items de lista con oferta comparable |
+| `productos_faltantes` | texto | `0` o detalle separado por punto y coma |
+| `cobertura_lista_pct` | numero | porcentaje de items encontrados |
+| `costo_total_estimado` | numero | suma del menor costo por grupo dentro del comercio |
+| `diferencia_vs_mas_barato` | numero/vacio | diferencia contra el comercio mas barato con la mayor cobertura |
+| `ahorro_vs_mas_caro` | numero/vacio | ahorro contra el comercio mas caro con la mayor cobertura |
+| `ranking_precio` | entero | orden final, prioriza cobertura y luego precio |
+
+### Mejor compra por producto
+
+Archivo:
+
+```text
+data/processed/mejor_compra_por_producto.csv
+```
+
+Columnas:
+
+| Columna | Tipo esperado | Regla |
+|---|---|---|
+| `item_lista` | texto | item original de la lista |
+| `grupo_comparacion` | texto | grupo usado para comparar |
+| `comercio_recomendado` | texto | comercio con menor costo para ese item |
+| `producto_encontrado` | texto | producto real tomado del CSV de precios |
+| `precio_final` | numero/vacio | costo estimado para la cantidad pedida |
+| `precio_unitario_comparable` | numero/vacio | precio por unidad base del producto elegido |
+| `ahorro_vs_promedio` | numero/vacio | diferencia contra el promedio de ofertas encontradas |
+| `confianza_matching` | numero/vacio | confianza heredada del matching Sprint 3 |

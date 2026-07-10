@@ -1,5 +1,43 @@
 # Changelog
 
+## 2026-07-10 - Sprint 4 - Listas de compra y ahorro
+
+Cambios:
+
+- Se creo la lista demo `data/sample/lista_compra_demo.csv`.
+- Se agrego el script `scripts/05_calcular_lista_compra.py` para calcular costo total por comercio, faltantes, cobertura, ahorro y compra dividida.
+- Se generan `data/processed/comparacion_lista_compra.csv` y `data/processed/mejor_compra_por_producto.csv` como outputs reproducibles.
+- Se agregaron pruebas automatizadas para lectura de lista, conversion de unidades, ranking por cobertura/precio, faltantes y generacion de outputs.
+- Se actualizo `dashboard/index.html` con un segundo cargador CSV para listas de compra, ranking por comercio, KPIs de ahorro y mejor compra por producto.
+- Se actualizo documentacion de README, contrato de datos, plan de pruebas y estado del proyecto.
+
+Archivos creados:
+
+- `data/sample/lista_compra_demo.csv`
+- `scripts/05_calcular_lista_compra.py`
+- `tests/test_shopping_list.py`
+
+Archivos modificados:
+
+- `dashboard/index.html`
+- `README.md`
+- `docs/DATA_CONTRACT.md`
+- `docs/TEST_PLAN.md`
+- `docs/PROJECT_STATUS.md`
+- `docs/CHANGELOG.md`
+
+Pruebas:
+
+- `python -m py_compile scripts/05_calcular_lista_compra.py`: OK.
+- `python scripts/05_calcular_lista_compra.py`: OK, 5 items y 7 comercios.
+- `python -m pytest`: 20 passed.
+
+Resultado demo:
+
+- Mejor comercio completo: `Atomo Conviene`.
+- Costo estimado: `9130.50`.
+- Ahorro contra el comercio mas caro con cobertura completa: `488.50`.
+
 ## 2026-07-10 - Sprint 3 - Matching de productos
 
 Cambios:
