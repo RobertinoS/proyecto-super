@@ -4,70 +4,38 @@ Actualizado: 2026-07-09.
 
 ## Sprint actual
 
-Sprint 1 - Base funcional CSV local.
+Sprint 2 - Ingestion SEPA/manual para San Juan.
 
-Objetivo: crear una base minima para comparar precios de supermercados/autoservicios usando un CSV local, normalizacion Python y dashboard sin backend.
+Rama:
+
+```text
+sprint-2-sepa-ingestion
+```
+
+Objetivo: integrar una fuente real o semirreal de precios para San Juan, priorizando SEPA como fuente inicial, sin romper el dashboard funcional del Sprint 1.
 
 ## Diagnostico ejecutivo
 
-El repo Git dedicado existe en:
+El repo Git dedicado esta en:
 
 ```text
 C:\Users\Rober\Desktop\Proyecto Super
 ```
 
-Rama actual: `main`.
+El Sprint 1 quedo cerrado en `main` con commit limpio y el Sprint 2 se trabaja en una rama nueva. El dashboard local `dashboard/index.html` no fue reemplazado; sigue funcionando con CSV local y ahora tambien puede cargar el CSV generado por el flujo SEPA/manual.
 
-Observacion: `git log` indica que la rama aun no tiene commits visibles en este entorno y `git status` muestra el proyecto como no trackeado. No se hizo commit automatico.
+## Base Sprint 1 preservada
 
-## Estructura existente
-
-Activos heredados del trabajo previo:
-
-- `app/index.html`
-- `app/promociones.html`
-- `src/`
-- `config/fuentes.yml`
-- `database/precios_san_juan.sqlite`
-- `data/export/*.json`
-- `tests/`
-- `docs/`
-
-Nuevos artefactos Sprint 1:
+Activos clave:
 
 - `data/sample/precios_demo.csv`
 - `scripts/02_normalizar_precios.py`
-- `data/processed/precios_normalizados.csv`
 - `dashboard/index.html`
-
-## Datos Sprint 1
-
-CSV sample:
-
-- Ruta: `data/sample/precios_demo.csv`.
-- Registros demo: 31.
-- Comercios: Vea, Carrefour, ChangoMas, Atomo Conviene y autoservicios grandes.
-- Localidades: Capital, Rawson, Santa Lucia y Rivadavia.
-
-CSV normalizado:
-
-- Ruta: `data/processed/precios_normalizados.csv`.
-- Generado por `scripts/02_normalizar_precios.py`.
-- Incluye campos limpios para comercio, sucursal, producto, marca y categoria.
-
-## Dashboard Sprint 1
-
-Ruta:
-
-```text
-dashboard/index.html
-```
-
-Funciona sin backend mediante carga manual de CSV local.
+- `data/processed/precios_normalizados.csv` generado localmente
 
 Capacidades:
 
-- Carga de CSV.
+- Carga manual de CSV.
 - Validacion de columnas.
 - KPIs basicos.
 - Busqueda de producto.
@@ -75,64 +43,106 @@ Capacidades:
 - Comparacion por comercio.
 - Tabla ordenada de menor a mayor precio.
 
-## Pruebas Sprint 1
+## Avance Sprint 2
+
+Fuentes oficiales investigadas:
+
+- Dataset oficial SEPA minorista.
+- Dataset oficial SEPA mayorista.
+- Metadata tecnica minorista con estructura de paquetes SEPA.
+
+Decision tecnica:
+
+- Mantener costo 0.
+- No usar credenciales ni APIs privadas.
+- Agregar modo manual para ZIP/CSV descargado.
+- Agregar modo `download-plan` preparado para descarga futura.
+- Usar `data/sample/sepa/` para datos simulados versionables.
+- Usar `data/raw/sepa/` para archivos reales no versionados.
+
+Nuevos artefactos:
+
+- `data/sample/sepa/sepa_precios_simulado.csv`
+- `scripts/01_descargar_o_importar_sepa.py`
+- `scripts/03_filtrar_san_juan.py`
+- `tests/test_sepa_ingestion.py`
+- `docs/SEPA_STRUCTURE.md`
+
+Salida Sprint 2:
+
+```text
+data/processed/precios_san_juan_sepa.csv
+```
+
+Reporte:
+
+```text
+data/processed/precios_san_juan_sepa_reporte.json
+```
+
+## Validaciones Sprint 2
+
+El filtro San Juan:
+
+- Lee CSV, TXT, directorios o ZIP.
+- Soporta delimitadores coma, punto y coma, tab y pipe.
+- Une archivos tipo SEPA separados por `id_comercio`, `id_bandera`, `id_sucursal`.
+- Valida campos minimos.
+- Convierte precio a numero.
+- Valida fecha o usa fallback.
+- Excluye filas fuera de San Juan.
+- Prioriza Capital, Rawson, Santa Lucia y Rivadavia.
+- Genera errores claros cuando corresponde.
+
+## Datos Sprint 2
+
+Archivo tipo SEPA simulado:
+
+```text
+data/sample/sepa/sepa_precios_simulado.csv
+```
+
+Contenido:
+
+- 34 filas fuente.
+- 32 filas San Juan generadas.
+- 2 filas fuera de San Juan excluidas.
+- Comercios: Vea, Carrefour, ChangoMas, Atomo Conviene y autoservicios grandes.
+- Localidades: Capital, Rawson, Santa Lucia y Rivadavia.
+
+## Pruebas ejecutadas
+
+Comandos:
 
 ```bash
+python -m py_compile scripts/01_descargar_o_importar_sepa.py scripts/02_normalizar_precios.py scripts/03_filtrar_san_juan.py
 python scripts/02_normalizar_precios.py
+python scripts/01_descargar_o_importar_sepa.py --mode download-plan
+python scripts/01_descargar_o_importar_sepa.py --mode manual --input data/sample/sepa/sepa_precios_simulado.csv
+python scripts/03_filtrar_san_juan.py --input data/raw/sepa/manual/sepa_precios_simulado.csv
 python -m pytest
-python -m http.server 8000
 ```
 
 Resultados:
 
-- `python scripts/02_normalizar_precios.py`: OK, 31 registros validos, 0 errores.
-- `python -m py_compile scripts/02_normalizar_precios.py`: OK.
-- Prueba columna faltante con CSV temporal: OK, devuelve error claro.
-- Prueba precio invalido con CSV temporal: OK, excluye fila invalida y genera archivo de errores.
-- `python -m pytest`: 6 passed.
-- `http://127.0.0.1:8011/dashboard/`: HTTP 200 durante servidor temporal.
-- Verificacion estructural del dashboard: contiene cargador CSV, parser CSV, KPIs, comparacion por comercio y tabla.
-- Playwright no esta instalado localmente; no se automatizo el dialogo nativo de seleccion de archivo.
-
-## Auditoria Sprint 1
-
-Fecha: 2026-07-09.
-
-Resultado:
-
-- Todos los archivos prometidos existen.
-- `scripts/02_normalizar_precios.py` corre sin errores.
-- `data/processed/precios_normalizados.csv` tiene las columnas esperadas.
-- Dashboard responde por HTTP local y contiene cargador CSV.
-- Se verifico el JavaScript del dashboard con el CSV normalizado.
-- KPIs coherentes: 31 filas, 7 productos, 7 comercios, precio promedio $2.378,40.
-- Producto mas barato detectado: Fideos spaghetti en Changomas, $870.
-- Busqueda `yerba`: 5 resultados correctos.
-- Tabla de precios: ordenada de menor a mayor.
-- Comparacion por comercio: promedios ordenados de menor a mayor.
-
-Correccion aplicada:
-
-- Se corrigio `dashboard/index.html` para parsear correctamente precios con punto decimal, por ejemplo `870.00`.
-- Antes de la correccion, el dashboard podia interpretar `870.00` como `87000`.
-
-## Cierre Git Sprint 1
-
-Decision de versionado:
-
-- Se eligio la opcion A recomendada: mover datos demo versionables a `data/sample/precios_demo.csv`.
-- `data/raw/` queda reservado para datos crudos reales no versionados.
-- `data/processed/precios_normalizados.csv` se genera localmente y queda ignorado como output reproducible.
+- Compilacion Python: OK.
+- `scripts/02_normalizar_precios.py`: OK, 31 registros validos, 0 errores.
+- `scripts/01_descargar_o_importar_sepa.py --mode download-plan`: OK, genera manifiesto sin descargar.
+- `scripts/01_descargar_o_importar_sepa.py --mode manual`: OK, copia sample a `data/raw/sepa/manual/`.
+- `scripts/03_filtrar_san_juan.py`: OK, 34 filas leidas, 32 San Juan, 2 fuera de provincia excluidas, 0 errores.
+- `python -m pytest`: 10 passed.
+- Dashboard: abre por HTTP local, contiene cargador y filtros; el parser del dashboard lee `precios_san_juan_sepa.csv` con 32 filas, 7 productos, 7 comercios, promedio 2414.23, busqueda `yerba` con 6 resultados y orden ascendente correcto.
 
 ## Riesgos y pendientes
 
-- El dashboard carga CSV por selector de archivo; no lee automaticamente archivos locales por restricciones normales del navegador.
-- Falta test automatizado especifico para el normalizador.
-- Git aparece sin commit visible, aunque el usuario indico haber realizado un primer commit.
-- El Sprint 1 usa datos ficticios; no debe confundirse con precios reales.
+- SEPA depende de datos declarados por comercios; debe auditarse contra paginas oficiales de cadenas cuando sea posible.
+- El flujo de descarga automatica queda preparado pero no activo por defecto.
+- El dashboard carga archivos por selector debido a restricciones normales del navegador.
+- Falta matching avanzado de productos equivalentes y precio por unidad comparable.
+- Falta scoring de ahorro por lista de compra y ruta.
 
 ## Proximo sprint recomendado
 
-Sprint 2 - Matching y equivalencias.
+Sprint 3 - Matching, equivalencias y ahorro por lista.
 
-Objetivo: comparar productos equivalentes por nombre, marca, presentacion y unidad, evitando comparaciones erroneas.
+Objetivo: construir diccionario/catalogo propio de productos, normalizar presentaciones, comparar precio por unidad y calcular ahorro por lista de compra y comercio/ruta.

@@ -1,5 +1,42 @@
 # Changelog
 
+## 2026-07-09 - Sprint 2 - Ingestion SEPA/manual San Juan
+
+Cambios:
+
+- Se creo una rama dedicada `sprint-2-sepa-ingestion`.
+- Se documento la estructura esperada de SEPA y sus paquetes ZIP/CSV.
+- Se agrego un importador manual para ZIP/CSV SEPA y un modo preparado para descarga futura.
+- Se agrego un filtro San Juan que genera CSV compatible con el dashboard Sprint 1.
+- Se agrego un sample tipo SEPA versionable para pruebas reproducibles.
+- Se agregaron pruebas automatizadas para CSV consolidado, ZIP manual, ZIP tipo SEPA oficial y error por campos minimos.
+
+Archivos creados:
+
+- `data/sample/sepa/sepa_precios_simulado.csv`
+- `scripts/01_descargar_o_importar_sepa.py`
+- `scripts/03_filtrar_san_juan.py`
+- `tests/test_sepa_ingestion.py`
+- `docs/SEPA_STRUCTURE.md`
+
+Archivos modificados:
+
+- `README.md`
+- `docs/DATA_CONTRACT.md`
+- `docs/TEST_PLAN.md`
+- `docs/PROJECT_STATUS.md`
+- `docs/CHANGELOG.md`
+
+Pruebas:
+
+- `python -m py_compile scripts/01_descargar_o_importar_sepa.py scripts/02_normalizar_precios.py scripts/03_filtrar_san_juan.py`: OK.
+- `python scripts/02_normalizar_precios.py`: OK, 31 registros validos, 0 errores.
+- `python scripts/01_descargar_o_importar_sepa.py --mode download-plan`: OK.
+- `python scripts/01_descargar_o_importar_sepa.py --mode manual --input data/sample/sepa/sepa_precios_simulado.csv`: OK.
+- `python scripts/03_filtrar_san_juan.py --input data/raw/sepa/manual/sepa_precios_simulado.csv`: OK, 32 filas San Juan, 2 fuera de provincia excluidas.
+- `python -m pytest`: 10 passed.
+- Dashboard: abre por HTTP local y el parser lee `data/processed/precios_san_juan_sepa.csv` con 32 filas, 7 productos, 7 comercios, busqueda `yerba` con 6 resultados y tabla ordenada.
+
 ## 2026-07-09 - Sprint 1 - Base funcional CSV local
 
 Cambios:
