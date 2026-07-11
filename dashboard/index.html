@@ -41,29 +41,57 @@
     }
 
     * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
     body { margin: 0; background: var(--bg); color: var(--ink); }
-    .shell { max-width: 1320px; margin: 0 auto; padding: 28px 18px 44px; }
+    .app-shell { display: grid; grid-template-columns: 260px minmax(0, 1fr); min-height: 100vh; }
+    .sidebar { position: sticky; top: 0; height: 100vh; padding: 18px; border-right: 1px solid var(--line); background: color-mix(in srgb, var(--panel) 94%, var(--brand) 6%); overflow: auto; }
+    .brand-block { border: 1px solid var(--line); background: var(--panel); border-radius: 8px; padding: 16px; box-shadow: var(--shadow); }
+    .brand-block strong { display: block; font-size: 17px; line-height: 1.25; }
+    .brand-block span { display: block; margin-top: 6px; color: var(--muted); font-size: 12px; line-height: 1.45; }
+    .nav-card { margin-top: 14px; border: 1px solid var(--line); background: var(--panel); border-radius: 8px; padding: 8px; box-shadow: var(--shadow); }
+    .nav-link { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 11px; border-radius: 8px; color: var(--ink); text-decoration: none; font-size: 13px; font-weight: 800; }
+    .nav-link:hover { background: var(--panel-soft); color: var(--brand); }
+    .nav-link span { color: var(--muted); font-size: 12px; font-weight: 700; }
+    .main-view { min-width: 0; padding: 22px 22px 42px; }
+    .shell { max-width: 1420px; margin: 0 auto; }
+    .app-header { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 18px; align-items: stretch; margin-bottom: 18px; }
+    .header-copy, .status-board { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 18px; box-shadow: var(--shadow); }
     .topbar { display: flex; justify-content: space-between; gap: 18px; align-items: flex-start; margin-bottom: 22px; }
     .eyebrow { margin: 0 0 8px; color: var(--brand); font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: 0; }
     h1 { margin: 0; font-size: clamp(26px, 4vw, 42px); line-height: 1.05; letter-spacing: 0; }
     h2, h3 { letter-spacing: 0; }
     .subtitle { margin: 10px 0 0; color: var(--muted); max-width: 880px; line-height: 1.5; }
-    .status { min-width: 280px; border: 1px solid var(--line); background: var(--panel); border-radius: 8px; padding: 12px 14px; box-shadow: var(--shadow); color: var(--muted); font-size: 13px; }
+    .status { border: 1px solid var(--line); background: var(--panel-soft); border-radius: 8px; padding: 12px 14px; color: var(--muted); font-size: 13px; line-height: 1.45; }
+    .quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+    .workflow { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
+    .step-card { border: 1px solid var(--line); background: var(--panel); border-radius: 8px; padding: 13px; box-shadow: var(--shadow); min-height: 96px; }
+    .step-card small { color: var(--muted); font-weight: 800; text-transform: uppercase; font-size: 11px; letter-spacing: 0; }
+    .step-card strong { display: block; margin-top: 7px; font-size: 14px; }
+    .step-card p { margin: 5px 0 0; color: var(--muted); font-size: 12px; line-height: 1.4; }
     .grid { display: grid; gap: 16px; }
     .two { grid-template-columns: 1.05fr .95fr; align-items: stretch; }
     .builder-layout { grid-template-columns: minmax(0, .96fr) minmax(0, 1.04fr); align-items: start; }
     .cards { grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 16px 0; }
     .card, .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; box-shadow: var(--shadow); }
-    .card { padding: 16px; min-height: 108px; }
+    .card { padding: 16px; min-height: 108px; position: relative; overflow: hidden; }
+    .card::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--brand); }
     .card span { color: var(--muted); font-size: 13px; }
     .card strong { display: block; margin-top: 8px; font-size: 25px; overflow-wrap: anywhere; }
     .panel { padding: 18px; }
     .panel h2 { margin: 0 0 12px; font-size: 18px; }
     .panel h3 { margin: 0; font-size: 15px; }
-    .uploader-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .upload { border: 1px dashed #94a3b8; border-radius: 8px; padding: 16px; background: var(--panel-soft); }
+    .panel-head { display: flex; justify-content: space-between; gap: 14px; align-items: flex-start; margin-bottom: 12px; }
+    .panel-head h2 { margin-bottom: 5px; }
+    .section-anchor { scroll-margin-top: 18px; }
+    .section-kicker { margin: 0 0 4px; color: var(--brand); font-size: 11px; font-weight: 900; text-transform: uppercase; }
+    .uploader-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+    .upload { border: 1px solid var(--line); border-radius: 8px; padding: 14px; background: var(--panel-soft); min-height: 174px; }
+    .upload-head { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
     .upload input { width: 100%; margin-top: 12px; }
     .upload p { margin: 8px 0 0; }
+    .file-state { display: inline-flex; align-items: center; border-radius: 999px; padding: 4px 8px; background: rgba(100, 116, 139, 0.12); color: var(--muted); font-size: 11px; font-weight: 800; white-space: nowrap; }
+    .file-state.loaded { color: var(--good); background: rgba(21, 128, 61, 0.1); }
+    .file-state.error-state { color: var(--bad); background: rgba(185, 28, 28, 0.1); }
     .controls { display: grid; grid-template-columns: 1fr 240px; gap: 12px; margin-top: 14px; }
     .builder-controls { display: grid; grid-template-columns: 1fr 132px 112px 104px; gap: 10px; align-items: end; margin: 12px 0; }
     .route-controls { display: grid; grid-template-columns: 1fr 1fr 150px auto; gap: 10px; align-items: end; margin-top: 12px; }
@@ -82,7 +110,8 @@
     .bar-row strong { overflow-wrap: anywhere; }
     .bar-track { height: 12px; background: var(--line); border-radius: 999px; overflow: hidden; }
     .bar-fill { height: 100%; min-width: 3px; background: linear-gradient(90deg, var(--brand), var(--brand-2)); }
-    .pill { display: inline-flex; align-items: center; border: 1px solid rgba(21, 128, 61, 0.3); background: rgba(21, 128, 61, 0.08); color: var(--good); border-radius: 999px; padding: 4px 9px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+    .pill { display: inline-flex; align-items: center; border: 1px solid rgba(21, 128, 61, 0.3); background: rgba(21, 128, 61, 0.08); color: var(--good); border-radius: 999px; padding: 4px 9px; font-size: 12px; font-weight: 800; white-space: nowrap; }
+    .notice { border: 1px solid var(--line); border-left: 4px solid var(--brand); background: var(--panel-soft); border-radius: 8px; padding: 10px 12px; color: var(--muted); font-size: 13px; line-height: 1.45; }
     .confidence { display: inline-flex; min-width: 46px; justify-content: center; border-radius: 999px; padding: 3px 8px; font-size: 12px; font-weight: 800; background: rgba(37, 99, 235, 0.12); color: var(--brand-2); }
     .confidence.low { background: rgba(180, 83, 9, 0.12); color: var(--warn); }
     .table-wrap { overflow: auto; border: 1px solid var(--line); border-radius: 8px; }
@@ -116,8 +145,18 @@
     .missing-card strong { display: block; margin-bottom: 6px; }
     .missing-card p { margin: 0; color: var(--muted); line-height: 1.45; font-size: 13px; }
 
+    @media (max-width: 1180px) {
+      .app-shell { grid-template-columns: 1fr; }
+      .sidebar { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+      .nav-card { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+      .nav-link { justify-content: center; text-align: center; }
+      .nav-link span { display: none; }
+      .app-header, .workflow { grid-template-columns: 1fr; }
+      .uploader-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
     @media (max-width: 1080px) {
-      .topbar, .two, .builder-layout, .uploader-grid { grid-template-columns: 1fr; display: grid; }
+      .topbar, .two, .builder-layout { grid-template-columns: 1fr; display: grid; }
       .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .controls, .builder-controls, .route-controls { grid-template-columns: 1fr; }
       .status { min-width: 0; }
@@ -126,6 +165,8 @@
     }
 
     @media (max-width: 560px) {
+      .main-view, .sidebar { padding: 14px; }
+      .nav-card, .uploader-grid { grid-template-columns: 1fr; }
       .cards { grid-template-columns: 1fr; }
       .bar-row { grid-template-columns: 1fr; gap: 6px; }
       .candidate { grid-template-columns: 1fr; }
@@ -133,40 +174,105 @@
   </style>
 </head>
 <body>
-  <main class="shell">
-    <header class="topbar">
-      <div>
-        <p class="eyebrow">BI local para compra inteligente</p>
-        <h1>Comparador de precios de San Juan</h1>
-        <p class="subtitle">Carga precios matcheados o con promociones, arma una lista desde la interfaz y calcula costo total, ahorro, faltantes y compra dividida sin editar CSV.</p>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Navegacion del dashboard">
+      <div class="brand-block">
+        <strong>Proyecto Super San Juan</strong>
+        <span>MVP local para decidir compra por precio efectivo, cobertura y cercania.</span>
       </div>
-      <div class="status" id="statusBox">Esperando CSV de precios.</div>
-    </header>
+      <nav class="nav-card">
+        <a class="nav-link" href="#resumen">Resumen <span>01</span></a>
+        <a class="nav-link" href="#precios">Precios <span>02</span></a>
+        <a class="nav-link" href="#lista">Lista de compra <span>03</span></a>
+        <a class="nav-link" href="#comparacion">Comparacion <span>04</span></a>
+        <a class="nav-link" href="#ruta">Ruta/cercania <span>05</span></a>
+      </nav>
+    </aside>
 
-    <section class="grid two">
+    <main class="main-view">
+      <div class="shell">
+        <header class="app-header" id="resumen">
+          <div class="header-copy">
+            <p class="eyebrow">BI local para compra inteligente</p>
+            <h1>Comparador de precios de San Juan</h1>
+            <p class="subtitle">Carga archivos CSV, arma una lista de compra y compara precio efectivo, faltantes, promociones y distancia aproximada en un flujo guiado.</p>
+          </div>
+          <div class="status-board">
+            <p class="section-kicker">Estado de sesion</p>
+            <div class="status" id="statusBox">Esperando CSV de precios.</div>
+            <div class="quick-actions">
+              <button id="recalculateAllButton" class="primary" type="button">Recalcular</button>
+              <button id="clearSessionButton" class="danger" type="button">Limpiar sesion</button>
+            </div>
+          </div>
+        </header>
+
+        <section class="workflow" aria-label="Flujo principal">
+          <div class="step-card">
+            <small>Paso 1</small>
+            <strong>Precios</strong>
+            <p>Carga precios matcheados o con promociones.</p>
+          </div>
+          <div class="step-card">
+            <small>Paso 2</small>
+            <strong>Lista</strong>
+            <p>Importa una lista o armala desde el catalogo.</p>
+          </div>
+          <div class="step-card">
+            <small>Paso 3</small>
+            <strong>Comparacion</strong>
+            <p>Calcula ranking, ahorro y faltantes.</p>
+          </div>
+          <div class="step-card">
+            <small>Paso 4</small>
+            <strong>Ruta</strong>
+            <p>Agrega sucursales y ubicacion para evaluar cercania.</p>
+          </div>
+        </section>
+
+    <section class="grid two section-anchor" id="precios">
       <div class="panel">
-        <h2>Precios cargados</h2>
+        <div class="panel-head">
+          <div>
+            <p class="section-kicker">Carga de datos</p>
+            <h2>Precios cargados</h2>
+            <p class="muted">El flujo completo usa precios, lista, sucursales y ubicacion. Cada bloque muestra su estado de carga.</p>
+          </div>
+          <span class="pill" id="freshnessPill">CSV local</span>
+        </div>
         <div class="uploader-grid">
           <div class="upload">
-            <strong>CSV de precios</strong>
+            <div class="upload-head">
+              <strong>CSV de precios</strong>
+              <span class="file-state" id="priceFileState">Pendiente</span>
+            </div>
             <p class="muted">Usa `data/processed/precios_matcheados.csv` o `data/processed/precios_con_promociones.csv`. Tambien acepta CSVs de sprints anteriores.</p>
             <input id="fileInput" type="file" accept=".csv,text/csv">
             <p id="fileError" class="error"></p>
           </div>
           <div class="upload">
-            <strong>Lista CSV opcional</strong>
+            <div class="upload-head">
+              <strong>Lista CSV opcional</strong>
+              <span class="file-state" id="listFileState">Pendiente</span>
+            </div>
             <p class="muted">Puedes cargar `data/sample/lista_compra_demo.csv` o armar la lista visualmente.</p>
             <input id="listInput" type="file" accept=".csv,text/csv">
             <p id="listError" class="error"></p>
           </div>
           <div class="upload">
-            <strong>Sucursales CSV</strong>
+            <div class="upload-head">
+              <strong>Sucursales CSV</strong>
+              <span class="file-state" id="branchFileState">Pendiente</span>
+            </div>
             <p class="muted">Carga `data/sample/sucursales_demo.csv` para estimar cercania por sucursal.</p>
             <input id="branchInput" type="file" accept=".csv,text/csv">
             <p id="branchError" class="error"></p>
           </div>
           <div class="upload">
-            <strong>Ubicacion usuario CSV</strong>
+            <div class="upload-head">
+              <strong>Ubicacion usuario CSV</strong>
+              <span class="file-state" id="locationFileState">Pendiente</span>
+            </div>
             <p class="muted">Carga `data/sample/ubicacion_usuario_demo.csv` o usa coordenadas manuales.</p>
             <input id="userLocationInput" type="file" accept=".csv,text/csv">
             <p id="userLocationError" class="error"></p>
@@ -188,20 +294,25 @@
       </div>
 
       <div class="panel">
-        <h2 id="comparisonTitle">Comparacion por comercio</h2>
+        <div class="panel-head">
+          <div>
+            <p class="section-kicker">Precios</p>
+            <h2 id="comparisonTitle">Comparacion por comercio</h2>
+          </div>
+        </div>
         <p class="muted" id="comparisonNote">Carga un CSV para calcular precios comparables.</p>
         <div class="bars" id="commerceBars"></div>
       </div>
     </section>
 
-    <section class="grid cards">
+    <section class="grid cards section-anchor">
       <div class="card"><span id="kpiProductsLabel">Productos unicos</span><strong id="kpiProducts">0</strong></div>
       <div class="card"><span>Comercios</span><strong id="kpiCommerces">0</strong></div>
       <div class="card"><span id="kpiAverageLabel">Precio promedio</span><strong id="kpiAverage">$ 0</strong></div>
       <div class="card"><span>Mas barato detectado</span><strong id="kpiCheapest">-</strong></div>
     </section>
 
-    <section class="grid builder-layout section-gap">
+    <section class="grid builder-layout section-gap section-anchor" id="lista">
       <div class="panel">
         <div class="topbar" style="margin-bottom: 12px;">
           <div>
@@ -274,7 +385,7 @@
       <div class="card"><span>Ahorro estimado</span><strong id="kpiListSavings">$ 0</strong></div>
     </section>
 
-    <section class="grid two section-gap">
+    <section class="grid two section-gap section-anchor" id="comparacion">
       <div class="panel">
         <div class="topbar" style="margin-bottom: 12px;">
           <div>
@@ -346,7 +457,7 @@
       </div>
     </section>
 
-    <section class="grid cards section-gap" id="routeCards">
+    <section class="grid cards section-gap section-anchor" id="ruta">
       <div class="card"><span>Sucursales cargadas</span><strong id="kpiBranches">0</strong></div>
       <div class="card"><span>Recomendacion final</span><strong id="kpiRouteBest">-</strong></div>
       <div class="card"><span>Distancia recomendada</span><strong id="kpiRouteDistance">0 km</strong></div>
@@ -419,7 +530,7 @@
           <h2>Tabla de precios</h2>
           <p class="muted" id="tableNote">Sin datos cargados.</p>
         </div>
-        <span class="pill" id="freshnessPill">CSV local</span>
+        <span class="pill">Detalle</span>
       </div>
       <div class="table-wrap">
         <table>
@@ -447,7 +558,9 @@
         </table>
       </div>
     </section>
-  </main>
+      </div>
+    </main>
+  </div>
 
   <script>
     const requiredColumns = [
@@ -474,6 +587,12 @@
       split: [],
       branches: [],
       userLocation: null,
+      files: {
+        prices: "",
+        list: "",
+        branches: "",
+        location: ""
+      },
       routeRecommendations: [],
       splitRoute: []
     };
@@ -1052,6 +1171,20 @@
       $("listActionMessage").className = isError ? "error" : "muted";
     }
 
+    function setFileState(id, message, mode = "pending") {
+      const element = $(id);
+      if (!element) return;
+      element.textContent = message;
+      element.className = `file-state ${mode === "loaded" ? "loaded" : mode === "error" ? "error-state" : ""}`.trim();
+    }
+
+    function resetFileStates() {
+      setFileState("priceFileState", "Pendiente");
+      setFileState("listFileState", "Pendiente");
+      setFileState("branchFileState", "Pendiente");
+      setFileState("locationFileState", "Pendiente");
+    }
+
     function setList(list, message = "") {
       state.list = list;
       updateShoppingResults();
@@ -1096,6 +1229,41 @@
           : (missingPrices ? "Carga precios matcheados o con promociones antes de calcular." : "Ranking recalculado."),
         !state.list.length || missingPrices
       );
+      render();
+    }
+
+    function recalculateAll() {
+      updateShoppingResults();
+      updateRouteResults();
+      if (state.rows.length) applyFilters();
+      setListMessage(state.rows.length ? "Dashboard recalculado con los datos cargados." : "Carga precios para recalcular.", !state.rows.length);
+      render();
+    }
+
+    function clearSession() {
+      state.rows = [];
+      state.filtered = [];
+      state.catalog = [];
+      state.list = [];
+      state.comparison = [];
+      state.split = [];
+      state.branches = [];
+      state.userLocation = null;
+      state.routeRecommendations = [];
+      state.splitRoute = [];
+      state.files = { prices: "", list: "", branches: "", location: "" };
+      ["fileInput", "listInput", "branchInput", "userLocationInput", "searchInput", "builderSearchInput", "manualLatInput", "manualLonInput"].forEach(id => {
+        if ($(id)) $(id).value = "";
+      });
+      $("commerceFilter").innerHTML = `<option value="">Todos los comercios</option>`;
+      $("costKmInput").value = "180";
+      ["fileError", "listError", "branchError", "userLocationError"].forEach(id => $(id).textContent = "");
+      $("freshnessPill").textContent = "CSV local";
+      $("routeInputNote").textContent = "Distancia aproximada por Haversine; no reemplaza navegacion real.";
+      clearStoredList();
+      resetFileStates();
+      setListMessage("Sesion limpiada. Puedes cargar nuevos archivos para empezar de nuevo.");
+      refreshStatus();
       render();
     }
 
@@ -1405,6 +1573,8 @@
           state.rows = toObjects(event.target.result);
           state.filtered = state.rows.slice().sort((a, b) => (rowComparable(a) || rowBasePrice(a)) - (rowComparable(b) || rowBasePrice(b)));
           state.catalog = buildCatalog(state.rows);
+          state.files.prices = file.name;
+          setFileState("priceFileState", file.name, "loaded");
           updateFilters();
           updateShoppingResults();
           refreshStatus(file.name);
@@ -1417,6 +1587,8 @@
           state.catalog = [];
           state.comparison = [];
           state.split = [];
+          state.files.prices = "";
+          setFileState("priceFileState", "Error", "error");
           $("fileError").textContent = error.message;
           $("statusBox").textContent = "No se pudo cargar el CSV de precios.";
           render();
@@ -1430,11 +1602,15 @@
       const reader = new FileReader();
       reader.onload = event => {
         try {
+          state.files.list = file.name;
+          setFileState("listFileState", file.name, "loaded");
           setList(parseList(event.target.result), `Lista cargada desde ${file.name}.`);
         } catch (error) {
           state.list = [];
           state.comparison = [];
           state.split = [];
+          state.files.list = "";
+          setFileState("listFileState", "Error", "error");
           $("listError").textContent = error.message;
           refreshStatus();
           render();
@@ -1449,6 +1625,8 @@
       reader.onload = event => {
         try {
           state.branches = parseBranches(event.target.result);
+          state.files.branches = file.name;
+          setFileState("branchFileState", file.name, "loaded");
           updateRouteResults();
           $("routeInputNote").textContent = `${state.branches.length} sucursales cargadas desde ${file.name}.`;
           render();
@@ -1456,6 +1634,8 @@
           state.branches = [];
           state.routeRecommendations = [];
           state.splitRoute = [];
+          state.files.branches = "";
+          setFileState("branchFileState", "Error", "error");
           $("branchError").textContent = error.message;
           render();
         }
@@ -1469,6 +1649,8 @@
       reader.onload = event => {
         try {
           state.userLocation = parseUserLocation(event.target.result);
+          state.files.location = file.name;
+          setFileState("locationFileState", file.name, "loaded");
           $("manualLatInput").value = "";
           $("manualLonInput").value = "";
           updateRouteResults();
@@ -1478,6 +1660,8 @@
           state.userLocation = null;
           state.routeRecommendations = [];
           state.splitRoute = [];
+          state.files.location = "";
+          setFileState("locationFileState", "Error", "error");
           $("userLocationError").textContent = error.message;
           render();
         }
@@ -1547,6 +1731,8 @@
       if (button) removeListItem(Number(button.getAttribute("data-remove-index")));
     });
     $("calculateListButton").addEventListener("click", calculateFromInterface);
+    $("recalculateAllButton").addEventListener("click", recalculateAll);
+    $("clearSessionButton").addEventListener("click", clearSession);
     $("saveListButton").addEventListener("click", () => {
       const ok = persistList();
       setListMessage(ok ? "Lista guardada en este navegador." : "localStorage no esta disponible.", !ok);

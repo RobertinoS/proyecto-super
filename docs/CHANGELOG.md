@@ -1,5 +1,36 @@
 # Changelog
 
+## 2026-07-11 - Sprint 9 - Rediseno UI/UX del dashboard
+
+Cambios:
+
+- Se rediseno `dashboard/index.html` con layout tipo BI/SaaS.
+- Se agrego header superior, sidebar de navegacion y area principal central.
+- Se organizaron secciones por `Resumen`, `Precios`, `Lista de compra`, `Comparacion` y `Ruta/cercania`.
+- Se mejoraron cards, paneles, tablas, badges, espaciado y jerarquia visual.
+- Se agregaron estados visuales para archivos cargados: precios, lista, sucursales y ubicacion.
+- Se agrego boton global `Recalcular`.
+- Se agrego boton global `Limpiar sesion`.
+- Se mantuvo la logica existente de carga CSV, lista, promociones, ranking, faltantes, compra dividida y ruta.
+- Se actualizaron README, guia de uso, estado y plan de pruebas.
+
+Archivos modificados:
+
+- `dashboard/index.html`
+- `README.md`
+- `docs/GUIA_USO_MVP.md`
+- `docs/PROJECT_STATUS.md`
+- `docs/CHANGELOG.md`
+- `docs/TEST_PLAN.md`
+
+Pruebas ejecutadas:
+
+- `python scripts/08_generar_mvp_demo.py`: OK, genero todos los outputs MVP.
+- `python -m pytest`: 33 passed.
+- Dashboard por HTTP local: OK, `http://127.0.0.1:8026/dashboard/` respondio 200.
+- Validacion funcional JS con CSV reales: OK, carga precios/promos, lista, sucursales, ubicacion, ranking, faltantes, export CSV y ruta.
+- Consola del navegador: sin errores.
+
 ## 2026-07-11 - Sprint 8 - Release MVP v1.0 listo para release local
 
 Cambios:
