@@ -4,15 +4,15 @@ Actualizado: 2026-07-11.
 
 ## Sprint actual
 
-Sprint 6 - Promociones y precio efectivo.
+Sprint 7 - Ruta y cercania de sucursales.
 
 Rama:
 
 ```text
-sprint-6-promotions-effective-price
+sprint-7-route-planning
 ```
 
-Objetivo: calcular precio efectivo con promociones simples, descuentos por medio de pago, topes, vigencia y prioridad, manteniendo compatibilidad con los sprints anteriores.
+Objetivo: combinar precio efectivo, cobertura de lista y distancia aproximada para decidir entre comprar todo en un comercio o dividir la compra.
 
 ## Diagnostico ejecutivo
 
@@ -22,7 +22,7 @@ El repo Git dedicado esta en:
 C:\Users\Rober\Desktop\Proyecto Super
 ```
 
-Sprint 1 a Sprint 5 se mantienen compatibles. El proyecto ahora agrega un motor local de promociones que genera `data/processed/precios_con_promociones.csv` sin modificar los precios matcheados originales. El dashboard puede cargar precios con o sin promociones y cambia automaticamente el ranking de lista segun el precio disponible.
+Sprint 1 a Sprint 6 se mantienen compatibles. El proyecto ahora agrega un modulo local de ruta/cercania basado en coordenadas demo y formula Haversine. No usa Google Maps API, APIs pagas, credenciales ni backend obligatorio.
 
 ## Flujo actual
 
@@ -34,26 +34,21 @@ data/sample/sepa/sepa_precios_simulado.csv
         -> data/processed/precios_matcheados.csv
         -> scripts/06_aplicar_promociones.py
         -> data/processed/precios_con_promociones.csv
-        -> dashboard/index.html
-        -> ranking con precio efectivo, faltantes, ahorro y compra dividida
-```
-
-Tambien sigue disponible el flujo sin promociones:
-
-```text
-data/processed/precios_matcheados.csv
-        + data/sample/lista_compra_demo.csv
         -> scripts/05_calcular_lista_compra.py
         -> data/processed/comparacion_lista_compra.csv
         -> data/processed/mejor_compra_por_producto.csv
+        -> scripts/07_planificar_ruta.py
+        -> data/processed/recomendacion_ruta.csv
+        -> data/processed/ruta_compra_dividida.csv
+        -> dashboard/index.html
 ```
 
-## Artefactos Sprint 6
+## Artefactos Sprint 7
 
-- `data/sample/promociones_demo.csv`
-- `scripts/06_aplicar_promociones.py`
-- `tests/test_promotions.py`
-- `scripts/05_calcular_lista_compra.py`
+- `data/sample/sucursales_demo.csv`
+- `data/sample/ubicacion_usuario_demo.csv`
+- `scripts/07_planificar_ruta.py`
+- `tests/test_route_planning.py`
 - `dashboard/index.html`
 - `tests/test_dashboard_shopping_list_ui.py`
 - `README.md`
@@ -64,89 +59,77 @@ data/processed/precios_matcheados.csv
 
 ## Decision tecnica
 
-- `precio` queda como precio de gondola.
-- `precio_original` conserva explicitamente el precio base cuando se aplican promociones.
-- `precio_efectivo` representa el precio final luego de promociones aplicables.
-- `precio_unitario_efectivo` se usa para comparar por kg, litro o unidad cuando existe.
-- `scripts/05_calcular_lista_compra.py` usa precio efectivo si el CSV lo trae; si no, usa el precio comparable original.
-- Promociones no acumulables: gana la de mayor ahorro.
-- Promociones acumulables: se aplican por prioridad ascendente, respetando topes.
-- `segunda_unidad` se calcula como descuento promedio por unidad.
-- Para pruebas reproducibles del demo se usa `--date 2026-07-11`.
-- Si no se informa `--date`, `scripts/06_aplicar_promociones.py` usa la fecha actual del sistema.
-- No se agregan APIs, credenciales, backend ni servicios pagos.
+- La distancia se calcula con Haversine en linea recta.
+- La distancia es aproximada y no reemplaza navegacion real.
+- No se usa Google Maps API ni servicios externos.
+- `score_conveniencia = costo_total_estimado + penalizacion_distancia`.
+- `penalizacion_distancia = distancia_km * costo_km_estimado`.
+- `costo_km_estimado` demo: `180` pesos por km.
+- El ranking prioriza cobertura completa y luego menor score de conveniencia.
+- La ruta dividida usa una heuristica simple de vecino mas cercano entre comercios recomendados.
+- Si el usuario ingresa coordenadas manuales en el dashboard, esas coordenadas tienen prioridad sobre el CSV de ubicacion.
 
-## Funcionalidades Sprint 6
+## Funcionalidades Sprint 7
 
-- Archivo demo de promociones versionable.
-- Aplicacion de descuentos por porcentaje.
-- Aplicacion de descuentos de monto fijo.
-- Aplicacion de segunda unidad.
-- Aplicacion de precio especial.
-- Aplicacion de descuento por medio de pago.
-- Validacion de vigencia por fecha y dia de semana.
-- Soporte de tope de descuento.
-- Soporte de prioridad y acumulabilidad.
-- Dashboard con precio original, precio efectivo, ahorro y descripcion de promocion.
-- Ranking de lista usando precio efectivo cuando esta disponible.
+- Archivo demo de sucursales por Capital, Rawson, Santa Lucia y Rivadavia.
+- Archivo demo de ubicacion del usuario.
+- Script local de planificacion de ruta.
+- Generacion de `recomendacion_ruta.csv`.
+- Generacion de `ruta_compra_dividida.csv`.
+- Ranking por precio efectivo y cobertura.
+- Ranking por conveniencia precio + distancia.
+- Ruta dividida sugerida por comercio recomendado.
+- Dashboard con carga de sucursales, ubicacion o coordenadas manuales.
 
 ## Validaciones actuales
 
 Pruebas agregadas:
 
-- `tests/test_promotions.py`
+- `tests/test_route_planning.py`
 
 Cobertura:
 
-- carga de promociones;
-- vigencia por fecha y dia;
-- promociones vencidas no aplican;
-- promociones futuras no aplican antes de `fecha_inicio`;
-- descuento porcentual;
-- descuento monto fijo;
-- tope;
-- precio especial;
-- segunda unidad;
-- medio de pago;
-- prioridad;
-- acumulabilidad;
-- generacion de `precios_con_promociones.csv`;
-- ranking de lista con precio efectivo;
-- dashboard JS con precio efectivo.
+- lectura de sucursales;
+- lectura de ubicacion usuario;
+- calculo Haversine;
+- generacion de `recomendacion_ruta.csv`;
+- generacion de `ruta_compra_dividida.csv`;
+- ranking por `score_conveniencia`;
+- compatibilidad con outputs de Sprint 6;
+- dashboard JS con ranking de conveniencia y ruta dividida.
 
 Pruebas ejecutadas:
 
 ```bash
-python -m py_compile scripts/05_calcular_lista_compra.py scripts/06_aplicar_promociones.py
+python -m py_compile scripts/07_planificar_ruta.py
 python scripts/02_normalizar_precios.py
 python scripts/01_descargar_o_importar_sepa.py --mode manual --input data/sample/sepa/sepa_precios_simulado.csv
 python scripts/03_filtrar_san_juan.py --input data/raw/sepa/manual/sepa_precios_simulado.csv
 python scripts/04_matching_productos.py
 python scripts/06_aplicar_promociones.py --date 2026-07-11
-python scripts/05_calcular_lista_compra.py
-python scripts/05_calcular_lista_compra.py --prices data/processed/precios_con_promociones.csv --report data/processed/lista_compra_promociones_reporte.json
+python scripts/05_calcular_lista_compra.py --prices data/processed/precios_con_promociones.csv
+python scripts/07_planificar_ruta.py
 python -m pytest
 ```
 
 Resultado:
 
-- `precios_con_promociones.csv`: 32 filas generadas, 12 con promocion aplicada.
-- `rows_with_promotion`: 12.
-- `total_saving`: `3045.50`.
-- Ranking sin promociones: mejor comercio `Atomo Conviene`, modo `precio_gondola`.
-- Ranking con promociones: mejor comercio `ChangoMas`, modo `precio_efectivo`, costo `7771.55`.
-- `python -m pytest`: `30 passed`.
-- Dashboard servido por HTTP local: OK, `dashboard/` HTTP 200 y CSV promocionado HTTP 200.
+- `python -m pytest`: `33 passed`.
+- `scripts/07_planificar_ruta.py`: OK, 12 recomendaciones y 2 paradas de ruta dividida.
+- Mejor recomendacion demo actual: `ChangoMas - Hiper San Juan`, score `8004.62`.
+- Dashboard servido por HTTP local: OK, `dashboard/` HTTP 200.
+- Validacion JS del dashboard: OK con `precios_con_promociones.csv`, `lista_compra_demo.csv`, `sucursales_demo.csv` y `ubicacion_usuario_demo.csv`.
 
 ## Riesgos y pendientes
 
-- Las promociones demo son ficticias y deben reemplazarse por promociones oficiales o relevadas de cada comercio.
-- La seleccion de medio de pago todavia se controla por script; el dashboard muestra promociones disponibles del CSV cargado.
-- `segunda_unidad` se modela como descuento promedio por unidad, no como optimizacion exacta por pares en lista.
-- Falta optimizacion de ruta/distancia y cercania de sucursales.
+- Las coordenadas demo son aproximadas.
+- La distancia Haversine no modela calles, transito, horarios ni tiempos reales.
+- El costo por km es demo y debe calibrarse con criterio operativo o de usuario.
+- La disponibilidad por sucursal todavia se aproxima desde el comercio, no desde stock real por sucursal.
+- Falta selector avanzado de preferencias: distancia maxima, cantidad maxima de paradas, medio de pago y tolerancia a faltantes.
 
 ## Proximo sprint recomendado
 
-Sprint 7 - Ruta de compra y cercania.
+Sprint 8 - Preferencias avanzadas de decision.
 
-Objetivo: sumar ubicacion/sucursal, distancia estimada y una recomendacion que balancee ahorro, faltantes y esfuerzo de traslado.
+Objetivo: permitir que el usuario configure prioridad entre ahorro, distancia, cantidad maxima de paradas, medios de pago y cobertura minima.

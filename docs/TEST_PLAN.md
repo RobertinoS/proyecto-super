@@ -571,3 +571,100 @@ python scripts/06_aplicar_promociones.py --date 2026-07-11
 python scripts/05_calcular_lista_compra.py --prices data/processed/precios_con_promociones.csv
 python -m pytest
 ```
+
+## Sprint 7: ruta y cercania
+
+### 34. Compilacion del script de ruta
+
+Comando:
+
+```bash
+python -m py_compile scripts/07_planificar_ruta.py
+```
+
+Resultado esperado:
+
+- El script compila sin errores.
+
+### 35. Generacion de recomendacion de ruta
+
+Comandos:
+
+```bash
+python scripts/06_aplicar_promociones.py --date 2026-07-11
+python scripts/05_calcular_lista_compra.py --prices data/processed/precios_con_promociones.csv
+python scripts/07_planificar_ruta.py
+```
+
+Resultado esperado:
+
+- Lee `data/processed/comparacion_lista_compra.csv`.
+- Lee `data/processed/mejor_compra_por_producto.csv`.
+- Lee `data/sample/sucursales_demo.csv`.
+- Lee `data/sample/ubicacion_usuario_demo.csv`.
+- Genera `data/processed/recomendacion_ruta.csv`.
+- Genera `data/processed/ruta_compra_dividida.csv`.
+- Genera `data/processed/ruta_reporte.json`.
+
+### 36. Haversine y ranking por score
+
+Prueba automatizada:
+
+```bash
+python -m pytest tests/test_route_planning.py
+```
+
+Resultado esperado:
+
+- La distancia entre un mismo punto es 0.
+- La distancia aproximada entre puntos de San Juan queda en rango razonable.
+- `score_conveniencia = costo_total_estimado + distancia_km * costo_km_estimado`.
+- El ranking por conveniencia prioriza cobertura y luego menor score.
+
+### 37. Ruta dividida sugerida
+
+Prueba automatizada:
+
+```bash
+python -m pytest tests/test_route_planning.py
+```
+
+Resultado esperado:
+
+- Agrupa productos por `comercio_recomendado`.
+- Selecciona sucursal cercana.
+- Calcula distancia desde origen.
+- Calcula distancia acumulada.
+- Genera costo y ahorro estimado por parada.
+
+### 38. Dashboard con ruta/cercania
+
+Pasos:
+
+1. Servir el proyecto con `python -m http.server 8026 --bind 127.0.0.1`.
+2. Abrir `http://127.0.0.1:8026/dashboard/`.
+3. Cargar `data/processed/precios_con_promociones.csv`.
+4. Cargar `data/sample/lista_compra_demo.csv`.
+5. Cargar `data/sample/sucursales_demo.csv`.
+6. Cargar `data/sample/ubicacion_usuario_demo.csv` o ingresar coordenadas manuales.
+7. Presionar `Calcular cercania`.
+
+Resultado esperado:
+
+- Se muestra distancia estimada por comercio/sucursal.
+- Se muestra ranking por precio efectivo en el modulo de lista.
+- Se muestra ranking por conveniencia precio + distancia.
+- Se muestra recomendacion final.
+- Se muestra ruta dividida sugerida.
+- La interfaz aclara que la distancia es aproximada y no reemplaza navegacion real.
+- Si se carga `precios_matcheados.csv` sin promociones, el dashboard sigue funcionando con precio de gondola.
+
+## Suite Sprint 7
+
+Comandos:
+
+```bash
+python -m py_compile scripts/07_planificar_ruta.py
+python scripts/07_planificar_ruta.py
+python -m pytest
+```

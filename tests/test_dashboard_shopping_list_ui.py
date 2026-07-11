@@ -21,6 +21,9 @@ def test_dashboard_shopping_list_ui_sections_exist():
         "Faltantes",
         "Exportar CSV",
         "Precio efectivo",
+        "Sucursales CSV",
+        "Ranking por conveniencia",
+        "Ruta dividida sugerida",
     ]:
         assert text in html
 
@@ -114,6 +117,19 @@ const promoCsv = [
 const promoRows = api.toObjects(promoCsv);
 const promoList = [api.createShoppingItemFromCatalog(api.buildCatalog(promoRows)[0], 1, "kg", "alta")];
 const promoComparison = api.buildShoppingComparison(promoRows, promoList);
+const branchCsv = [
+  "comercio,sucursal,localidad,direccion,latitud,longitud,zona,horario_referencia",
+  "Comercio A,Centro,Capital,Centro 1,-31.5375,-68.5364,Centro,Demo",
+  "Comercio B,Oeste,Rivadavia,Oeste 1,-31.5279,-68.6051,Oeste,Demo"
+].join("\n");
+const userCsv = [
+  "nombre_ubicacion,latitud,longitud,localidad,descripcion",
+  "Casa demo,-31.5375,-68.5364,Capital,Demo"
+].join("\n");
+const branches = api.parseBranches(branchCsv);
+const origin = api.parseUserLocation(userCsv);
+const routeRecommendations = api.buildRouteRecommendations(comparison, branches, origin, 180);
+const splitRoute = api.buildSplitRoute(split, branches, origin);
 api.clearStoredList();
 const cleared = api.readStoredList();
 
@@ -133,6 +149,10 @@ const result = {
   promoHasPromotions: api.hasPromotions(promoRows),
   promoEffectivePrice: api.rowBasePrice(promoRows[1]),
   promoBestCommerce: promoComparison[0].comercio,
+  routeBestCommerce: routeRecommendations[0].comercio,
+  routeBestScore: routeRecommendations[0].score,
+  splitRouteStops: splitRoute.length,
+  haversineZero: api.haversineKm(-31.5375, -68.5364, -31.5375, -68.5364),
 };
 
 console.log(JSON.stringify(result));
@@ -163,3 +183,7 @@ console.log(JSON.stringify(result));
     assert data["promoHasPromotions"] is True
     assert data["promoEffectivePrice"] == 800
     assert data["promoBestCommerce"] == "Comercio B"
+    assert data["routeBestCommerce"] == "Comercio A"
+    assert data["routeBestScore"] >= 2200
+    assert data["splitRouteStops"] == 2
+    assert data["haversineZero"] == 0

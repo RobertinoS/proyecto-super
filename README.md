@@ -44,6 +44,14 @@ data/processed/precios_matcheados.csv + data/sample/promociones_demo.csv
         -> scripts/05_calcular_lista_compra.py
         -> ranking usando precio efectivo cuando existe
         -> dashboard/index.html
+
+Sprint 7 ruta/cercania:
+data/processed/comparacion_lista_compra.csv + data/processed/mejor_compra_por_producto.csv
+        + data/sample/sucursales_demo.csv + data/sample/ubicacion_usuario_demo.csv
+        -> scripts/07_planificar_ruta.py
+        -> data/processed/recomendacion_ruta.csv
+        -> data/processed/ruta_compra_dividida.csv
+        -> dashboard/index.html
 ```
 
 ## Requisitos
@@ -235,6 +243,63 @@ Uso en dashboard:
 
 Si se carga `data/processed/precios_matcheados.csv`, el dashboard sigue usando precio de gondola.
 
+## Sprint 7: ruta y cercania
+
+El modulo de ruta agrega una decision simple de conveniencia: combina costo total, cobertura de lista y distancia aproximada desde una ubicacion de usuario. No usa Google Maps API, servicios pagos ni credenciales.
+
+Datos demo versionables:
+
+```text
+data/sample/sucursales_demo.csv
+data/sample/ubicacion_usuario_demo.csv
+```
+
+Antes de planificar ruta, generar lista con precio efectivo:
+
+```bash
+python scripts/06_aplicar_promociones.py --date 2026-07-11
+python scripts/05_calcular_lista_compra.py --prices data/processed/precios_con_promociones.csv
+```
+
+Generar recomendacion de ruta:
+
+```bash
+python scripts/07_planificar_ruta.py
+```
+
+Salidas esperadas:
+
+```text
+data/processed/recomendacion_ruta.csv
+data/processed/ruta_compra_dividida.csv
+data/processed/ruta_reporte.json
+```
+
+Regla de score inicial:
+
+```text
+score_conveniencia = costo_total_estimado + penalizacion_distancia
+penalizacion_distancia = distancia_km * costo_km_estimado
+```
+
+El valor demo de `costo_km_estimado` es `180` pesos por km. Es configurable:
+
+```bash
+python scripts/07_planificar_ruta.py --costo-km-estimado 220
+```
+
+La distancia se calcula con Haversine, es decir, distancia aproximada en linea recta. No reemplaza navegacion real ni tiempos de transito.
+
+Uso en dashboard:
+
+1. Abrir `dashboard/index.html`.
+2. Cargar `data/processed/precios_con_promociones.csv` o `data/processed/precios_matcheados.csv`.
+3. Cargar o armar una lista.
+4. Cargar `data/sample/sucursales_demo.csv`.
+5. Cargar `data/sample/ubicacion_usuario_demo.csv` o ingresar latitud/longitud manual.
+6. Presionar "Calcular cercania".
+7. Revisar ranking por conveniencia y ruta dividida sugerida.
+
 ## Datos versionables
 
 - `data/sample/precios_demo.csv`: demo Sprint 1.
@@ -242,6 +307,8 @@ Si se carga `data/processed/precios_matcheados.csv`, el dashboard sigue usando p
 - `data/sample/product_dictionary.csv`: diccionario editable de equivalencias Sprint 3.
 - `data/sample/lista_compra_demo.csv`: lista demo versionable Sprint 4.
 - `data/sample/promociones_demo.csv`: promociones demo versionables Sprint 6.
+- `data/sample/sucursales_demo.csv`: sucursales demo con coordenadas Sprint 7.
+- `data/sample/ubicacion_usuario_demo.csv`: ubicacion de usuario demo Sprint 7.
 
 ## Politica de datos
 
@@ -272,4 +339,4 @@ Ademas del dashboard standalone de Sprint 1/2, el repo conserva el sistema avanz
 
 ## Proximo sprint recomendado
 
-Sprint 7: planificacion de ruta y cercania, sin perder trazabilidad de precio efectivo y promociones.
+Sprint 8: selector avanzado de preferencias del usuario, ponderando ahorro, distancia, cantidad maxima de paradas y medios de pago.

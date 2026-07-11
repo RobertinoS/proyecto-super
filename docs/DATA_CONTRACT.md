@@ -477,3 +477,124 @@ Columnas nuevas en `data/processed/precios_con_promociones.csv`:
 - `data/processed/precios_con_promociones.csv`: usa `precio_efectivo` y `precio_unitario_efectivo`.
 
 `dashboard/index.html` detecta automaticamente si el CSV tiene columnas de promociones. En ese caso muestra precio original, precio efectivo, ahorro y descripcion de promocion, y calcula el ranking con precio efectivo.
+
+## Sprint 7: ruta y cercania
+
+Entradas generadas esperadas:
+
+```text
+data/processed/comparacion_lista_compra.csv
+data/processed/mejor_compra_por_producto.csv
+```
+
+Entradas demo versionables:
+
+```text
+data/sample/sucursales_demo.csv
+data/sample/ubicacion_usuario_demo.csv
+```
+
+Script:
+
+```text
+scripts/07_planificar_ruta.py
+```
+
+Salidas generadas:
+
+```text
+data/processed/recomendacion_ruta.csv
+data/processed/ruta_compra_dividida.csv
+data/processed/ruta_reporte.json
+```
+
+### Sucursales
+
+Columnas minimas de `data/sample/sucursales_demo.csv`:
+
+| Columna | Tipo esperado | Regla |
+|---|---|---|
+| `comercio` | texto | debe coincidir con `comercio` de los precios/lista |
+| `sucursal` | texto | nombre visible de sucursal |
+| `localidad` | texto | Capital, Rawson, Santa Lucia, Rivadavia u otra |
+| `direccion` | texto | referencia visible |
+| `latitud` | numero | coordenada decimal |
+| `longitud` | numero | coordenada decimal |
+| `zona` | texto | etiqueta operativa |
+| `horario_referencia` | texto | dato informativo |
+
+### Ubicacion usuario
+
+Columnas minimas de `data/sample/ubicacion_usuario_demo.csv`:
+
+| Columna | Tipo esperado | Regla |
+|---|---|---|
+| `nombre_ubicacion` | texto | etiqueta visible |
+| `latitud` | numero | coordenada decimal |
+| `longitud` | numero | coordenada decimal |
+| `localidad` | texto | localidad de referencia |
+| `descripcion` | texto | detalle informativo |
+
+El dashboard tambien permite ingresar latitud y longitud manuales. Si se cargan coordenadas manuales, tienen prioridad sobre el CSV de ubicacion.
+
+### Recomendacion ruta
+
+Archivo:
+
+```text
+data/processed/recomendacion_ruta.csv
+```
+
+Columnas:
+
+| Columna | Tipo esperado | Regla |
+|---|---|---|
+| `comercio` | texto | comercio evaluado |
+| `sucursal` | texto | sucursal evaluada |
+| `localidad` | texto | localidad de la sucursal |
+| `costo_total_estimado` | numero | costo de lista por comercio |
+| `ahorro_vs_mas_caro` | numero/vacio | ahorro informado por Sprint 4/6 |
+| `cobertura_lista_pct` | numero | cobertura de lista |
+| `distancia_km` | numero | distancia Haversine aproximada |
+| `penalizacion_distancia` | numero | `distancia_km * costo_km_estimado` |
+| `score_conveniencia` | numero | `costo_total_estimado + penalizacion_distancia` |
+| `recomendacion` | texto | recomendacion legible |
+
+Regla inicial:
+
+```text
+score_conveniencia = costo_total_estimado + penalizacion_distancia
+penalizacion_distancia = distancia_km * costo_km_estimado
+```
+
+Valor demo:
+
+```text
+costo_km_estimado = 180
+```
+
+La distancia usa Haversine en linea recta. Es aproximada y no reemplaza navegacion real.
+
+### Ruta compra dividida
+
+Archivo:
+
+```text
+data/processed/ruta_compra_dividida.csv
+```
+
+Columnas:
+
+| Columna | Tipo esperado | Regla |
+|---|---|---|
+| `orden_sugerido` | entero | orden de visita sugerido |
+| `comercio` | texto | comercio recomendado para esos productos |
+| `sucursal` | texto | sucursal elegida por cercania aproximada |
+| `localidad` | texto | localidad de la sucursal |
+| `productos_a_comprar` | texto | items agrupados separados por punto y coma |
+| `costo_estimado` | numero | suma de `precio_final` para esos items |
+| `distancia_desde_origen_km` | numero | distancia directa desde ubicacion de usuario |
+| `distancia_acumulada_km` | numero | distancia acumulada en la ruta sugerida |
+| `ahorro_estimado` | numero | suma de ahorro contra promedio de compra dividida |
+
+El orden de ruta dividida usa una heuristica simple de vecino mas cercano entre comercios recomendados. No optimiza transito, sentidos de calle ni horarios.
