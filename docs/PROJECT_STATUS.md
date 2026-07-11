@@ -4,15 +4,15 @@ Actualizado: 2026-07-11.
 
 ## Sprint actual
 
-Sprint 7 - Ruta y cercania de sucursales.
+Sprint 8 - Release MVP v1.0 listo para release local.
 
 Rama:
 
 ```text
-sprint-7-route-planning
+sprint-8-release-mvp-v1
 ```
 
-Objetivo: combinar precio efectivo, cobertura de lista y distancia aproximada para decidir entre comprar todo en un comercio o dividir la compra.
+Objetivo: cerrar el MVP local, documentar uso real/manual, validar flujo completo y dejar un comando unico para generar datos demo.
 
 ## Diagnostico ejecutivo
 
@@ -22,7 +22,27 @@ El repo Git dedicado esta en:
 C:\Users\Rober\Desktop\Proyecto Super
 ```
 
-Sprint 1 a Sprint 6 se mantienen compatibles. El proyecto ahora agrega un modulo local de ruta/cercania basado en coordenadas demo y formula Haversine. No usa Google Maps API, APIs pagas, credenciales ni backend obligatorio.
+Sprint 1 a Sprint 7 se mantienen compatibles. El proyecto queda como MVP v1.0 listo para release local: compara precios, aplica matching, promociones, listas de compra y ruta/cercania aproximada con datos CSV locales. No usa Google Maps API, APIs pagas, credenciales ni backend obligatorio.
+
+## Resumen ejecutivo MVP v1.0
+
+Funcionalidades terminadas:
+
+- carga de CSV local en dashboard standalone;
+- importacion manual de fuente tipo SEPA/sample;
+- filtro San Juan;
+- normalizacion y matching de productos equivalentes;
+- precio unitario comparable;
+- listas de compra desde CSV o UI;
+- persistencia local con `localStorage`;
+- exportacion de lista compatible con scripts;
+- promociones y precio efectivo;
+- ranking por comercio, ahorro y faltantes;
+- compra dividida por producto;
+- sucursales demo y ubicacion demo;
+- score de conveniencia por precio + distancia;
+- ruta dividida sugerida;
+- script unico `scripts/08_generar_mvp_demo.py`.
 
 ## Flujo actual
 
@@ -42,6 +62,41 @@ data/sample/sepa/sepa_precios_simulado.csv
         -> data/processed/ruta_compra_dividida.csv
         -> dashboard/index.html
 ```
+
+Flujo recomendado para usuario MVP:
+
+```bash
+python scripts/08_generar_mvp_demo.py
+python -m http.server 8026 --bind 127.0.0.1
+```
+
+Dashboard:
+
+```text
+http://127.0.0.1:8026/dashboard/
+```
+
+Archivos a cargar:
+
+```text
+data/processed/precios_con_promociones.csv
+data/sample/lista_compra_demo.csv
+data/sample/sucursales_demo.csv
+data/sample/ubicacion_usuario_demo.csv
+```
+
+## Artefactos Sprint 8
+
+- `scripts/08_generar_mvp_demo.py`
+- `docs/GUIA_USO_MVP.md`
+- `docs/RELEASE_CHECKLIST.md`
+- `README.md`
+- `dashboard/index.html`
+- `docs/DATA_CONTRACT.md`
+- `docs/TEST_PLAN.md`
+- `docs/PROJECT_STATUS.md`
+- `docs/CHANGELOG.md`
+- `docs/DATA_RETENTION_POLICY.md`
 
 ## Artefactos Sprint 7
 
@@ -83,6 +138,14 @@ data/sample/sepa/sepa_precios_simulado.csv
 
 ## Validaciones actuales
 
+Pruebas release MVP:
+
+- `python -m compileall scripts`: OK;
+- `python scripts/08_generar_mvp_demo.py`: OK;
+- `python -m pytest`: 33 passed;
+- dashboard por HTTP local: OK, `http://127.0.0.1:8026/dashboard/` respondio 200;
+- validacion funcional JS con CSV reales: OK.
+
 Pruebas agregadas:
 
 - `tests/test_route_planning.py`
@@ -122,14 +185,16 @@ Resultado:
 
 ## Riesgos y pendientes
 
+- Los datos demo no son datos reales de compra.
 - Las coordenadas demo son aproximadas.
 - La distancia Haversine no modela calles, transito, horarios ni tiempos reales.
 - El costo por km es demo y debe calibrarse con criterio operativo o de usuario.
 - La disponibilidad por sucursal todavia se aproxima desde el comercio, no desde stock real por sucursal.
+- Falta procedimiento operativo para fuentes reales por cadena.
 - Falta selector avanzado de preferencias: distancia maxima, cantidad maxima de paradas, medio de pago y tolerancia a faltantes.
 
 ## Proximo sprint recomendado
 
-Sprint 8 - Preferencias avanzadas de decision.
+Sprint 9 - Datos reales operativos y preferencias avanzadas.
 
-Objetivo: permitir que el usuario configure prioridad entre ahorro, distancia, cantidad maxima de paradas, medios de pago y cobertura minima.
+Objetivo: incorporar fuentes reales/manuales verificadas, calibrar coordenadas/costo por km y permitir que el usuario configure prioridad entre ahorro, distancia, cantidad maxima de paradas, medios de pago y cobertura minima.

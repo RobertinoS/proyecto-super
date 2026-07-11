@@ -1,6 +1,6 @@
 # Politica de retencion y limpieza - datos
 
-Actualizado: 2026-07-09.
+Actualizado: 2026-07-11.
 
 ## Objetivo
 
@@ -20,6 +20,11 @@ Definir reglas para almacenamiento, limpieza y trazabilidad de archivos crudos, 
 
 - `data/sample/precios_demo.csv`: dataset demo Sprint 1.
 - `data/sample/sepa/sepa_precios_simulado.csv`: dataset tipo SEPA simulado Sprint 2.
+- `data/sample/product_dictionary.csv`: diccionario demo editable Sprint 3.
+- `data/sample/lista_compra_demo.csv`: lista demo Sprint 4.
+- `data/sample/promociones_demo.csv`: promociones demo Sprint 6.
+- `data/sample/sucursales_demo.csv`: sucursales demo Sprint 7.
+- `data/sample/ubicacion_usuario_demo.csv`: ubicacion demo Sprint 7.
 - `.gitkeep` en carpetas vacias necesarias.
 
 ## Datos no versionables

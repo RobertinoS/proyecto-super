@@ -598,3 +598,48 @@ Columnas:
 | `ahorro_estimado` | numero | suma de ahorro contra promedio de compra dividida |
 
 El orden de ruta dividida usa una heuristica simple de vecino mas cercano entre comercios recomendados. No optimiza transito, sentidos de calle ni horarios.
+
+## Sprint 8: release MVP v1.0
+
+Script orquestador:
+
+```text
+scripts/08_generar_mvp_demo.py
+```
+
+El script no crea un contrato nuevo; ejecuta el flujo completo con los contratos ya definidos:
+
+```text
+precios_demo.csv
+sepa_precios_simulado.csv
+precios_san_juan_sepa.csv
+precios_matcheados.csv
+precios_con_promociones.csv
+comparacion_lista_compra.csv
+mejor_compra_por_producto.csv
+recomendacion_ruta.csv
+ruta_compra_dividida.csv
+```
+
+Fecha demo por defecto:
+
+```text
+2026-07-11
+```
+
+Esa fecha se usa solo para que las promociones demo sean reproducibles. Puede cambiarse con:
+
+```bash
+python scripts/08_generar_mvp_demo.py --date YYYY-MM-DD
+```
+
+Archivos que una persona debe cargar en el dashboard para validar el MVP completo:
+
+```text
+data/processed/precios_con_promociones.csv
+data/sample/lista_compra_demo.csv
+data/sample/sucursales_demo.csv
+data/sample/ubicacion_usuario_demo.csv
+```
+
+Los outputs de `data/processed/` siguen siendo generados y no versionables. Los inputs de `data/sample/` son demo versionables.

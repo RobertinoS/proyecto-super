@@ -2,6 +2,138 @@
 
 Comparador local de precios para supermercados, autoservicios y mayoristas de San Juan.
 
+## MVP v1.0
+
+Objetivo: permitir que una persona use datos CSV locales para comparar precios, promociones, listas de compra y conveniencia por distancia aproximada sin depender de backend, credenciales, APIs pagas ni Codex.
+
+El MVP permite:
+
+- importar o simular datos tipo SEPA/manual;
+- filtrar precios de San Juan;
+- agrupar productos equivalentes por `grupo_comparacion`;
+- calcular precio unitario comparable;
+- aplicar promociones demo y precio efectivo;
+- armar o cargar una lista de compra;
+- calcular ranking por comercio, ahorro y faltantes;
+- sugerir compra dividida por producto;
+- estimar conveniencia por distancia con Haversine;
+- usar el dashboard local desde el navegador.
+
+## Inicio rapido
+
+Desde `C:\Users\Rober\Desktop\Proyecto Super`:
+
+```bash
+python -m pip install -r requirements.txt
+python scripts/08_generar_mvp_demo.py
+python -m http.server 8026 --bind 127.0.0.1
+```
+
+Abrir:
+
+```text
+http://127.0.0.1:8026/dashboard/
+```
+
+En el dashboard cargar estos archivos:
+
+```text
+data/processed/precios_con_promociones.csv
+data/sample/lista_compra_demo.csv
+data/sample/sucursales_demo.csv
+data/sample/ubicacion_usuario_demo.csv
+```
+
+Luego usar `Calcular ranking` y `Calcular cercania`.
+
+## Estructura de carpetas
+
+```text
+dashboard/          Dashboard HTML standalone.
+scripts/            Flujo local de procesamiento y release demo.
+data/sample/        Datos demo versionables.
+data/raw/           Datos crudos locales ignorados por Git.
+data/processed/     Outputs generados ignorados por Git.
+docs/               Documentacion tecnica, uso y release.
+tests/              Pruebas automatizadas.
+```
+
+## Flujo completo MVP
+
+El comando recomendado para generar todos los outputs demo es:
+
+```bash
+python scripts/08_generar_mvp_demo.py
+```
+
+Ese script ejecuta:
+
+```text
+scripts/02_normalizar_precios.py
+scripts/01_descargar_o_importar_sepa.py --mode manual
+scripts/03_filtrar_san_juan.py
+scripts/04_matching_productos.py
+scripts/06_aplicar_promociones.py --date 2026-07-11
+scripts/05_calcular_lista_compra.py --prices data/processed/precios_con_promociones.csv
+scripts/07_planificar_ruta.py
+```
+
+Outputs principales:
+
+```text
+data/processed/precios_normalizados.csv
+data/processed/precios_san_juan_sepa.csv
+data/processed/precios_matcheados.csv
+data/processed/precios_con_promociones.csv
+data/processed/comparacion_lista_compra.csv
+data/processed/mejor_compra_por_producto.csv
+data/processed/recomendacion_ruta.csv
+data/processed/ruta_compra_dividida.csv
+```
+
+`2026-07-11` es la fecha estable de prueba para que las promociones demo sean reproducibles. Para otra fecha:
+
+```bash
+python scripts/08_generar_mvp_demo.py --date 2026-07-12
+```
+
+Validacion tecnica de release:
+
+```bash
+python -m compileall scripts
+python scripts/08_generar_mvp_demo.py
+python -m pytest
+```
+
+## Uso del dashboard
+
+1. Servir el proyecto: `python -m http.server 8026 --bind 127.0.0.1`.
+2. Abrir `http://127.0.0.1:8026/dashboard/`.
+3. Cargar `data/processed/precios_con_promociones.csv` en `CSV de precios`.
+4. Cargar `data/sample/lista_compra_demo.csv` o armar una lista desde `Armar lista`.
+5. Guardar o recuperar listas con los botones de `Lista actual`.
+6. Presionar `Calcular ranking`.
+7. Cargar `data/sample/sucursales_demo.csv`.
+8. Cargar `data/sample/ubicacion_usuario_demo.csv` o ingresar coordenadas manuales.
+9. Presionar `Calcular cercania`.
+10. Revisar ranking por comercio, ahorro, faltantes, mejor compra dividida y score de conveniencia.
+
+## Limitaciones conocidas
+
+- Los datos demo son ficticios/simulados y sirven para validar flujo, no para decision real.
+- `data/raw/` puede recibir archivos manuales reales, pero esos archivos no se versionan.
+- La distancia usa Haversine en linea recta; no calcula tiempos reales, calles, transito ni horarios.
+- El matching es auditable y simple; puede requerir ampliar `data/sample/product_dictionary.csv`.
+- Las promociones demo no reemplazan condiciones reales de cada cadena.
+- No hay backend ni multiusuario; `localStorage` queda solo en el navegador local.
+
+## Proximos pasos recomendados
+
+- Incorporar fuentes oficiales/manuales reales por cadena y localidad.
+- Agregar preferencia de usuario: maximo de paradas, medio de pago, distancia maxima y tolerancia a faltantes.
+- Separar datos reales de datos demo con un procedimiento operativo diario.
+- Calibrar `costo_km_estimado` y validar coordenadas reales de sucursales.
+
 El proyecto mantiene dos caminos compatibles:
 
 ```text
@@ -339,4 +471,4 @@ Ademas del dashboard standalone de Sprint 1/2, el repo conserva el sistema avanz
 
 ## Proximo sprint recomendado
 
-Sprint 8: selector avanzado de preferencias del usuario, ponderando ahorro, distancia, cantidad maxima de paradas y medios de pago.
+Sprint 9: preparacion para datos reales operativos, fuentes oficiales/manuales por cadena, preferencias de usuario y calibracion de distancia/costo.

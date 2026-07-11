@@ -1,5 +1,44 @@
 # Changelog
 
+## 2026-07-11 - Sprint 8 - Release MVP v1.0 listo para release local
+
+Cambios:
+
+- Se agrego `scripts/08_generar_mvp_demo.py` para ejecutar el flujo demo completo en un comando.
+- Se creo `docs/GUIA_USO_MVP.md` con instrucciones simples para usar el dashboard.
+- Se creo `docs/RELEASE_CHECKLIST.md` para validar pruebas, archivos ignorados, dashboard y documentacion.
+- Se actualizo `README.md` con inicio rapido, flujo completo, estructura, limitaciones y proximos pasos.
+- Se actualizo `docs/PROJECT_STATUS.md` indicando MVP v1.0 listo para release local.
+- Se actualizo `docs/DATA_CONTRACT.md` con el flujo orquestado por Sprint 8.
+- Se actualizo `docs/TEST_PLAN.md` con pruebas de release MVP.
+- Se actualizo `docs/DATA_RETENTION_POLICY.md` con todos los samples versionables actuales.
+- Se mejoraron mensajes del dashboard para CSV sin filas validas, lista vacia, sucursales vacias, precios faltantes y ruta/cercania incompleta.
+- Se documento `python -m compileall scripts` como comando de compilacion compatible con PowerShell.
+
+Archivos creados:
+
+- `scripts/08_generar_mvp_demo.py`
+- `docs/GUIA_USO_MVP.md`
+- `docs/RELEASE_CHECKLIST.md`
+
+Archivos modificados:
+
+- `README.md`
+- `dashboard/index.html`
+- `docs/DATA_CONTRACT.md`
+- `docs/TEST_PLAN.md`
+- `docs/PROJECT_STATUS.md`
+- `docs/CHANGELOG.md`
+- `docs/DATA_RETENTION_POLICY.md`
+
+Pruebas ejecutadas:
+
+- `python -m compileall scripts`: OK.
+- `python scripts/08_generar_mvp_demo.py`: OK, genero todos los outputs demo.
+- `python -m pytest`: 33 passed.
+- Dashboard por HTTP local: OK, `http://127.0.0.1:8026/dashboard/` respondio 200.
+- Validacion funcional JS del dashboard con CSV reales: OK, carga precios/promos, lista, sucursales, ubicacion, ranking, localStorage, export CSV y ruta.
+
 ## 2026-07-11 - Sprint 7 - Ruta y cercania
 
 Cambios:
