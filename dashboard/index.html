@@ -66,6 +66,7 @@
     .upload p { margin: 8px 0 0; }
     .controls { display: grid; grid-template-columns: 1fr 240px; gap: 12px; margin-top: 14px; }
     .builder-controls { display: grid; grid-template-columns: 1fr 132px 112px 104px; gap: 10px; align-items: end; margin: 12px 0; }
+    .route-controls { display: grid; grid-template-columns: 1fr 1fr 150px auto; gap: 10px; align-items: end; margin-top: 12px; }
     input, select, button { font: inherit; }
     input, select { width: 100%; min-height: 42px; border: 1px solid var(--line); border-radius: 8px; padding: 0 12px; font-size: 14px; background: var(--panel); color: var(--ink); }
     input[type="number"] { padding-right: 6px; }
@@ -118,7 +119,7 @@
     @media (max-width: 1080px) {
       .topbar, .two, .builder-layout, .uploader-grid { grid-template-columns: 1fr; display: grid; }
       .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .controls, .builder-controls { grid-template-columns: 1fr; }
+      .controls, .builder-controls, .route-controls { grid-template-columns: 1fr; }
       .status { min-width: 0; }
       .missing-grid { grid-template-columns: 1fr; }
       .list-actions { justify-content: flex-start; }
@@ -158,6 +159,18 @@
             <input id="listInput" type="file" accept=".csv,text/csv">
             <p id="listError" class="error"></p>
           </div>
+          <div class="upload">
+            <strong>Sucursales CSV</strong>
+            <p class="muted">Carga `data/sample/sucursales_demo.csv` para estimar cercania por sucursal.</p>
+            <input id="branchInput" type="file" accept=".csv,text/csv">
+            <p id="branchError" class="error"></p>
+          </div>
+          <div class="upload">
+            <strong>Ubicacion usuario CSV</strong>
+            <p class="muted">Carga `data/sample/ubicacion_usuario_demo.csv` o usa coordenadas manuales.</p>
+            <input id="userLocationInput" type="file" accept=".csv,text/csv">
+            <p id="userLocationError" class="error"></p>
+          </div>
         </div>
         <div class="controls">
           <input id="searchInput" type="search" placeholder="Buscar producto, marca, categoria o grupo">
@@ -165,6 +178,13 @@
             <option value="">Todos los comercios</option>
           </select>
         </div>
+        <div class="route-controls">
+          <input id="manualLatInput" type="number" step="0.000001" placeholder="Latitud manual">
+          <input id="manualLonInput" type="number" step="0.000001" placeholder="Longitud manual">
+          <input id="costKmInput" type="number" min="0" step="10" value="180" aria-label="Costo por km estimado">
+          <button id="calculateRouteButton" type="button">Calcular cercania</button>
+        </div>
+        <p class="muted" id="routeInputNote">Distancia aproximada por Haversine; no reemplaza navegacion real.</p>
       </div>
 
       <div class="panel">
@@ -326,6 +346,73 @@
       </div>
     </section>
 
+    <section class="grid cards section-gap" id="routeCards">
+      <div class="card"><span>Sucursales cargadas</span><strong id="kpiBranches">0</strong></div>
+      <div class="card"><span>Recomendacion final</span><strong id="kpiRouteBest">-</strong></div>
+      <div class="card"><span>Distancia recomendada</span><strong id="kpiRouteDistance">0 km</strong></div>
+      <div class="card"><span>Score conveniencia</span><strong id="kpiRouteScore">$ 0</strong></div>
+    </section>
+
+    <section class="grid two section-gap">
+      <div class="panel">
+        <div class="topbar" style="margin-bottom: 12px;">
+          <div>
+            <h2>Ranking por conveniencia</h2>
+            <p class="muted" id="routeNote">Carga sucursales y ubicacion para combinar precio efectivo, cobertura y distancia.</p>
+          </div>
+          <span class="pill" id="routePill">Ruta pendiente</span>
+        </div>
+        <div class="table-wrap">
+          <table class="compact-table">
+            <thead>
+              <tr>
+                <th>Comercio</th>
+                <th>Sucursal</th>
+                <th>Cobertura</th>
+                <th>Total</th>
+                <th>Distancia</th>
+                <th>Penalizacion</th>
+                <th>Score</th>
+                <th>Recomendacion</th>
+              </tr>
+            </thead>
+            <tbody id="routeRows">
+              <tr><td colspan="8"><div class="empty">Sin calculo de cercania.</div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="topbar" style="margin-bottom: 12px;">
+          <div>
+            <h2>Ruta dividida sugerida</h2>
+            <p class="muted" id="splitRouteNote">Agrupa la mejor compra por comercio y ordena paradas por cercania aproximada.</p>
+          </div>
+          <span class="pill" id="splitRoutePill">Sin ruta</span>
+        </div>
+        <div class="table-wrap">
+          <table class="compact-table">
+            <thead>
+              <tr>
+                <th>Orden</th>
+                <th>Comercio</th>
+                <th>Sucursal</th>
+                <th>Productos</th>
+                <th>Costo</th>
+                <th>Dist. origen</th>
+                <th>Dist. acum.</th>
+                <th>Ahorro</th>
+              </tr>
+            </thead>
+            <tbody id="splitRouteRows">
+              <tr><td colspan="8"><div class="empty">Sin ruta dividida calculada.</div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
     <section class="panel section-gap">
       <div class="topbar" style="margin-bottom: 12px;">
         <div>
@@ -368,6 +455,8 @@
       "presentacion", "precio", "fecha_relevamiento", "fuente"
     ];
     const listColumns = ["item_lista", "grupo_comparacion", "cantidad", "unidad", "prioridad"];
+    const branchColumns = ["comercio", "sucursal", "localidad", "direccion", "latitud", "longitud", "zona", "horario_referencia"];
+    const userLocationColumns = ["nombre_ubicacion", "latitud", "longitud", "localidad", "descripcion"];
     const storageKey = "proyecto-super-lista-compra-v1";
     const unitAliases = {
       kg: "kg", kilo: "kg", kilos: "kg",
@@ -376,7 +465,18 @@
       ml: "ml", cc: "ml", un: "un", unidad: "un", unidades: "un"
     };
 
-    const state = { rows: [], filtered: [], catalog: [], list: [], comparison: [], split: [] };
+    const state = {
+      rows: [],
+      filtered: [],
+      catalog: [],
+      list: [],
+      comparison: [],
+      split: [],
+      branches: [],
+      userLocation: null,
+      routeRecommendations: [],
+      splitRoute: []
+    };
     const peso = new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS", maximumFractionDigits: 0 });
     const pesoPreciso = new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS", maximumFractionDigits: 2 });
     const number = new Intl.NumberFormat("es-AR");
@@ -451,6 +551,27 @@
 
     function parseList(text) {
       return rowsToObjects(text, listColumns, "lista").map((row, index) => normalizeShoppingItem(row, index + 2));
+    }
+
+    function parseBranches(text) {
+      return rowsToObjects(text, branchColumns, "sucursales").map((row, index) => {
+        const latitud = parseNumber(row.latitud);
+        const longitud = parseNumber(row.longitud);
+        if (!row.comercio || !row.sucursal) throw new Error(`Fila ${index + 2}: comercio o sucursal vacio.`);
+        if (!Number.isFinite(latitud) || !Number.isFinite(longitud)) throw new Error(`Fila ${index + 2}: latitud o longitud invalida.`);
+        return { ...row, latitud, longitud };
+      });
+    }
+
+    function parseUserLocation(text) {
+      const rows = rowsToObjects(text, userLocationColumns, "ubicacion").map((row, index) => {
+        const latitud = parseNumber(row.latitud);
+        const longitud = parseNumber(row.longitud);
+        if (!Number.isFinite(latitud) || !Number.isFinite(longitud)) throw new Error(`Fila ${index + 2}: latitud o longitud invalida.`);
+        return { ...row, latitud, longitud };
+      });
+      if (!rows.length) throw new Error("El CSV de ubicacion esta vacio.");
+      return rows[0];
     }
 
     function parseNumber(value) {
@@ -724,9 +845,12 @@
     function updateShoppingResults() {
       state.comparison = [];
       state.split = [];
+      state.routeRecommendations = [];
+      state.splitRoute = [];
       if (!state.rows.length || !state.list.length || !hasMatching(state.rows)) return;
       state.comparison = buildShoppingComparison(state.rows, state.list);
       state.split = buildBestSplit(state.rows, state.list);
+      updateRouteResults();
     }
 
     function buildShoppingComparison(rows, items) {
@@ -777,6 +901,135 @@
         const best = offers.sort((a, b) => a.cost - b.cost || a.row.comercio.localeCompare(b.row.comercio))[0];
         return { item, best, average, ahorro: average - best.cost };
       });
+    }
+
+    function haversineKm(lat1, lon1, lat2, lon2) {
+      const radiusKm = 6371;
+      const toRad = value => value * Math.PI / 180;
+      const dLat = toRad(lat2 - lat1);
+      const dLon = toRad(lon2 - lon1);
+      const a = Math.sin(dLat / 2) ** 2 +
+        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+      return radiusKm * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    function currentUserLocation() {
+      const lat = parseNumber($("manualLatInput").value);
+      const lon = parseNumber($("manualLonInput").value);
+      if (Number.isFinite(lat) && Number.isFinite(lon)) {
+        return {
+          nombre_ubicacion: "Ubicacion manual",
+          latitud: lat,
+          longitud: lon,
+          localidad: "",
+          descripcion: "Coordenadas ingresadas manualmente"
+        };
+      }
+      return state.userLocation;
+    }
+
+    function costKmValue() {
+      const value = parseNumber($("costKmInput").value);
+      return Number.isFinite(value) && value >= 0 ? value : 180;
+    }
+
+    function branchesForCommerce(branches, commerce) {
+      return branches.filter(branch => branch.comercio === commerce);
+    }
+
+    function nearestBranch(branches, commerce, lat, lon) {
+      const candidates = branchesForCommerce(branches, commerce);
+      if (!candidates.length) return { branch: null, distance: 0 };
+      return candidates
+        .map(branch => ({ branch, distance: haversineKm(lat, lon, branch.latitud, branch.longitud) }))
+        .sort((a, b) => a.distance - b.distance || a.branch.sucursal.localeCompare(b.branch.sucursal))[0];
+    }
+
+    function buildRouteRecommendations(comparison, branches, origin, costKm) {
+      const raw = [];
+      comparison.forEach(row => {
+        const commerceBranches = branchesForCommerce(branches, row.comercio);
+        const scoped = commerceBranches.length ? commerceBranches : [{
+          comercio: row.comercio,
+          sucursal: "Sin sucursal mapeada",
+          localidad: "",
+          latitud: origin.latitud,
+          longitud: origin.longitud
+        }];
+        scoped.forEach(branch => {
+          const distance = haversineKm(origin.latitud, origin.longitud, branch.latitud, branch.longitud);
+          const penalty = distance * costKm;
+          raw.push({
+            comercio: row.comercio,
+            sucursal: branch.sucursal,
+            localidad: branch.localidad,
+            cobertura: row.cobertura,
+            total: row.total,
+            ahorro: row.savingsMostExpensive,
+            distancia: distance,
+            penalizacion: penalty,
+            score: row.total + penalty
+          });
+        });
+      });
+      raw.sort((a, b) => b.cobertura - a.cobertura || a.score - b.score || a.distancia - b.distancia || a.comercio.localeCompare(b.comercio));
+      const bestFull = raw.find(row => row.cobertura >= 99.99);
+      return raw.map(row => ({
+        ...row,
+        recomendacion: bestFull && row === bestFull
+          ? "Recomendado: mejor balance precio/distancia"
+          : (row.cobertura < 99.99 ? "Cobertura parcial: revisar faltantes" : "Alternativa completa")
+      }));
+    }
+
+    function buildSplitRoute(split, branches, origin) {
+      const grouped = new Map();
+      split.filter(entry => !entry.missing).forEach(entry => {
+        const commerce = entry.best.row.comercio;
+        if (!grouped.has(commerce)) grouped.set(commerce, []);
+        grouped.get(commerce).push(entry);
+      });
+      const remaining = new Set([...grouped.keys()]);
+      const rows = [];
+      let currentLat = origin.latitud;
+      let currentLon = origin.longitud;
+      let accumulated = 0;
+      let order = 1;
+      while (remaining.size) {
+        const options = [...remaining].map(commerce => ({ commerce, ...nearestBranch(branches, commerce, currentLat, currentLon) }))
+          .sort((a, b) => a.distance - b.distance || a.commerce.localeCompare(b.commerce));
+        const next = options[0];
+        const items = grouped.get(next.commerce) || [];
+        accumulated += next.distance;
+        const direct = next.branch ? haversineKm(origin.latitud, origin.longitud, next.branch.latitud, next.branch.longitud) : 0;
+        rows.push({
+          orden_sugerido: order,
+          comercio: next.commerce,
+          sucursal: next.branch ? next.branch.sucursal : "Sin sucursal mapeada",
+          localidad: next.branch ? next.branch.localidad : "",
+          productos_a_comprar: items.map(entry => entry.item.item_lista).join("; "),
+          costo_estimado: items.reduce((sum, entry) => sum + entry.best.cost, 0),
+          distancia_desde_origen_km: direct,
+          distancia_acumulada_km: accumulated,
+          ahorro_estimado: items.reduce((sum, entry) => sum + entry.ahorro, 0)
+        });
+        if (next.branch) {
+          currentLat = next.branch.latitud;
+          currentLon = next.branch.longitud;
+        }
+        remaining.delete(next.commerce);
+        order++;
+      }
+      return rows;
+    }
+
+    function updateRouteResults() {
+      state.routeRecommendations = [];
+      state.splitRoute = [];
+      const origin = currentUserLocation();
+      if (!state.comparison.length || !state.branches.length || !origin) return;
+      state.routeRecommendations = buildRouteRecommendations(state.comparison, state.branches, origin, costKmValue());
+      state.splitRoute = buildSplitRoute(state.split, state.branches, origin);
     }
 
     function setListMessage(message, isError = false) {
@@ -1022,6 +1275,64 @@
       `).join("") || `<div class="empty">No hay faltantes para la lista calculada.</div>`;
     }
 
+    function renderRouteTables() {
+      const origin = currentUserLocation();
+      const best = state.routeRecommendations[0];
+      $("kpiBranches").textContent = number.format(state.branches.length);
+      $("kpiRouteBest").textContent = best ? `${best.comercio} - ${best.sucursal}` : "-";
+      $("kpiRouteDistance").textContent = best ? `${pct.format(best.distancia)} km` : "0 km";
+      $("kpiRouteScore").textContent = best ? pesoPreciso.format(best.score) : "$ 0";
+
+      if (!state.list.length || !state.comparison.length) {
+        $("routeNote").textContent = "Calcula una lista para poder comparar precio efectivo, cobertura y distancia.";
+        $("routePill").textContent = "Lista pendiente";
+        $("routeRows").innerHTML = `<tr><td colspan="8"><div class="empty">Calcula una lista antes de estimar cercania.</div></td></tr>`;
+        $("splitRouteRows").innerHTML = `<tr><td colspan="8"><div class="empty">Sin ruta dividida calculada.</div></td></tr>`;
+        $("splitRoutePill").textContent = "Sin ruta";
+        return;
+      }
+      if (!state.branches.length || !origin) {
+        $("routeNote").textContent = "Carga sucursales y ubicacion, o ingresa coordenadas manuales.";
+        $("routePill").textContent = !state.branches.length ? "Sucursales pendientes" : "Ubicacion pendiente";
+        $("routeRows").innerHTML = `<tr><td colspan="8"><div class="empty">Faltan sucursales o ubicacion para calcular distancia.</div></td></tr>`;
+        $("splitRouteRows").innerHTML = `<tr><td colspan="8"><div class="empty">Faltan sucursales o ubicacion.</div></td></tr>`;
+        $("splitRoutePill").textContent = "Sin ruta";
+        return;
+      }
+
+      $("routeNote").textContent = `Ranking por score = costo total + distancia * ${peso.format(costKmValue())}/km. Distancia Haversine aproximada.`;
+      $("routePill").textContent = best ? `Mejor ${pct.format(best.distancia)} km` : "Sin recomendacion";
+      $("routeRows").innerHTML = state.routeRecommendations.map(row => `
+        <tr>
+          <td class="group">${safe(row.comercio)}</td>
+          <td>${safe(row.sucursal)}<br><span class="muted">${safe(row.localidad)}</span></td>
+          <td>${pct.format(row.cobertura)}%</td>
+          <td class="price">${pesoPreciso.format(row.total)}</td>
+          <td>${pct.format(row.distancia)} km</td>
+          <td>${pesoPreciso.format(row.penalizacion)}</td>
+          <td class="unit-price">${pesoPreciso.format(row.score)}</td>
+          <td>${safe(row.recomendacion)}</td>
+        </tr>
+      `).join("") || `<tr><td colspan="8"><div class="empty">Sin recomendaciones para mostrar.</div></td></tr>`;
+
+      $("splitRoutePill").textContent = state.splitRoute.length ? `${state.splitRoute.length} paradas` : "Sin ruta";
+      $("splitRouteNote").textContent = state.splitRoute.length
+        ? "Orden sugerido por cercania progresiva desde la ubicacion elegida."
+        : "Agrupa la mejor compra por comercio y ordena paradas por cercania aproximada.";
+      $("splitRouteRows").innerHTML = state.splitRoute.map(row => `
+        <tr>
+          <td>${row.orden_sugerido}</td>
+          <td class="group">${safe(row.comercio)}</td>
+          <td>${safe(row.sucursal)}<br><span class="muted">${safe(row.localidad)}</span></td>
+          <td>${safe(row.productos_a_comprar)}</td>
+          <td class="price">${pesoPreciso.format(row.costo_estimado)}</td>
+          <td>${pct.format(row.distancia_desde_origen_km)} km</td>
+          <td>${pct.format(row.distancia_acumulada_km)} km</td>
+          <td>${pesoPreciso.format(row.ahorro_estimado)}</td>
+        </tr>
+      `).join("") || `<tr><td colspan="8"><div class="empty">Sin ruta dividida calculada.</div></td></tr>`;
+    }
+
     function renderTable() {
       const rows = state.filtered.slice(0, 250);
       $("tableNote").textContent = `${number.format(rows.length)} visibles de ${number.format(state.filtered.length)} resultados filtrados. Modo: ${priceModeLabel(state.filtered)}.`;
@@ -1061,6 +1372,7 @@
       renderShoppingListEditor();
       renderShoppingTables();
       renderMissing();
+      renderRouteTables();
       renderTable();
     }
 
@@ -1110,6 +1422,48 @@
       reader.readAsText(file, "utf-8");
     }
 
+    function loadBranchFile(file) {
+      $("branchError").textContent = "";
+      const reader = new FileReader();
+      reader.onload = event => {
+        try {
+          state.branches = parseBranches(event.target.result);
+          updateRouteResults();
+          $("routeInputNote").textContent = `${state.branches.length} sucursales cargadas desde ${file.name}.`;
+          render();
+        } catch (error) {
+          state.branches = [];
+          state.routeRecommendations = [];
+          state.splitRoute = [];
+          $("branchError").textContent = error.message;
+          render();
+        }
+      };
+      reader.readAsText(file, "utf-8");
+    }
+
+    function loadUserLocationFile(file) {
+      $("userLocationError").textContent = "";
+      const reader = new FileReader();
+      reader.onload = event => {
+        try {
+          state.userLocation = parseUserLocation(event.target.result);
+          $("manualLatInput").value = "";
+          $("manualLonInput").value = "";
+          updateRouteResults();
+          $("routeInputNote").textContent = `Ubicacion cargada: ${state.userLocation.nombre_ubicacion || state.userLocation.localidad}.`;
+          render();
+        } catch (error) {
+          state.userLocation = null;
+          state.routeRecommendations = [];
+          state.splitRoute = [];
+          $("userLocationError").textContent = error.message;
+          render();
+        }
+      };
+      reader.readAsText(file, "utf-8");
+    }
+
     function bootStoredList() {
       try {
         const stored = readStoredList();
@@ -1132,8 +1486,28 @@
       const file = event.target.files && event.target.files[0];
       if (file) loadListFile(file);
     });
+    $("branchInput").addEventListener("change", event => {
+      const file = event.target.files && event.target.files[0];
+      if (file) loadBranchFile(file);
+    });
+    $("userLocationInput").addEventListener("change", event => {
+      const file = event.target.files && event.target.files[0];
+      if (file) loadUserLocationFile(file);
+    });
     $("searchInput").addEventListener("input", applyFilters);
     $("commerceFilter").addEventListener("change", applyFilters);
+    $("manualLatInput").addEventListener("input", () => {
+      updateRouteResults();
+      render();
+    });
+    $("manualLonInput").addEventListener("input", () => {
+      updateRouteResults();
+      render();
+    });
+    $("costKmInput").addEventListener("input", () => {
+      updateRouteResults();
+      render();
+    });
     $("builderSearchInput").addEventListener("input", renderCatalog);
     $("productCandidates").addEventListener("click", event => {
       const button = event.target.closest("[data-add-group]");
@@ -1172,11 +1546,19 @@
     });
     $("clearListButton").addEventListener("click", () => setList([], "Lista vaciada."));
     $("exportListButton").addEventListener("click", downloadListCsv);
+    $("calculateRouteButton").addEventListener("click", () => {
+      updateShoppingResults();
+      updateRouteResults();
+      setListMessage(state.routeRecommendations.length ? "Cercania recalculada." : "Faltan lista, sucursales o ubicacion para calcular cercania.", !state.routeRecommendations.length);
+      render();
+    });
 
     globalThis.__proyectoSuperDashboard = {
       parseCsv,
       toObjects,
       parseList,
+      parseBranches,
+      parseUserLocation,
       buildCatalog,
       createShoppingItemFromCatalog,
       upsertListItem,
@@ -1188,6 +1570,9 @@
       clearStoredList,
       buildShoppingComparison,
       buildBestSplit,
+      haversineKm,
+      buildRouteRecommendations,
+      buildSplitRoute,
       hasPromotions,
       rowBasePrice,
       rowComparable,

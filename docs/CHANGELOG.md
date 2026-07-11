@@ -1,5 +1,47 @@
 # Changelog
 
+## 2026-07-11 - Sprint 7 - Ruta y cercania
+
+Cambios:
+
+- Se creo `data/sample/sucursales_demo.csv` con sucursales demo y coordenadas locales.
+- Se creo `data/sample/ubicacion_usuario_demo.csv` con punto de partida demo.
+- Se agrego `scripts/07_planificar_ruta.py` para calcular distancia Haversine, score de conveniencia y ruta dividida.
+- Se genera `data/processed/recomendacion_ruta.csv`.
+- Se genera `data/processed/ruta_compra_dividida.csv`.
+- Se agrego score `costo_total_estimado + distancia_km * costo_km_estimado`.
+- Se definio `costo_km_estimado` demo en 180 pesos por km.
+- Se actualizo `dashboard/index.html` con carga de sucursales, ubicacion, coordenadas manuales, ranking por conveniencia y ruta dividida sugerida.
+- Se agregaron pruebas automatizadas de ruta y se amplio la prueba JS del dashboard.
+- Se actualizaron README, contrato de datos, plan de pruebas y estado del proyecto.
+
+Archivos creados:
+
+- `data/sample/sucursales_demo.csv`
+- `data/sample/ubicacion_usuario_demo.csv`
+- `scripts/07_planificar_ruta.py`
+- `tests/test_route_planning.py`
+
+Archivos modificados:
+
+- `dashboard/index.html`
+- `tests/test_dashboard_shopping_list_ui.py`
+- `README.md`
+- `docs/DATA_CONTRACT.md`
+- `docs/TEST_PLAN.md`
+- `docs/PROJECT_STATUS.md`
+- `docs/CHANGELOG.md`
+
+Pruebas:
+
+- `python -m py_compile scripts/07_planificar_ruta.py`: OK.
+- `python scripts/07_planificar_ruta.py`: OK, 12 recomendaciones y 2 paradas.
+- `python -m pytest tests/test_route_planning.py tests/test_promotions.py tests/test_shopping_list.py`: 14 passed.
+- `python -m pytest tests/test_dashboard_shopping_list_ui.py tests/test_route_planning.py`: 5 passed.
+- Flujo completo Sprint 1-7 con promociones y ruta: OK.
+- `python -m pytest`: 33 passed.
+- Dashboard por HTTP local: OK, secciones de ruta visibles y CSV de recomendacion servido.
+
 ## 2026-07-11 - Sprint 6 - Promociones y precio efectivo
 
 Cambios:
