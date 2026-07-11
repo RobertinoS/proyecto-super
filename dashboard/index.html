@@ -530,7 +530,7 @@
     }
 
     function toObjects(text) {
-      return rowsToObjects(text, requiredColumns, "precios").map(row => {
+      const rows = rowsToObjects(text, requiredColumns, "precios").map(row => {
         row.precio_num = parseNumber(row.precio);
         const original = parseNumber(row.precio_original);
         row.precio_original_num = Number.isFinite(original) ? original : row.precio_num;
@@ -547,20 +547,26 @@
         row.confianza_num = Number.isFinite(parseNumber(row.confianza_matching)) ? parseNumber(row.confianza_matching) : NaN;
         return row;
       }).filter(row => row.producto && Number.isFinite(row.precio_num) && row.precio_num > 0);
+      if (!rows.length) throw new Error("El CSV de precios no tiene filas validas. Revisa columnas, producto y precios mayores a cero.");
+      return rows;
     }
 
     function parseList(text) {
-      return rowsToObjects(text, listColumns, "lista").map((row, index) => normalizeShoppingItem(row, index + 2));
+      const items = rowsToObjects(text, listColumns, "lista").map((row, index) => normalizeShoppingItem(row, index + 2));
+      if (!items.length) throw new Error("El CSV de lista no tiene items. Agrega al menos un item_lista con grupo_comparacion, cantidad y unidad.");
+      return items;
     }
 
     function parseBranches(text) {
-      return rowsToObjects(text, branchColumns, "sucursales").map((row, index) => {
+      const branches = rowsToObjects(text, branchColumns, "sucursales").map((row, index) => {
         const latitud = parseNumber(row.latitud);
         const longitud = parseNumber(row.longitud);
         if (!row.comercio || !row.sucursal) throw new Error(`Fila ${index + 2}: comercio o sucursal vacio.`);
         if (!Number.isFinite(latitud) || !Number.isFinite(longitud)) throw new Error(`Fila ${index + 2}: latitud o longitud invalida.`);
         return { ...row, latitud, longitud };
       });
+      if (!branches.length) throw new Error("El CSV de sucursales no tiene filas. Carga data/sample/sucursales_demo.csv o un archivo equivalente.");
+      return branches;
     }
 
     function parseUserLocation(text) {
@@ -1032,6 +1038,15 @@
       state.splitRoute = buildSplitRoute(state.split, state.branches, origin);
     }
 
+    function routeMissingMessage() {
+      if (!state.list.length) return "Arma o carga una lista antes de calcular cercania.";
+      if (!state.rows.length || !hasMatching(state.rows)) return "Carga primero precios_matcheados.csv o precios_con_promociones.csv.";
+      if (!state.comparison.length) return "Calcula el ranking de la lista antes de estimar ruta.";
+      if (!state.branches.length) return "Carga data/sample/sucursales_demo.csv o un CSV de sucursales compatible.";
+      if (!currentUserLocation()) return "Carga data/sample/ubicacion_usuario_demo.csv o ingresa latitud y longitud manual.";
+      return "No se pudo calcular cercania con los datos actuales.";
+    }
+
     function setListMessage(message, isError = false) {
       $("listActionMessage").textContent = message;
       $("listActionMessage").className = isError ? "error" : "muted";
@@ -1074,7 +1089,13 @@
 
     function calculateFromInterface() {
       updateShoppingResults();
-      setListMessage(state.list.length ? "Ranking recalculado." : "Agrega items para calcular.", !state.list.length);
+      const missingPrices = state.list.length && (!state.rows.length || !hasMatching(state.rows));
+      setListMessage(
+        !state.list.length
+          ? "Agrega items para calcular."
+          : (missingPrices ? "Carga precios matcheados o con promociones antes de calcular." : "Ranking recalculado."),
+        !state.list.length || missingPrices
+      );
       render();
     }
 
@@ -1549,7 +1570,7 @@
     $("calculateRouteButton").addEventListener("click", () => {
       updateShoppingResults();
       updateRouteResults();
-      setListMessage(state.routeRecommendations.length ? "Cercania recalculada." : "Faltan lista, sucursales o ubicacion para calcular cercania.", !state.routeRecommendations.length);
+      setListMessage(state.routeRecommendations.length ? "Cercania recalculada." : routeMissingMessage(), !state.routeRecommendations.length);
       render();
     });
 

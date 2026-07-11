@@ -668,3 +668,74 @@ python -m py_compile scripts/07_planificar_ruta.py
 python scripts/07_planificar_ruta.py
 python -m pytest
 ```
+
+## Sprint 8: Release MVP v1.0
+
+### 39. Compilacion de todos los scripts
+
+Comando:
+
+```bash
+python -m compileall scripts
+```
+
+Resultado esperado:
+
+- Todos los scripts compilan sin errores.
+- El comando es compatible con PowerShell porque no depende de expansion de comodines.
+
+### 40. Flujo demo en un comando
+
+Comando:
+
+```bash
+python scripts/08_generar_mvp_demo.py
+```
+
+Resultado esperado:
+
+- Ejecuta normalizacion.
+- Importa el sample SEPA/manual.
+- Filtra San Juan.
+- Genera matching.
+- Aplica promociones con fecha demo `2026-07-11`.
+- Calcula lista con precio efectivo.
+- Planifica ruta.
+- Verifica que existan los outputs principales.
+
+### 41. Dashboard MVP completo
+
+Pasos:
+
+1. Servir el proyecto con `python -m http.server 8026 --bind 127.0.0.1`.
+2. Abrir `http://127.0.0.1:8026/dashboard/`.
+3. Cargar `data/processed/precios_con_promociones.csv`.
+4. Cargar `data/sample/lista_compra_demo.csv`.
+5. Cargar `data/sample/sucursales_demo.csv`.
+6. Cargar `data/sample/ubicacion_usuario_demo.csv`.
+7. Buscar productos.
+8. Agregar producto a lista desde UI.
+9. Editar cantidad.
+10. Eliminar item.
+11. Guardar y recuperar lista con `localStorage`.
+12. Exportar CSV.
+13. Calcular ranking.
+14. Calcular cercania/ruta.
+
+Resultado esperado:
+
+- El dashboard muestra precio original, precio efectivo, ahorro de promocion y promo aplicada.
+- El ranking usa precio efectivo.
+- Se muestran faltantes y mejor compra dividida.
+- Se muestra distancia aproximada, penalizacion, score y recomendacion final.
+- Los mensajes de error son claros si faltan precios, lista, sucursales o ubicacion.
+
+## Suite release MVP
+
+Comandos:
+
+```bash
+python -m compileall scripts
+python scripts/08_generar_mvp_demo.py
+python -m pytest
+```
