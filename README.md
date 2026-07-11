@@ -109,14 +109,17 @@ python -m pytest
 
 1. Servir el proyecto: `python -m http.server 8026 --bind 127.0.0.1`.
 2. Abrir `http://127.0.0.1:8026/dashboard/`.
-3. Cargar `data/processed/precios_con_promociones.csv` en `CSV de precios`.
-4. Cargar `data/sample/lista_compra_demo.csv` o armar una lista desde `Armar lista`.
-5. Guardar o recuperar listas con los botones de `Lista actual`.
-6. Presionar `Calcular ranking`.
-7. Cargar `data/sample/sucursales_demo.csv`.
-8. Cargar `data/sample/ubicacion_usuario_demo.csv` o ingresar coordenadas manuales.
-9. Presionar `Calcular cercania`.
-10. Revisar ranking por comercio, ahorro, faltantes, mejor compra dividida y score de conveniencia.
+3. Usar la navegacion lateral: `Resumen`, `Precios`, `Lista de compra`, `Comparacion` y `Ruta/cercania`.
+4. Cargar `data/processed/precios_con_promociones.csv` en `CSV de precios`.
+5. Cargar `data/sample/lista_compra_demo.csv` o armar una lista desde `Armar lista`.
+6. Guardar o recuperar listas con los botones de `Lista actual`.
+7. Presionar `Calcular ranking` o `Recalcular`.
+8. Cargar `data/sample/sucursales_demo.csv`.
+9. Cargar `data/sample/ubicacion_usuario_demo.csv` o ingresar coordenadas manuales.
+10. Presionar `Calcular cercania`.
+11. Revisar ranking por comercio, ahorro, faltantes, mejor compra dividida y score de conveniencia.
+
+El dashboard muestra el estado de cada archivo cargado y permite `Limpiar sesion` para empezar de nuevo sin recargar la pagina.
 
 ## Limitaciones conocidas
 
@@ -471,4 +474,4 @@ Ademas del dashboard standalone de Sprint 1/2, el repo conserva el sistema avanz
 
 ## Proximo sprint recomendado
 
-Sprint 9: preparacion para datos reales operativos, fuentes oficiales/manuales por cadena, preferencias de usuario y calibracion de distancia/costo.
+Sprint 10: preparacion para datos reales operativos, fuentes oficiales/manuales por cadena, preferencias de usuario y calibracion de distancia/costo.

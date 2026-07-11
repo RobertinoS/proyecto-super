@@ -739,3 +739,54 @@ python -m compileall scripts
 python scripts/08_generar_mvp_demo.py
 python -m pytest
 ```
+
+## Sprint 9: Rediseno UI/UX dashboard
+
+### 42. Estructura visual profesional
+
+Validar en `dashboard/index.html`:
+
+- header superior;
+- sidebar de navegacion;
+- secciones `Resumen`, `Precios`, `Lista de compra`, `Comparacion` y `Ruta/cercania`;
+- KPIs visibles;
+- cards y badges de estado;
+- tablas legibles;
+- responsive design.
+
+### 43. Estados y acciones de sesion
+
+Pasos:
+
+1. Abrir dashboard por HTTP local.
+2. Cargar precios, lista, sucursales y ubicacion.
+3. Verificar que cada archivo muestre estado cargado.
+4. Usar `Recalcular`.
+5. Usar `Limpiar sesion`.
+
+Resultado esperado:
+
+- El usuario entiende que archivo falta o ya fue cargado.
+- `Recalcular` actualiza ranking y ruta con los datos actuales.
+- `Limpiar sesion` borra datos en pantalla y permite empezar de nuevo sin recargar pagina.
+
+### 44. Compatibilidad MVP
+
+Comandos:
+
+```bash
+python scripts/08_generar_mvp_demo.py
+python -m pytest
+```
+
+Validacion manual:
+
+- cargar `data/processed/precios_con_promociones.csv`;
+- cargar `data/sample/lista_compra_demo.csv`;
+- cargar `data/sample/sucursales_demo.csv`;
+- cargar `data/sample/ubicacion_usuario_demo.csv`;
+- armar lista desde UI;
+- guardar, recuperar y exportar lista;
+- calcular ranking;
+- ver promociones, faltantes y mejor compra dividida;
+- calcular cercania/ruta.

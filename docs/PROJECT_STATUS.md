@@ -4,15 +4,15 @@ Actualizado: 2026-07-11.
 
 ## Sprint actual
 
-Sprint 8 - Release MVP v1.0 listo para release local.
+Sprint 9 - Rediseno UI/UX del dashboard.
 
 Rama:
 
 ```text
-sprint-8-release-mvp-v1
+sprint-9-dashboard-ui-redesign
 ```
 
-Objetivo: cerrar el MVP local, documentar uso real/manual, validar flujo completo y dejar un comando unico para generar datos demo.
+Objetivo: mejorar la interfaz y distribucion del dashboard sin cambiar la logica principal del negocio.
 
 ## Diagnostico ejecutivo
 
@@ -22,7 +22,26 @@ El repo Git dedicado esta en:
 C:\Users\Rober\Desktop\Proyecto Super
 ```
 
-Sprint 1 a Sprint 7 se mantienen compatibles. El proyecto queda como MVP v1.0 listo para release local: compara precios, aplica matching, promociones, listas de compra y ruta/cercania aproximada con datos CSV locales. No usa Google Maps API, APIs pagas, credenciales ni backend obligatorio.
+Sprint 1 a Sprint 8 se mantienen compatibles. El proyecto mantiene MVP v1.0.0 en `main` y este sprint rediseña solamente la capa visual del dashboard: navegacion lateral, header, estados de archivo, cards y mejor distribucion de secciones. No usa Google Maps API, APIs pagas, credenciales ni backend obligatorio.
+
+## Artefactos Sprint 9
+
+- `dashboard/index.html`
+- `README.md`
+- `docs/GUIA_USO_MVP.md`
+- `docs/PROJECT_STATUS.md`
+- `docs/CHANGELOG.md`
+- `docs/TEST_PLAN.md`
+
+## Decision tecnica Sprint 9
+
+- No se modifican scripts Python.
+- Se conservan los ids y funciones JS usados por pruebas y flujo MVP.
+- Se agrega navegacion lateral por secciones: Resumen, Precios, Lista de compra, Comparacion y Ruta/cercania.
+- Se agregan estados visuales por archivo cargado.
+- Se agrega accion global `Recalcular`.
+- Se agrega accion global `Limpiar sesion`.
+- Se mantiene funcionamiento sin backend y con archivos CSV locales.
 
 ## Resumen ejecutivo MVP v1.0
 
@@ -138,6 +157,15 @@ data/sample/ubicacion_usuario_demo.csv
 
 ## Validaciones actuales
 
+Pruebas Sprint 9:
+
+- `python scripts/08_generar_mvp_demo.py`: OK;
+- `python -m pytest`: 33 passed;
+- dashboard por HTTP local: OK, `http://127.0.0.1:8026/dashboard/` respondio 200;
+- validacion visual: sidebar, header, flujo guiado, estados de archivo y botones globales presentes;
+- validacion funcional JS con CSV reales: OK;
+- consola del navegador: sin errores.
+
 Pruebas release MVP:
 
 - `python -m compileall scripts`: OK;
@@ -195,6 +223,6 @@ Resultado:
 
 ## Proximo sprint recomendado
 
-Sprint 9 - Datos reales operativos y preferencias avanzadas.
+Sprint 10 - Datos reales operativos y preferencias avanzadas.
 
 Objetivo: incorporar fuentes reales/manuales verificadas, calibrar coordenadas/costo por km y permitir que el usuario configure prioridad entre ahorro, distancia, cantidad maxima de paradas, medios de pago y cobertura minima.

@@ -34,6 +34,14 @@ http://127.0.0.1:8026/dashboard/
 
 ## 3. Cargar precios
 
+El dashboard esta organizado en una navegacion lateral:
+
+- `Resumen`
+- `Precios`
+- `Lista de compra`
+- `Comparacion`
+- `Ruta/cercania`
+
 Primer archivo a cargar:
 
 ```text
@@ -70,6 +78,8 @@ data/sample/lista_compra_demo.csv
 - editar cantidad o eliminar items en `Lista actual`.
 
 La lista se puede guardar en el navegador con `Guardar`, recuperar con `Recuperar` y exportar con `Exportar CSV`.
+
+Tambien se puede usar `Recalcular` para actualizar los paneles con los datos cargados y `Limpiar sesion` para borrar la sesion local y empezar de nuevo.
 
 ## 5. Calcular ranking
 
