@@ -85,7 +85,7 @@
     .confidence { display: inline-flex; min-width: 46px; justify-content: center; border-radius: 999px; padding: 3px 8px; font-size: 12px; font-weight: 800; background: rgba(37, 99, 235, 0.12); color: var(--brand-2); }
     .confidence.low { background: rgba(180, 83, 9, 0.12); color: var(--warn); }
     .table-wrap { overflow: auto; border: 1px solid var(--line); border-radius: 8px; }
-    table { width: 100%; border-collapse: collapse; min-width: 1120px; background: var(--panel); }
+    table { width: 100%; border-collapse: collapse; min-width: 1320px; background: var(--panel); }
     .compact-table { min-width: 780px; }
     .mini-table { min-width: 640px; }
     th, td { padding: 11px 12px; border-bottom: 1px solid var(--line); text-align: left; font-size: 13px; vertical-align: top; }
@@ -93,6 +93,8 @@
     tr:hover td { background: var(--panel-soft); }
     .price { font-weight: 800; color: var(--brand); white-space: nowrap; }
     .unit-price { font-weight: 900; color: var(--brand-2); white-space: nowrap; }
+    .promo-save { font-weight: 900; color: var(--good); white-space: nowrap; }
+    .promo-desc { max-width: 240px; min-width: 180px; }
     .muted { color: var(--muted); }
     .error { color: var(--bad); }
     .success { color: var(--good); }
@@ -135,7 +137,7 @@
       <div>
         <p class="eyebrow">BI local para compra inteligente</p>
         <h1>Comparador de precios de San Juan</h1>
-        <p class="subtitle">Carga precios matcheados, arma una lista desde la interfaz y calcula costo total, ahorro, faltantes y compra dividida sin editar CSV.</p>
+        <p class="subtitle">Carga precios matcheados o con promociones, arma una lista desde la interfaz y calcula costo total, ahorro, faltantes y compra dividida sin editar CSV.</p>
       </div>
       <div class="status" id="statusBox">Esperando CSV de precios.</div>
     </header>
@@ -146,7 +148,7 @@
         <div class="uploader-grid">
           <div class="upload">
             <strong>CSV de precios</strong>
-            <p class="muted">Usa `data/processed/precios_matcheados.csv`. Tambien acepta CSVs de sprints anteriores.</p>
+            <p class="muted">Usa `data/processed/precios_matcheados.csv` o `data/processed/precios_con_promociones.csv`. Tambien acepta CSVs de sprints anteriores.</p>
             <input id="fileInput" type="file" accept=".csv,text/csv">
             <p id="fileError" class="error"></p>
           </div>
@@ -343,14 +345,17 @@
               <th>Comercio</th>
               <th>Sucursal</th>
               <th>Categoria</th>
-              <th>Precio</th>
+              <th>Precio original</th>
+              <th>Precio efectivo</th>
+              <th>Ahorro promo</th>
+              <th>Promo aplicada</th>
               <th>Comparable</th>
               <th>Conf.</th>
               <th>Fecha</th>
             </tr>
           </thead>
           <tbody id="priceRows">
-            <tr><td colspan="11"><div class="empty">Carga un CSV para comenzar.</div></td></tr>
+            <tr><td colspan="14"><div class="empty">Carga un CSV para comenzar.</div></td></tr>
           </tbody>
         </table>
       </div>
@@ -427,8 +432,18 @@
     function toObjects(text) {
       return rowsToObjects(text, requiredColumns, "precios").map(row => {
         row.precio_num = parseNumber(row.precio);
+        const original = parseNumber(row.precio_original);
+        row.precio_original_num = Number.isFinite(original) ? original : row.precio_num;
+        const effective = parseNumber(row.precio_efectivo);
+        row.precio_efectivo_num = Number.isFinite(effective) ? effective : NaN;
+        row.ahorro_promocion_num = Number.isFinite(parseNumber(row.ahorro_promocion)) ? parseNumber(row.ahorro_promocion) : 0;
         const comparable = parseNumber(row.precio_unitario_comparable);
         row.comparable_num = Number.isFinite(comparable) ? comparable : row.precio_num;
+        const effectiveComparable = parseNumber(row.precio_unitario_efectivo);
+        const quantity = parseNumber(row.cantidad_base);
+        row.comparable_efectivo_num = Number.isFinite(effectiveComparable)
+          ? effectiveComparable
+          : (Number.isFinite(row.precio_efectivo_num) && Number.isFinite(quantity) && quantity > 0 ? row.precio_efectivo_num / quantity : NaN);
         row.confianza_num = Number.isFinite(parseNumber(row.confianza_matching)) ? parseNumber(row.confianza_matching) : NaN;
         return row;
       }).filter(row => row.producto && Number.isFinite(row.precio_num) && row.precio_num > 0);
@@ -502,6 +517,26 @@
       return rows.some(row => row.grupo_comparacion || row.precio_unitario_comparable);
     }
 
+    function hasPromotions(rows = state.rows) {
+      return rows.some(row => Number.isFinite(row.precio_efectivo_num) || row.promo_aplicada || row.promo_id_aplicada);
+    }
+
+    function rowOriginalPrice(row) {
+      return Number.isFinite(row.precio_original_num) ? row.precio_original_num : row.precio_num;
+    }
+
+    function rowBasePrice(row) {
+      return Number.isFinite(row.precio_efectivo_num) ? row.precio_efectivo_num : row.precio_num;
+    }
+
+    function rowComparable(row) {
+      return Number.isFinite(row.comparable_efectivo_num) ? row.comparable_efectivo_num : row.comparable_num;
+    }
+
+    function priceModeLabel(rows = state.rows) {
+      return hasPromotions(rows) ? "precio efectivo" : "precio de gondola";
+    }
+
     function groupLabel(row) {
       return row.grupo_comparacion || row.producto_normalizado || row.producto;
     }
@@ -511,7 +546,13 @@
     }
 
     function comparableText(row) {
-      return `${pesoPreciso.format(row.comparable_num || row.precio_num)}${unitLabel(row)}`;
+      return `${pesoPreciso.format(rowComparable(row) || rowBasePrice(row))}${unitLabel(row)}`;
+    }
+
+    function promotionText(row) {
+      if (row.promo_aplicada) return row.promo_aplicada;
+      if (row.promo_id_aplicada) return row.promo_id_aplicada;
+      return Number.isFinite(row.ahorro_promocion_num) && row.ahorro_promocion_num > 0 ? "Promocion aplicada" : "-";
     }
 
     function confidenceClass(row) {
@@ -526,7 +567,7 @@
         groups.get(key).push(row);
       });
       return [...groups.entries()].map(([group, groupRows]) => {
-        const best = groupRows.slice().sort((a, b) => (a.comparable_num || a.precio_num) - (b.comparable_num || b.precio_num))[0];
+        const best = groupRows.slice().sort((a, b) => (rowComparable(a) || rowBasePrice(a)) - (rowComparable(b) || rowBasePrice(b)))[0];
         return {
           grupo_comparacion: group,
           item_lista: `${best.producto}${best.presentacion_normalizada || best.presentacion ? ` ${best.presentacion_normalizada || best.presentacion}` : ""}`.trim(),
@@ -657,14 +698,16 @@
           row.grupo_comparacion
         ].join(" "));
         return (!query || haystack.includes(query)) && (!commerce || row.comercio === commerce);
-      }).sort((a, b) => (a.comparable_num || a.precio_num) - (b.comparable_num || b.precio_num));
+      }).sort((a, b) => (rowComparable(a) || rowBasePrice(a)) - (rowComparable(b) || rowBasePrice(b)));
       render();
     }
 
     function rowCostForItem(row, item) {
       const rowUnit = normalizeUnit(row.unidad_base);
-      if (item.unidad === "un" && Number.isFinite(row.precio_num)) return row.precio_num * item.cantidad;
-      if (rowUnit === item.unidad && Number.isFinite(row.comparable_num)) return row.comparable_num * item.cantidad;
+      const basePrice = rowBasePrice(row);
+      const comparable = rowComparable(row);
+      if (item.unidad === "un" && Number.isFinite(basePrice)) return basePrice * item.cantidad;
+      if (rowUnit === item.unidad && Number.isFinite(comparable)) return comparable * item.cantidad;
       return null;
     }
 
@@ -785,16 +828,17 @@
     function renderKpis() {
       const rows = state.filtered;
       const matched = hasMatching(rows);
+      const promoted = hasPromotions(rows);
       const products = matched ? unique(rows, "grupo_comparacion").length : unique(rows, "producto").length;
       const commerces = unique(rows, "comercio").length;
-      const avg = rows.length ? rows.reduce((sum, row) => sum + (row.comparable_num || row.precio_num), 0) / rows.length : 0;
+      const avg = rows.length ? rows.reduce((sum, row) => sum + (matched ? rowComparable(row) : rowBasePrice(row)), 0) / rows.length : 0;
       const cheapest = rows[0];
       $("kpiProductsLabel").textContent = matched ? "Grupos comparables" : "Productos unicos";
-      $("kpiAverageLabel").textContent = matched ? "Promedio comparable" : "Precio promedio";
+      $("kpiAverageLabel").textContent = promoted ? "Promedio efectivo" : (matched ? "Promedio comparable" : "Precio promedio");
       $("kpiProducts").textContent = number.format(products);
       $("kpiCommerces").textContent = number.format(commerces);
       $("kpiAverage").textContent = matched ? pesoPreciso.format(avg || 0) : peso.format(avg || 0);
-      $("kpiCheapest").textContent = cheapest ? `${cheapest.producto} - ${matched ? comparableText(cheapest) : peso.format(cheapest.precio_num)}` : "-";
+      $("kpiCheapest").textContent = cheapest ? `${cheapest.producto} - ${matched ? comparableText(cheapest) : peso.format(rowBasePrice(cheapest))}` : "-";
     }
 
     function renderShoppingKpis() {
@@ -816,7 +860,7 @@
       const grouped = new Map();
       state.filtered.forEach(row => {
         if (!grouped.has(row.comercio)) grouped.set(row.comercio, []);
-        grouped.get(row.comercio).push(row.precio_num);
+        grouped.get(row.comercio).push(rowBasePrice(row));
       });
       const data = [...grouped.entries()].map(([commerce, values]) => ({
         label: commerce,
@@ -835,14 +879,14 @@
         grouped.get(key).push(row);
       });
       const data = [...grouped.entries()].map(([group, rows]) => {
-        const best = rows.slice().sort((a, b) => a.comparable_num - b.comparable_num)[0];
+        const best = rows.slice().sort((a, b) => rowComparable(a) - rowComparable(b))[0];
         return {
           label: group,
           detail: `${best.comercio} - ${comparableText(best)}`,
-          value: best.comparable_num || best.precio_num
+          value: rowComparable(best) || rowBasePrice(best)
         };
       }).sort((a, b) => a.value - b.value).slice(0, 8);
-      renderBarData(data, "Ganador de menor precio unitario comparable por grupo.");
+      renderBarData(data, `Ganador de menor ${priceModeLabel(state.filtered)} unitario comparable por grupo.`);
     }
 
     function renderBarData(data, note) {
@@ -871,7 +915,7 @@
           <div>
             <strong>${safe(item.item_lista)}</strong>
             <small>${safe(item.grupo_comparacion)}</small>
-            <small>${safe(item.marca || "Sin marca")} · ${safe(item.categoria || "Sin categoria")} · ${item.offers} ofertas · mejor ${safe(item.bestRow.comercio)} ${comparableText(item.bestRow)}</small>
+            <small>${safe(item.marca || "Sin marca")} · ${safe(item.categoria || "Sin categoria")} · ${item.offers} ofertas · mejor ${safe(item.bestRow.comercio)} ${comparableText(item.bestRow)}${hasPromotions([item.bestRow]) ? ` · ahorro ${pesoPreciso.format(item.bestRow.ahorro_promocion_num || 0)}` : ""}</small>
           </div>
           <button type="button" data-add-group="${safe(item.grupo_comparacion)}" class="primary">Agregar</button>
         </div>
@@ -919,7 +963,7 @@
         return;
       }
       const best = state.comparison[0];
-      $("rankingNote").textContent = best ? `${state.comparison.length} comercios comparados. Mejor opcion: ${best.comercio}.` : "Sin comercios comparables.";
+      $("rankingNote").textContent = best ? `${state.comparison.length} comercios comparados con ${priceModeLabel()}. Mejor opcion: ${best.comercio}.` : "Sin comercios comparables.";
       $("coveragePill").textContent = best ? `${pct.format(best.cobertura)}% cobertura top` : "Sin cobertura";
       $("listRankingRows").innerHTML = state.comparison.map(row => `
         <tr>
@@ -935,7 +979,7 @@
       `).join("") || `<tr><td colspan="8"><div class="empty">No hay ranking para mostrar.</div></td></tr>`;
 
       const splitReady = state.split.filter(row => !row.missing).length;
-      $("splitNote").textContent = `${splitReady}/${state.list.length} items con comercio recomendado.`;
+      $("splitNote").textContent = `${splitReady}/${state.list.length} items con comercio recomendado usando ${priceModeLabel()}.`;
       $("splitPill").textContent = best ? `Ahorro ${$("kpiListSavings").textContent}` : "Compra dividida";
       $("splitRows").innerHTML = state.split.map(entry => {
         if (entry.missing) {
@@ -980,7 +1024,7 @@
 
     function renderTable() {
       const rows = state.filtered.slice(0, 250);
-      $("tableNote").textContent = `${number.format(rows.length)} visibles de ${number.format(state.filtered.length)} resultados filtrados.`;
+      $("tableNote").textContent = `${number.format(rows.length)} visibles de ${number.format(state.filtered.length)} resultados filtrados. Modo: ${priceModeLabel(state.filtered)}.`;
       $("priceRows").innerHTML = rows.map(row => `
         <tr>
           <td>${safe(row.producto)}</td>
@@ -990,17 +1034,21 @@
           <td>${safe(row.comercio)}</td>
           <td>${safe(row.sucursal)}<br><span class="muted">${safe(row.localidad)}</span></td>
           <td>${safe(row.categoria)}</td>
-          <td class="price">${peso.format(row.precio_num)}</td>
+          <td class="price">${peso.format(rowOriginalPrice(row))}</td>
+          <td class="price">${peso.format(rowBasePrice(row))}</td>
+          <td class="promo-save">${row.ahorro_promocion_num > 0 ? pesoPreciso.format(row.ahorro_promocion_num) : "-"}</td>
+          <td class="promo-desc">${safe(promotionText(row))}</td>
           <td class="unit-price">${comparableText(row)}</td>
           <td>${row.confianza_matching ? `<span class="${confidenceClass(row)}">${safe(row.confianza_matching)}</span>` : "-"}</td>
           <td>${safe(row.fecha_relevamiento)}</td>
         </tr>
-      `).join("") || `<tr><td colspan="11"><div class="empty">No hay resultados para los filtros actuales.</div></td></tr>`;
+      `).join("") || `<tr><td colspan="14"><div class="empty">No hay resultados para los filtros actuales.</div></td></tr>`;
     }
 
     function refreshStatus(fileName) {
       const matched = hasMatching();
-      const pricePart = state.rows.length ? `${number.format(state.rows.length)} precios${matched ? " matcheados" : ""}${fileName ? ` desde ${fileName}` : ""}` : "Sin precios cargados";
+      const promoted = hasPromotions();
+      const pricePart = state.rows.length ? `${number.format(state.rows.length)} precios${matched ? " matcheados" : ""}${promoted ? " con promociones" : ""}${fileName ? ` desde ${fileName}` : ""}` : "Sin precios cargados";
       const listPart = state.list.length ? `${number.format(state.list.length)} items en lista` : "sin lista";
       $("statusBox").textContent = `${pricePart}; ${listPart}.`;
     }
@@ -1022,13 +1070,13 @@
       reader.onload = event => {
         try {
           state.rows = toObjects(event.target.result);
-          state.filtered = state.rows.slice().sort((a, b) => (a.comparable_num || a.precio_num) - (b.comparable_num || b.precio_num));
+          state.filtered = state.rows.slice().sort((a, b) => (rowComparable(a) || rowBasePrice(a)) - (rowComparable(b) || rowBasePrice(b)));
           state.catalog = buildCatalog(state.rows);
           updateFilters();
           updateShoppingResults();
           refreshStatus(file.name);
           const dates = unique(state.rows, "fecha_relevamiento").sort();
-          $("freshnessPill").textContent = dates.length ? `Fecha ${dates[dates.length - 1]}` : "CSV local";
+          $("freshnessPill").textContent = `${hasPromotions() ? "Precio efectivo" : "Precio gondola"}${dates.length ? ` · Fecha ${dates[dates.length - 1]}` : ""}`;
           applyFilters();
         } catch (error) {
           state.rows = [];
@@ -1140,6 +1188,9 @@
       clearStoredList,
       buildShoppingComparison,
       buildBestSplit,
+      hasPromotions,
+      rowBasePrice,
+      rowComparable,
       rowCostForItem
     };
 

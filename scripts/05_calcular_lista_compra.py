@@ -179,9 +179,27 @@ def load_prices(path: Path) -> list[dict[str, str]]:
     return rows
 
 
+def row_base_price(row: dict[str, str]) -> float | None:
+    effective = parse_number(row.get("precio_efectivo"))
+    if effective is not None:
+        return effective
+    return parse_number(row.get("precio"))
+
+
+def row_comparable_price(row: dict[str, str]) -> float | None:
+    effective = parse_number(row.get("precio_unitario_efectivo"))
+    if effective is not None:
+        return effective
+    return parse_number(row.get("precio_unitario_comparable"))
+
+
+def price_mode(rows: list[dict[str, str]]) -> str:
+    return "precio_efectivo" if any(row.get("precio_efectivo") for row in rows) else "precio_gondola"
+
+
 def row_cost_for_item(row: dict[str, str], item: ShoppingItem) -> float | None:
-    price = parse_number(row.get("precio"))
-    comparable = parse_number(row.get("precio_unitario_comparable"))
+    price = row_base_price(row)
+    comparable = row_comparable_price(row)
     row_unit = normalize_unit(row.get("unidad_base"))
     if item.unidad == "un" and price is not None:
         return price * item.cantidad
@@ -296,7 +314,7 @@ def build_best_split(prices: list[dict[str, str]], items: list[ShoppingItem]) ->
                 "comercio_recomendado": best_row.get("comercio", ""),
                 "producto_encontrado": best_row.get("producto", ""),
                 "precio_final": format_money(best_cost),
-                "precio_unitario_comparable": format_money(parse_number(best_row.get("precio_unitario_comparable"))),
+                "precio_unitario_comparable": format_money(row_comparable_price(best_row)),
                 "ahorro_vs_promedio": format_money(average - best_cost),
                 "confianza_matching": best_row.get("confianza_matching", ""),
             }
@@ -328,6 +346,7 @@ def calculate_shopping_list(
         "best_output": str(best_output),
         "items": len(items),
         "commerces": len(comparison),
+        "price_mode": price_mode(prices),
         "best_commerce": cheapest["comercio"] if cheapest else "",
         "best_cost": cheapest["costo_total_estimado"] if cheapest else "",
         "split_items": len(best_split),

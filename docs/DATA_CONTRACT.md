@@ -1,6 +1,6 @@
 # Contrato de datos
 
-Actualizado: 2026-07-10.
+Actualizado: 2026-07-11.
 
 ## Columnas canonicas del dashboard
 
@@ -320,7 +320,7 @@ Columnas:
 | `productos_encontrados` | entero | cantidad de items de lista con oferta comparable |
 | `productos_faltantes` | texto | `0` o detalle separado por punto y coma |
 | `cobertura_lista_pct` | numero | porcentaje de items encontrados |
-| `costo_total_estimado` | numero | suma del menor costo por grupo dentro del comercio |
+| `costo_total_estimado` | numero | suma del menor costo por grupo dentro del comercio; usa `precio_efectivo` cuando existe |
 | `diferencia_vs_mas_barato` | numero/vacio | diferencia contra el comercio mas barato con la mayor cobertura |
 | `ahorro_vs_mas_caro` | numero/vacio | ahorro contra el comercio mas caro con la mayor cobertura |
 | `ranking_precio` | entero | orden final, prioriza cobertura y luego precio |
@@ -393,3 +393,87 @@ Estructura guardada:
 ```
 
 La persistencia es local al navegador del usuario. No se envia informacion a ningun backend.
+
+## Sprint 6: promociones y precio efectivo
+
+Entrada de precios:
+
+```text
+data/processed/precios_matcheados.csv
+```
+
+Entrada demo versionable:
+
+```text
+data/sample/promociones_demo.csv
+```
+
+Script:
+
+```text
+scripts/06_aplicar_promociones.py
+```
+
+Salida generada:
+
+```text
+data/processed/precios_con_promociones.csv
+data/processed/precios_con_promociones_reporte.json
+```
+
+### Promociones
+
+Columnas minimas de `data/sample/promociones_demo.csv`:
+
+| Columna | Tipo esperado | Regla |
+|---|---|---|
+| `promo_id` | texto | identificador estable de la promocion |
+| `comercio` | texto | comercio objetivo; vacio aplica a todos |
+| `grupo_comparacion` | texto | grupo objetivo; vacio aplica a todo el comercio |
+| `tipo_promocion` | texto | `descuento_porcentaje`, `descuento_monto_fijo`, `segunda_unidad`, `precio_especial`, `descuento_medio_pago` |
+| `descripcion` | texto | texto visible para dashboard |
+| `descuento_pct` | numero/vacio | porcentaje de descuento |
+| `descuento_monto` | numero/vacio | monto fijo o precio especial final segun tipo |
+| `tope_descuento` | numero/vacio | maximo descuento por fila; `0` o vacio sin tope |
+| `medio_pago` | texto/vacio | medio de pago requerido o sugerido |
+| `dia_semana` | texto/vacio | `todos` o dia especifico |
+| `fecha_inicio` | fecha | ISO `YYYY-MM-DD` recomendado |
+| `fecha_fin` | fecha | ISO `YYYY-MM-DD` recomendado |
+| `acumulable` | texto | `si` o `no` |
+| `prioridad` | entero | menor numero se aplica primero en acumulables |
+
+### Reglas Sprint 6
+
+- Promocion por comercio completo: `comercio` con `grupo_comparacion` vacio.
+- Promocion por producto comparable: `grupo_comparacion` informado.
+- Promocion por medio de pago: `medio_pago` informado.
+- Vigencia: `fecha_inicio`, `fecha_fin` y `dia_semana`.
+- `scripts/06_aplicar_promociones.py --date YYYY-MM-DD` evalua vigencia con fecha explicita.
+- Si se omite `--date`, el script evalua vigencia con la fecha actual del sistema.
+- Si `acumulable = no`, se aplica solo la promocion de mayor ahorro.
+- Si `acumulable = si`, se aplican promociones acumulables por prioridad ascendente, respetando topes.
+- `segunda_unidad` se calcula como descuento promedio por unidad. Ejemplo: segunda al 50% equivale a 25% por unidad.
+- `precio_especial` interpreta `descuento_monto` como precio final especial.
+
+### Salida con promociones
+
+Columnas nuevas en `data/processed/precios_con_promociones.csv`:
+
+| Columna | Tipo esperado | Regla |
+|---|---|---|
+| `precio_original` | numero | precio de gondola original |
+| `precio_efectivo` | numero | precio final luego de promociones aplicables |
+| `ahorro_promocion` | numero | diferencia entre original y efectivo |
+| `promo_id_aplicada` | texto/vacio | promo aplicada o promos acumuladas separadas por `+` |
+| `promo_aplicada` | texto/vacio | descripcion visible de la promo |
+| `medio_pago_promocion` | texto/vacio | medio de pago asociado cuando corresponda |
+| `precio_unitario_efectivo` | numero | `precio_efectivo / cantidad_base` |
+
+### Compatibilidad con lista y dashboard
+
+`scripts/05_calcular_lista_compra.py` acepta:
+
+- `data/processed/precios_matcheados.csv`: usa `precio` y `precio_unitario_comparable`.
+- `data/processed/precios_con_promociones.csv`: usa `precio_efectivo` y `precio_unitario_efectivo`.
+
+`dashboard/index.html` detecta automaticamente si el CSV tiene columnas de promociones. En ese caso muestra precio original, precio efectivo, ahorro y descripcion de promocion, y calcula el ranking con precio efectivo.

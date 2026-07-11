@@ -1,0 +1,7 @@
+promo_id,comercio,grupo_comparacion,tipo_promocion,descripcion,descuento_pct,descuento_monto,tope_descuento,medio_pago,dia_semana,fecha_inicio,fecha_fin,acumulable,prioridad
+PCT_ATOMO_YERBA,Atomo Conviene,yerba_mate_playadito_1kg,descuento_porcentaje,10% en yerba Playadito,10,0,500,,todos,2026-01-01,2026-12-31,no,10
+FIJO_VEA_LECHE,Vea,leche_entera_la_serenisima_1l,descuento_monto_fijo,$120 off leche entera,0,120,0,,todos,2026-01-01,2026-12-31,no,20
+SEGUNDA_CARREFOUR_FIDEOS,Carrefour,fideos_spaghetti_matarazzo_500g,segunda_unidad,Segunda unidad al 50% en fideos,50,0,0,,todos,2026-01-01,2026-12-31,no,30
+ESPECIAL_VEA_ACEITE,Vea,aceite_girasol_cocinero_900ml,precio_especial,Precio especial aceite girasol,0,2150,0,,todos,2026-01-01,2026-12-31,no,40
+MP_CHANGOMAS_TARJETA,ChangoMas,,descuento_medio_pago,15% con tarjeta SuperClub,15,0,600,SuperClub,todos,2026-01-01,2026-12-31,si,50
+PCT_AUTOSERVICIO_ALMACEN,Autoservicio Norte,,descuento_porcentaje,5% en productos seleccionados,5,0,300,,todos,2026-01-01,2026-12-31,si,60

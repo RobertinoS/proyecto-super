@@ -36,6 +36,14 @@ data/processed/precios_matcheados.csv
         -> dashboard/index.html
         -> armar/editar/guardar/exportar lista desde el navegador
         -> ranking, faltantes, ahorro y compra dividida
+
+Sprint 6 promociones:
+data/processed/precios_matcheados.csv + data/sample/promociones_demo.csv
+        -> scripts/06_aplicar_promociones.py
+        -> data/processed/precios_con_promociones.csv
+        -> scripts/05_calcular_lista_compra.py
+        -> ranking usando precio efectivo cuando existe
+        -> dashboard/index.html
 ```
 
 ## Requisitos
@@ -180,12 +188,60 @@ Uso recomendado:
 
 El dashboard tambien sigue aceptando `data/sample/lista_compra_demo.csv` desde el cargador de lista.
 
+## Sprint 6: promociones y precio efectivo
+
+El modulo de promociones calcula `precio_efectivo` sin reemplazar el precio original. Soporta descuentos por porcentaje, monto fijo, segunda unidad, precio especial y medio de pago. La regla inicial es auditable: las promociones no acumulables compiten entre si y se aplica la de mayor ahorro; las acumulables se aplican por prioridad y respetan topes.
+
+Promociones demo versionables:
+
+```text
+data/sample/promociones_demo.csv
+```
+
+Generar precios con promociones:
+
+```bash
+python scripts/06_aplicar_promociones.py
+```
+
+Para pruebas reproducibles con las promociones demo del sprint se usa:
+
+```bash
+python scripts/06_aplicar_promociones.py --date 2026-07-11
+```
+
+`2026-07-11` es una fecha de prueba para validar la vigencia de `data/sample/promociones_demo.csv`. Si no se informa `--date`, el script usa la fecha actual del sistema.
+
+Salida esperada:
+
+```text
+data/processed/precios_con_promociones.csv
+data/processed/precios_con_promociones_reporte.json
+```
+
+Calcular lista usando precio efectivo:
+
+```bash
+python scripts/05_calcular_lista_compra.py --prices data/processed/precios_con_promociones.csv
+```
+
+Uso en dashboard:
+
+1. Abrir `dashboard/index.html`.
+2. Cargar `data/processed/precios_con_promociones.csv` en "CSV de precios".
+3. Armar o cargar una lista.
+4. Presionar "Calcular ranking".
+5. Revisar precio original, precio efectivo, ahorro de promocion y ranking calculado con precio efectivo.
+
+Si se carga `data/processed/precios_matcheados.csv`, el dashboard sigue usando precio de gondola.
+
 ## Datos versionables
 
 - `data/sample/precios_demo.csv`: demo Sprint 1.
 - `data/sample/sepa/sepa_precios_simulado.csv`: fuente tipo SEPA simulada para pruebas reproducibles.
 - `data/sample/product_dictionary.csv`: diccionario editable de equivalencias Sprint 3.
 - `data/sample/lista_compra_demo.csv`: lista demo versionable Sprint 4.
+- `data/sample/promociones_demo.csv`: promociones demo versionables Sprint 6.
 
 ## Politica de datos
 
@@ -216,4 +272,4 @@ Ademas del dashboard standalone de Sprint 1/2, el repo conserva el sistema avanz
 
 ## Proximo sprint recomendado
 
-Sprint 6: promociones, descuentos de tarjeta y planificacion de ruta de compra.
+Sprint 7: planificacion de ruta y cercania, sin perder trazabilidad de precio efectivo y promociones.
