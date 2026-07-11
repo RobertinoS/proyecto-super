@@ -20,6 +20,7 @@ def test_dashboard_shopping_list_ui_sections_exist():
         "Mejor compra dividida",
         "Faltantes",
         "Exportar CSV",
+        "Precio efectivo",
     ]:
         assert text in html
 
@@ -105,6 +106,14 @@ const restored = api.readStoredList();
 const exported = api.serializeListToCsv(restored);
 const comparison = api.buildShoppingComparison(rows, restored);
 const split = api.buildBestSplit(rows, restored);
+const promoCsv = [
+  "comercio,sucursal,localidad,producto,marca,categoria,presentacion,precio,fecha_relevamiento,fuente,cantidad_base,unidad_base,precio_unitario_comparable,grupo_comparacion,confianza_matching,precio_original,precio_efectivo,ahorro_promocion,promo_aplicada,precio_unitario_efectivo",
+  "Comercio A,Centro,Capital,Yerba Playadito,Playadito,Almacen,1 kg,1000,2026-07-10,test,1,kg,1000,yerba_mate_playadito_1kg,0.95,1000,1000,0,,1000",
+  "Comercio B,Centro,Capital,Yerba Playadito,Playadito,Almacen,1 kg,1200,2026-07-10,test,1,kg,1200,yerba_mate_playadito_1kg,0.95,1200,800,400,20% promo,800"
+].join("\n");
+const promoRows = api.toObjects(promoCsv);
+const promoList = [api.createShoppingItemFromCatalog(api.buildCatalog(promoRows)[0], 1, "kg", "alta")];
+const promoComparison = api.buildShoppingComparison(promoRows, promoList);
 api.clearStoredList();
 const cleared = api.readStoredList();
 
@@ -121,6 +130,9 @@ const result = {
   missingCommerceCount: comparison.filter(row => row.faltantes.length > 0).length,
   splitCount: split.length,
   splitBestYerba: split.find(row => row.item.grupo_comparacion === "yerba_mate_playadito_1kg").best.row.comercio,
+  promoHasPromotions: api.hasPromotions(promoRows),
+  promoEffectivePrice: api.rowBasePrice(promoRows[1]),
+  promoBestCommerce: promoComparison[0].comercio,
 };
 
 console.log(JSON.stringify(result));
@@ -148,3 +160,6 @@ console.log(JSON.stringify(result));
     assert data["missingCommerceCount"] == 1
     assert data["splitCount"] == 2
     assert data["splitBestYerba"] == "Comercio B"
+    assert data["promoHasPromotions"] is True
+    assert data["promoEffectivePrice"] == 800
+    assert data["promoBestCommerce"] == "Comercio B"

@@ -1,5 +1,51 @@
 # Changelog
 
+## 2026-07-11 - Sprint 6 - Promociones y precio efectivo
+
+Cambios:
+
+- Se creo `data/sample/promociones_demo.csv` con promociones demo versionables.
+- Se agrego `scripts/06_aplicar_promociones.py` para calcular `precio_efectivo`.
+- Se agrego soporte para descuentos por porcentaje, monto fijo, segunda unidad, precio especial y medio de pago.
+- Se agrego logica de vigencia, dia de semana, topes, prioridad y acumulabilidad.
+- Se documento que `--date 2026-07-11` es fecha de prueba para promociones demo y que, si se omite, el script usa la fecha actual del sistema.
+- Se actualizo `scripts/05_calcular_lista_compra.py` para usar `precio_efectivo` y `precio_unitario_efectivo` cuando existen.
+- Se actualizo `dashboard/index.html` para cargar CSV con o sin promociones.
+- Se agrego visualizacion de precio original, precio efectivo, ahorro y descripcion de promocion.
+- Se agregaron pruebas automatizadas de promociones y ranking con precio efectivo.
+- Se ampliaron las pruebas JS del dashboard para validar precio efectivo.
+- Se actualizaron README, contrato de datos, plan de pruebas y estado del proyecto.
+
+Archivos creados:
+
+- `data/sample/promociones_demo.csv`
+- `scripts/06_aplicar_promociones.py`
+- `tests/test_promotions.py`
+
+Archivos modificados:
+
+- `dashboard/index.html`
+- `scripts/05_calcular_lista_compra.py`
+- `tests/test_dashboard_shopping_list_ui.py`
+- `README.md`
+- `docs/DATA_CONTRACT.md`
+- `docs/TEST_PLAN.md`
+- `docs/PROJECT_STATUS.md`
+- `docs/CHANGELOG.md`
+
+Pruebas:
+
+- `python -m py_compile scripts/05_calcular_lista_compra.py scripts/06_aplicar_promociones.py`: OK.
+- `python scripts/02_normalizar_precios.py`: OK.
+- `python scripts/01_descargar_o_importar_sepa.py --mode manual --input data/sample/sepa/sepa_precios_simulado.csv`: OK.
+- `python scripts/03_filtrar_san_juan.py --input data/raw/sepa/manual/sepa_precios_simulado.csv`: OK, 32 filas San Juan.
+- `python scripts/04_matching_productos.py`: OK, 32 filas y 7 grupos.
+- `python scripts/06_aplicar_promociones.py --date 2026-07-11`: OK, 32 filas, 12 con promocion, ahorro total 3045.50.
+- `python scripts/05_calcular_lista_compra.py`: OK, modo `precio_gondola`.
+- `python scripts/05_calcular_lista_compra.py --prices data/processed/precios_con_promociones.csv --report data/processed/lista_compra_promociones_reporte.json`: OK, modo `precio_efectivo`, mejor comercio `ChangoMas`.
+- `python -m pytest`: 30 passed.
+- Dashboard por HTTP local: OK, `dashboard/` HTTP 200 y CSV promocionado HTTP 200.
+
 ## 2026-07-10 - Sprint 5 - Lista visual en dashboard
 
 Cambios:

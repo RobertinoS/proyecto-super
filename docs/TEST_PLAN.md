@@ -1,6 +1,6 @@
 # Plan de pruebas
 
-Actualizado: 2026-07-10.
+Actualizado: 2026-07-11.
 
 ## Sprint 1: CSV local
 
@@ -452,5 +452,122 @@ Resultado esperado:
 Comandos:
 
 ```bash
+python -m pytest
+```
+
+## Sprint 6: promociones y precio efectivo
+
+### 28. Compilacion del script de promociones
+
+Comando:
+
+```bash
+python -m py_compile scripts/06_aplicar_promociones.py
+```
+
+Resultado esperado:
+
+- El script compila sin errores.
+
+### 29. Generacion de precios con promociones
+
+Comando:
+
+```bash
+python scripts/06_aplicar_promociones.py --date 2026-07-11
+```
+
+Resultado esperado:
+
+- Lee `data/processed/precios_matcheados.csv`.
+- Lee `data/sample/promociones_demo.csv`.
+- Usa `2026-07-11` como fecha de prueba reproducible para las promociones demo.
+- Genera `data/processed/precios_con_promociones.csv`.
+- Genera `data/processed/precios_con_promociones_reporte.json`.
+- Conserva `precio_original`.
+- Calcula `precio_efectivo`, `ahorro_promocion` y `precio_unitario_efectivo`.
+
+Decision de fecha:
+
+- Si se informa `--date`, el script usa esa fecha para evaluar vigencia.
+- Si se omite `--date`, el script usa la fecha actual del sistema.
+- Para tests y cierres de sprint se usa `--date 2026-07-11` porque es una fecha de prueba estable para `data/sample/promociones_demo.csv`.
+
+### 30. Reglas de promocion
+
+Prueba automatizada:
+
+```bash
+python -m pytest tests/test_promotions.py
+```
+
+Resultado esperado:
+
+- Carga promociones validas.
+- Respeta vigencia por fecha y dia de semana.
+- Excluye promociones vencidas.
+- Excluye promociones futuras antes de `fecha_inicio`.
+- Calcula descuento porcentual.
+- Calcula descuento de monto fijo.
+- Respeta tope de descuento.
+- Aplica `precio_especial`.
+- Calcula `segunda_unidad` como descuento promedio por unidad.
+- Filtra por medio de pago cuando se informa.
+
+### 31. Prioridad y acumulabilidad
+
+Prueba automatizada:
+
+```bash
+python -m pytest tests/test_promotions.py
+```
+
+Resultado esperado:
+
+- En promociones no acumulables, aplica solo la de mayor ahorro.
+- En promociones acumulables, aplica por prioridad ascendente.
+- El resultado final no baja de cero.
+
+### 32. Ranking de lista con precio efectivo
+
+Prueba automatizada:
+
+```bash
+python -m pytest tests/test_promotions.py
+```
+
+Resultado esperado:
+
+- `scripts/05_calcular_lista_compra.py` usa `precio_efectivo` cuando existe.
+- Un comercio mas caro en gondola puede quedar primero si la promocion lo vuelve mas barato.
+- El reporte informa `price_mode = precio_efectivo`.
+
+### 33. Dashboard con promociones
+
+Pasos:
+
+1. Servir el proyecto con `python -m http.server 8026 --bind 127.0.0.1`.
+2. Abrir `http://127.0.0.1:8026/dashboard/`.
+3. Cargar `data/processed/precios_con_promociones.csv`.
+4. Cargar o armar una lista.
+5. Calcular ranking.
+
+Resultado esperado:
+
+- La tabla muestra precio original.
+- La tabla muestra precio efectivo.
+- La tabla muestra ahorro por promocion.
+- La tabla muestra descripcion de promocion aplicada.
+- El ranking indica que usa precio efectivo.
+- La mejor compra dividida usa precio efectivo.
+
+## Suite Sprint 6
+
+Comandos:
+
+```bash
+python -m py_compile scripts/06_aplicar_promociones.py
+python scripts/06_aplicar_promociones.py --date 2026-07-11
+python scripts/05_calcular_lista_compra.py --prices data/processed/precios_con_promociones.csv
 python -m pytest
 ```
