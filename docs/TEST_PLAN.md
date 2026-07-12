@@ -1,6 +1,6 @@
 # Plan de pruebas
 
-Actualizado: 2026-07-11.
+Actualizado: 2026-07-12.
 
 ## Sprint 1: CSV local
 
@@ -790,3 +790,76 @@ Validacion manual:
 - calcular ranking;
 - ver promociones, faltantes y mejor compra dividida;
 - calcular cercania/ruta.
+
+## Sprint 10: carga real controlada
+
+### 45. Compilacion del validador
+
+Comando:
+
+```bash
+python -m py_compile scripts/09_validar_precios_reales.py
+```
+
+Resultado esperado:
+
+- El script compila sin errores.
+
+### 46. Validacion de precios reales demo
+
+Comando:
+
+```bash
+python scripts/09_validar_precios_reales.py --input data/sample/precios_reales_demo.csv
+```
+
+Resultado esperado:
+
+- Genera `data/processed/precios_reales_validados.csv`.
+- Genera `data/processed/reporte_validacion_precios_reales.csv`.
+- Conserva al menos 20 filas validas.
+- Reporta errores controlados: precio invalido, fecha invalida, localidad fuera de alcance, duplicado y precio sospechoso.
+
+### 47. Casos automatizados de validacion real
+
+Comando:
+
+```bash
+python -m pytest tests/test_real_data_validation.py
+```
+
+Resultado esperado:
+
+- Valida plantilla.
+- Detecta precios invalidos.
+- Detecta fechas invalidas.
+- Falla con reporte si faltan columnas.
+- Detecta duplicados.
+- Genera CSV validado y reporte.
+- Confirma compatibilidad con `scripts/04_matching_productos.py`.
+
+### 48. Dashboard con archivo real validado
+
+Pasos:
+
+1. Ejecutar el validador.
+2. Ejecutar matching con `--input data/processed/precios_reales_validados.csv`.
+3. Servir el proyecto con `python -m http.server 8026 --bind 127.0.0.1`.
+4. Abrir `http://127.0.0.1:8026/dashboard/`.
+5. Cargar `data/processed/precios_reales_matcheados.csv`.
+
+Resultado esperado:
+
+- El dashboard carga el CSV.
+- Muestra KPIs, tabla y comparacion por comercio.
+- Si se carga un CSV crudo con problemas, muestra avisos de calidad para precio invalido, fecha invalida, localidad fuera de alcance o duplicados.
+
+## Suite Sprint 10
+
+Comandos:
+
+```bash
+python -m compileall scripts
+python scripts/09_validar_precios_reales.py --input data/sample/precios_reales_demo.csv
+python -m pytest
+```

@@ -58,6 +58,21 @@ data/processed/precios_matcheados.csv
 
 En ese caso el dashboard compara precio de gondola, sin promociones.
 
+Para usar precios reales manuales, primero validar la carga:
+
+```bash
+python scripts/09_validar_precios_reales.py --input data/sample/precios_reales_demo.csv
+python scripts/04_matching_productos.py --input data/processed/precios_reales_validados.csv --output data/processed/precios_reales_matcheados.csv
+```
+
+Luego cargar en el dashboard:
+
+```text
+data/processed/precios_reales_matcheados.csv
+```
+
+Si el archivo real se carga crudo y tiene columnas faltantes, precios invalidos, fechas invalidas, localidades fuera de alcance o duplicados, el dashboard muestra avisos. Para operacion controlada siempre conviene usar el validador antes de cargar.
+
 ## 4. Armar lista
 
 Hay dos opciones:
@@ -158,3 +173,29 @@ lista_compra_exportada.csv
 ```
 
 Ese CSV es compatible con `scripts/05_calcular_lista_compra.py`.
+
+## 9. Carga real controlada
+
+Guia completa:
+
+```text
+docs/GUIA_CARGA_PRECIOS_REALES.md
+```
+
+Plantilla:
+
+```text
+data/sample/precios_reales_template.csv
+```
+
+Demo con errores controlados:
+
+```text
+data/sample/precios_reales_demo.csv
+```
+
+Reporte de validacion:
+
+```text
+data/processed/reporte_validacion_precios_reales.csv
+```

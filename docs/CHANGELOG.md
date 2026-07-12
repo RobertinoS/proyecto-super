@@ -1,5 +1,50 @@
 # Changelog
 
+## 2026-07-12 - Sprint 10 - Operacion real controlada
+
+Cambios:
+
+- Se creo `data/sample/precios_reales_template.csv` como plantilla versionable para carga manual.
+- Se creo `data/sample/precios_reales_demo.csv` con mas de 20 productos y errores controlados.
+- Se agrego `scripts/09_validar_precios_reales.py` para validar columnas, precios, fechas, localidades, comercio/sucursal, duplicados y precios sospechosos.
+- Se generan `data/processed/precios_reales_validados.csv` y `data/processed/reporte_validacion_precios_reales.csv`.
+- Se creo `docs/GUIA_CARGA_PRECIOS_REALES.md`.
+- Se agregaron pruebas automatizadas en `tests/test_real_data_validation.py`.
+- Se mejoro `dashboard/index.html` con avisos de calidad para cargas reales crudas.
+- Se amplio la prueba JS del dashboard para cubrir avisos de calidad.
+- Se actualizaron README, guia de uso, contrato de datos, plan de pruebas, estado y politica de retencion.
+
+Archivos creados:
+
+- `data/sample/precios_reales_template.csv`
+- `data/sample/precios_reales_demo.csv`
+- `docs/GUIA_CARGA_PRECIOS_REALES.md`
+- `scripts/09_validar_precios_reales.py`
+- `tests/test_real_data_validation.py`
+
+Archivos modificados:
+
+- `dashboard/index.html`
+- `tests/test_dashboard_shopping_list_ui.py`
+- `README.md`
+- `docs/GUIA_USO_MVP.md`
+- `docs/DATA_CONTRACT.md`
+- `docs/TEST_PLAN.md`
+- `docs/PROJECT_STATUS.md`
+- `docs/DATA_RETENTION_POLICY.md`
+- `docs/CHANGELOG.md`
+
+Pruebas ejecutadas:
+
+- `python -m compileall scripts`: OK.
+- `python scripts/09_validar_precios_reales.py --input data/sample/precios_reales_demo.csv`: OK, genero archivo validado y reporte.
+- `python scripts/04_matching_productos.py --input data/processed/precios_reales_validados.csv --output data/processed/precios_reales_matcheados.csv`: OK.
+- `python scripts/06_aplicar_promociones.py --prices data/processed/precios_reales_matcheados.csv --output data/processed/precios_reales_con_promociones.csv --date 2026-07-11`: OK.
+- `python scripts/05_calcular_lista_compra.py --prices data/processed/precios_reales_con_promociones.csv`: OK.
+- `python scripts/08_generar_mvp_demo.py`: OK.
+- `python -m pytest`: 39 passed.
+- Dashboard por HTTP local: OK, carga precios reales validados/matcheados, promociones, lista demo, ranking, faltantes, compra dividida y avisos ante CSV crudo con errores.
+
 ## 2026-07-11 - Sprint 9 - Rediseno UI/UX del dashboard
 
 Cambios:

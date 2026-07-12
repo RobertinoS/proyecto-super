@@ -577,6 +577,7 @@
       l: "l", lt: "l", lts: "l", litro: "l", litros: "l",
       ml: "ml", cc: "ml", un: "un", unidad: "un", unidades: "un"
     };
+    const allowedPriceLocalities = new Set(["capital", "san juan", "rawson", "santa lucia", "rivadavia"]);
 
     const state = {
       rows: [],
@@ -649,7 +650,8 @@
     }
 
     function toObjects(text) {
-      const rows = rowsToObjects(text, requiredColumns, "precios").map(row => {
+      const sourceRows = rowsToObjects(text, requiredColumns, "precios");
+      const enrichedRows = sourceRows.map(row => {
         row.precio_num = parseNumber(row.precio);
         const original = parseNumber(row.precio_original);
         row.precio_original_num = Number.isFinite(original) ? original : row.precio_num;
@@ -665,8 +667,10 @@
           : (Number.isFinite(row.precio_efectivo_num) && Number.isFinite(quantity) && quantity > 0 ? row.precio_efectivo_num / quantity : NaN);
         row.confianza_num = Number.isFinite(parseNumber(row.confianza_matching)) ? parseNumber(row.confianza_matching) : NaN;
         return row;
-      }).filter(row => row.producto && Number.isFinite(row.precio_num) && row.precio_num > 0);
+      });
+      const rows = enrichedRows.filter(row => row.producto && Number.isFinite(row.precio_num) && row.precio_num > 0);
       if (!rows.length) throw new Error("El CSV de precios no tiene filas validas. Revisa columnas, producto y precios mayores a cero.");
+      rows.validationWarnings = priceQualityWarnings(enrichedRows, rows);
       return rows;
     }
 
@@ -707,6 +711,53 @@
       const looksLikeThousands = parts.length > 1 && parts[parts.length - 1].length === 3;
       if (looksLikeThousands) return Number(parts.join(""));
       return Number(raw);
+    }
+
+    function isRealDate(year, month, day) {
+      const date = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
+      return date.getUTCFullYear() === Number(year) && date.getUTCMonth() === Number(month) - 1 && date.getUTCDate() === Number(day);
+    }
+
+    function isValidDateValue(value) {
+      const text = String(value || "").trim();
+      if (!text) return false;
+      const iso = text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (iso) return isRealDate(iso[1], iso[2], iso[3]);
+      const slash = text.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+      if (slash) return isRealDate(slash[3], slash[2], slash[1]);
+      const dash = text.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+      if (dash) return isRealDate(dash[3], dash[2], dash[1]);
+      const compact = text.match(/^(\d{4})(\d{2})(\d{2})$/);
+      if (compact) return isRealDate(compact[1], compact[2], compact[3]);
+      return false;
+    }
+
+    function priceQualityWarnings(allRows, validRows) {
+      const warnings = [];
+      const omitted = allRows.length - validRows.length;
+      const invalidDates = validRows.filter(row => !isValidDateValue(row.fecha_relevamiento)).length;
+      const outOfScope = validRows.filter(row => row.localidad && !allowedPriceLocalities.has(norm(row.localidad))).length;
+      const seen = new Set();
+      let duplicates = 0;
+      validRows.forEach(row => {
+        const key = [
+          row.comercio,
+          row.sucursal,
+          row.localidad,
+          row.producto,
+          row.marca,
+          row.presentacion,
+          row.fecha_relevamiento
+        ].map(norm).join("|");
+        if (seen.has(key)) duplicates += 1;
+        seen.add(key);
+      });
+      if (omitted) warnings.push(`${omitted} fila(s) omitida(s) por producto vacio o precio invalido.`);
+      if (invalidDates) warnings.push(`${invalidDates} fila(s) con fecha invalida o no reconocida.`);
+      if (outOfScope) warnings.push(`${outOfScope} fila(s) con localidad fuera del alcance inicial de San Juan.`);
+      if (duplicates) warnings.push(`${duplicates} posible(s) duplicado(s) detectado(s).`);
+      if (warnings.length) warnings.push("Para carga real controlada, valida primero con scripts/09_validar_precios_reales.py.");
+      return warnings;
     }
 
     function normalizeUnit(unit) {
@@ -1575,9 +1626,12 @@
           state.catalog = buildCatalog(state.rows);
           state.files.prices = file.name;
           setFileState("priceFileState", file.name, "loaded");
+          const warnings = state.rows.validationWarnings || [];
+          $("fileError").textContent = warnings.join(" ");
           updateFilters();
           updateShoppingResults();
           refreshStatus(file.name);
+          if (warnings.length) $("statusBox").textContent = `CSV cargado con ${warnings.length - 1} aviso(s) de calidad.`;
           const dates = unique(state.rows, "fecha_relevamiento").sort();
           $("freshnessPill").textContent = `${hasPromotions() ? "Precio efectivo" : "Precio gondola"}${dates.length ? ` · Fecha ${dates[dates.length - 1]}` : ""}`;
           applyFilters();

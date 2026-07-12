@@ -1,18 +1,18 @@
 # Estado del proyecto
 
-Actualizado: 2026-07-11.
+Actualizado: 2026-07-12.
 
 ## Sprint actual
 
-Sprint 9 - Rediseno UI/UX del dashboard.
+Sprint 10 - Operacion real controlada con datos manuales.
 
 Rama:
 
 ```text
-sprint-9-dashboard-ui-redesign
+sprint-10-real-data-controlled
 ```
 
-Objetivo: mejorar la interfaz y distribucion del dashboard sin cambiar la logica principal del negocio.
+Objetivo: pasar de datos demo a carga real manual o semimanual validada, sin scraping automatico y sin romper MVP v1.1.0.
 
 ## Diagnostico ejecutivo
 
@@ -22,7 +22,42 @@ El repo Git dedicado esta en:
 C:\Users\Rober\Desktop\Proyecto Super
 ```
 
-Sprint 1 a Sprint 8 se mantienen compatibles. El proyecto mantiene MVP v1.0.0 en `main` y este sprint rediseña solamente la capa visual del dashboard: navegacion lateral, header, estados de archivo, cards y mejor distribucion de secciones. No usa Google Maps API, APIs pagas, credenciales ni backend obligatorio.
+Sprint 1 a Sprint 9 se mantienen compatibles. El proyecto mantiene MVP v1.1.0 en `main` y el Sprint 10 agrega carga real controlada con CSV manuales, validador, reporte de errores y salida compatible con el dashboard. No usa scraping automatico, APIs pagas, credenciales ni backend obligatorio.
+
+## Artefactos Sprint 10
+
+- `data/sample/precios_reales_template.csv`
+- `data/sample/precios_reales_demo.csv`
+- `docs/GUIA_CARGA_PRECIOS_REALES.md`
+- `scripts/09_validar_precios_reales.py`
+- `tests/test_real_data_validation.py`
+- `dashboard/index.html`
+- `README.md`
+- `docs/GUIA_USO_MVP.md`
+- `docs/DATA_CONTRACT.md`
+- `docs/TEST_PLAN.md`
+- `docs/DATA_RETENTION_POLICY.md`
+- `docs/CHANGELOG.md`
+
+## Decision tecnica Sprint 10
+
+- La carga real se valida antes de entrar al flujo analitico.
+- Las filas con errores fatales se excluyen de `precios_reales_validados.csv`.
+- Los precios sospechosos se informan como alerta y se conservan para revision.
+- `direccion` y `observacion` se preservan como trazabilidad, pero el contrato canonico de 10 columnas sigue intacto.
+- El dashboard suma avisos livianos de calidad si el usuario carga un CSV crudo directo.
+- No se modifica la logica principal de matching, promociones, lista ni ruta.
+
+## Validaciones Sprint 10
+
+- `python -m compileall scripts`: OK.
+- `python scripts/09_validar_precios_reales.py --input data/sample/precios_reales_demo.csv`: OK, 24 filas validas y 5 incidencias controladas.
+- `python scripts/04_matching_productos.py --input data/processed/precios_reales_validados.csv --output data/processed/precios_reales_matcheados.csv`: OK, 24 filas matcheadas y 19 grupos.
+- `python scripts/06_aplicar_promociones.py --prices data/processed/precios_reales_matcheados.csv --output data/processed/precios_reales_con_promociones.csv --date 2026-07-11`: OK, 7 filas con promocion.
+- `python scripts/05_calcular_lista_compra.py --prices data/processed/precios_reales_con_promociones.csv`: OK, ranking con `precio_efectivo`.
+- `python scripts/08_generar_mvp_demo.py`: OK, flujo MVP demo compatible.
+- `python -m pytest`: 39 passed.
+- Dashboard por HTTP local: OK, `http://127.0.0.1:8026/dashboard/` respondio 200 y cargo precios reales matcheados/con promociones.
 
 ## Artefactos Sprint 9
 

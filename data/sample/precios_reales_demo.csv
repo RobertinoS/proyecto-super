@@ -1,0 +1,29 @@
+comercio,sucursal,localidad,direccion,producto,marca,categoria,presentacion,precio,fecha_relevamiento,fuente,observacion
+Vea,Av Libertador,Capital,Av. Libertador 1250,Yerba Mate Playadito 1 kg,Playadito,Almacen,1 kg,3290,2026-07-10,manual_gondola,precio visto en gondola
+Carrefour,Hiper Rawson,Rawson,Av. Mendoza Sur 410,Yerba Playadito 1000 g,Playadito,Almacen,1000 g,3375,2026-07-10,manual_ticket,ticket compra familiar
+ChangoMas,Hiper San Juan,Capital,Av. Circunvalacion 1800,Playadito yerba mate x 1 kilo,Playadito,Almacen,1 kilo,3190,2026-07-10,web_oficial,publicado en catalogo web
+Atomo Conviene,Rivadavia,Rivadavia,Av. Jose Ignacio de la Roza 3320,Leche Entera La Serenisima 1 l,La Serenisima,Lacteos,1 l,1420,2026-07-10,manual_gondola,
+Vea,Av Libertador,Capital,Av. Libertador 1250,Leche entera La Serenisima 1000 ml,La Serenisima,Lacteos,1000 ml,1450,2026-07-10,manual_gondola,
+Carrefour,Hiper Rawson,Rawson,Av. Mendoza Sur 410,Aceite Girasol Natura 900 ml,Natura,Almacen,900 ml,2650,2026-07-10,manual_ticket,
+ChangoMas,Hiper San Juan,Capital,Av. Circunvalacion 1800,Aceite Natura girasol 0.9 l,Natura,Almacen,0.9 l,2700,2026-07-10,web_oficial,
+Vea,Santa Lucia,Santa Lucia,Av. Libertador Este 2800,Fideos Spaghetti Matarazzo 500 g,Matarazzo,Almacen,500 g,1080,2026-07-10,manual_gondola,
+Carrefour,Hiper Rawson,Rawson,Av. Mendoza Sur 410,Spaghetti Matarazzo x 500 gr,Matarazzo,Almacen,500 gr,1125,2026-07-10,manual_ticket,
+ChangoMas,Rawson Sur,Rawson,Dr. Ortega 2100,Arroz largo fino Gallo 1 kg,Gallo,Almacen,1 kg,1850,2026-07-10,manual_gondola,
+Vea,Santa Lucia,Santa Lucia,Av. Libertador Este 2800,Harina Pureza 000 1 kg,Pureza,Almacen,1 kg,990,2026-07-10,manual_gondola,
+Atomo Conviene,Rawson,Rawson,Republica del Libano 865,Azucar Ledesma 1 kg,Ledesma,Almacen,1 kg,1250,2026-07-10,manual_gondola,
+Carrefour,Capital Centro,Capital,General Acha 120,Cafe Molido La Morenita 750 g,La Morenita,Almacen,750 g,6150,2026-07-10,manual_ticket,
+Vea,Rivadavia,Rivadavia,Av. Ignacio de la Roza 3350,Cafe La Morenita molido 500 g,La Morenita,Almacen,500 g,4300,2026-07-10,manual_gondola,
+Atomo Conviene,Santa Lucia,Santa Lucia,Hipolito Yrigoyen 1450,Galletitas Chocolinas 170 g,Chocolinas,Almacen,170 g,1550,2026-07-10,manual_gondola,
+Carrefour,Hiper Rawson,Rawson,Av. Mendoza Sur 410,Detergente Magistral 500 ml,Magistral,Limpieza,500 ml,1980,2026-07-10,manual_ticket,
+Vea,Av Libertador,Capital,Av. Libertador 1250,Lavandina Ayudin 1 l,Ayudin,Limpieza,1 l,1180,2026-07-10,manual_gondola,
+ChangoMas,Hiper San Juan,Capital,Av. Circunvalacion 1800,Yogur bebible La Serenisima 1 l,La Serenisima,Lacteos,1 l,2150,2026-07-10,web_oficial,
+Atomo Conviene,Rivadavia,Rivadavia,Av. Jose Ignacio de la Roza 3320,Pan lactal Bimbo 560 g,Bimbo,Panificados,560 g,2850,2026-07-10,manual_gondola,
+Carrefour,Hiper Rawson,Rawson,Av. Mendoza Sur 410,Coca Cola comun 2.25 l,Coca Cola,Bebidas,2.25 l,3100,2026-07-10,manual_ticket,
+Vea,Santa Lucia,Santa Lucia,Av. Libertador Este 2800,Coca Cola Zero 2.25 l,Coca Cola Zero,Bebidas,2.25 l,3150,2026-07-10,manual_gondola,
+ChangoMas,Rawson Sur,Rawson,Dr. Ortega 2100,Leche descremada La Serenisima 1 l,La Serenisima,Lacteos,1 l,1390,2026-07-10,manual_gondola,
+Atomo Conviene,Capital Centro,Capital,General Paz 670,Arroz integral Gallo 1 kg,Gallo,Almacen,1 kg,2100,2026-07-10,manual_gondola,
+Vea,Av Libertador,Capital,Av. Libertador 1250,Manteca La Serenisima 200 g,La Serenisima,Lacteos,200 g,abc,2026-07-10,manual_gondola,error controlado precio invalido
+Carrefour,Hiper Rawson,Rawson,Av. Mendoza Sur 410,Queso cremoso La Paulina 1 kg,La Paulina,Lacteos,1 kg,7800,31/02/2026,manual_ticket,error controlado fecha invalida
+ChangoMas,Mendoza Centro,Mendoza,Av. San Martin 600,Papel Higienico Elite 4 un,Elite,Limpieza,4 un,2500,2026-07-10,manual_gondola,error controlado fuera de San Juan
+Vea,Av Libertador,Capital,Av. Libertador 1250,Yerba Mate Playadito 1 kg,Playadito,Almacen,1 kg,3290,2026-07-10,manual_gondola,error controlado duplicado
+Vea,Rivadavia,Rivadavia,Av. Ignacio de la Roza 3350,Sal fina Celusal 500 g,Celusal,Almacen,500 g,1,2026-07-10,manual_gondola,error controlado precio sospechoso
