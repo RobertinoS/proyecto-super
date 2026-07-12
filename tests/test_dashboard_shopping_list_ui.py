@@ -117,6 +117,15 @@ const promoCsv = [
 const promoRows = api.toObjects(promoCsv);
 const promoList = [api.createShoppingItemFromCatalog(api.buildCatalog(promoRows)[0], 1, "kg", "alta")];
 const promoComparison = api.buildShoppingComparison(promoRows, promoList);
+const rawQualityCsv = [
+  "comercio,sucursal,localidad,producto,marca,categoria,presentacion,precio,fecha_relevamiento,fuente",
+  "Comercio A,Centro,Capital,Yerba Playadito,Playadito,Almacen,1 kg,1000,2026-07-10,test",
+  "Comercio A,Centro,Capital,Manteca,Marca,Lacteos,200 g,abc,2026-07-10,test",
+  "Comercio A,Centro,Capital,Queso,Marca,Lacteos,1 kg,7800,31/02/2026,test",
+  "Comercio A,Centro,Mendoza,Arroz,Marca,Almacen,1 kg,2000,2026-07-10,test",
+  "Comercio A,Centro,Capital,Yerba Playadito,Playadito,Almacen,1 kg,1000,2026-07-10,test"
+].join("\n");
+const rawQualityRows = api.toObjects(rawQualityCsv);
 const branchCsv = [
   "comercio,sucursal,localidad,direccion,latitud,longitud,zona,horario_referencia",
   "Comercio A,Centro,Capital,Centro 1,-31.5375,-68.5364,Centro,Demo",
@@ -149,6 +158,7 @@ const result = {
   promoHasPromotions: api.hasPromotions(promoRows),
   promoEffectivePrice: api.rowBasePrice(promoRows[1]),
   promoBestCommerce: promoComparison[0].comercio,
+  qualityWarnings: rawQualityRows.validationWarnings.join(" | "),
   routeBestCommerce: routeRecommendations[0].comercio,
   routeBestScore: routeRecommendations[0].score,
   splitRouteStops: splitRoute.length,
@@ -183,6 +193,10 @@ console.log(JSON.stringify(result));
     assert data["promoHasPromotions"] is True
     assert data["promoEffectivePrice"] == 800
     assert data["promoBestCommerce"] == "Comercio B"
+    assert "omitida" in data["qualityWarnings"]
+    assert "fecha invalida" in data["qualityWarnings"]
+    assert "localidad fuera" in data["qualityWarnings"]
+    assert "duplicado" in data["qualityWarnings"]
     assert data["routeBestCommerce"] == "Comercio A"
     assert data["routeBestScore"] >= 2200
     assert data["splitRouteStops"] == 2

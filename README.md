@@ -19,6 +19,8 @@ El MVP permite:
 - estimar conveniencia por distancia con Haversine;
 - usar el dashboard local desde el navegador.
 
+Sprint 10 agrega una operacion real controlada para cargar precios manuales o semimanuales por comercio/sucursal, validarlos y convertirlos en CSV limpio compatible con matching, promociones, listas y dashboard.
+
 ## Inicio rapido
 
 Desde `C:\Users\Rober\Desktop\Proyecto Super`:
@@ -45,6 +47,47 @@ data/sample/ubicacion_usuario_demo.csv
 ```
 
 Luego usar `Calcular ranking` y `Calcular cercania`.
+
+## Carga real controlada
+
+Usar la plantilla versionable:
+
+```text
+data/sample/precios_reales_template.csv
+```
+
+Completar una copia con precios reales y guardarla en `data/raw/precios_reales/manual/` o una carpeta local equivalente no versionada. Ejemplo de nombre:
+
+```text
+vea_capital_20260712_gondola.csv
+```
+
+Validar:
+
+```bash
+python scripts/09_validar_precios_reales.py --input data/sample/precios_reales_demo.csv
+```
+
+Salidas:
+
+```text
+data/processed/precios_reales_validados.csv
+data/processed/reporte_validacion_precios_reales.csv
+```
+
+Integrar con el flujo existente:
+
+```bash
+python scripts/04_matching_productos.py --input data/processed/precios_reales_validados.csv --output data/processed/precios_reales_matcheados.csv --report data/processed/precios_reales_matcheados_reporte.json
+python scripts/06_aplicar_promociones.py --prices data/processed/precios_reales_matcheados.csv --output data/processed/precios_reales_con_promociones.csv --report data/processed/precios_reales_promociones_reporte.json --date 2026-07-11
+python scripts/05_calcular_lista_compra.py --prices data/processed/precios_reales_con_promociones.csv --comparison-output data/processed/comparacion_lista_reales.csv --best-output data/processed/mejor_compra_reales.csv --report data/processed/lista_reales_reporte.json
+```
+
+Guia operativa:
+
+```text
+docs/GUIA_CARGA_PRECIOS_REALES.md
+```
 
 ## Estructura de carpetas
 
@@ -186,6 +229,13 @@ data/processed/comparacion_lista_compra.csv + data/processed/mejor_compra_por_pr
         -> scripts/07_planificar_ruta.py
         -> data/processed/recomendacion_ruta.csv
         -> data/processed/ruta_compra_dividida.csv
+        -> dashboard/index.html
+
+Sprint 10 carga real controlada:
+data/sample/precios_reales_template.csv o data/sample/precios_reales_demo.csv
+        -> scripts/09_validar_precios_reales.py
+        -> data/processed/precios_reales_validados.csv
+        -> scripts/04_matching_productos.py --input data/processed/precios_reales_validados.csv
         -> dashboard/index.html
 ```
 

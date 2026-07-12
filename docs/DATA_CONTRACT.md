@@ -1,6 +1,6 @@
 # Contrato de datos
 
-Actualizado: 2026-07-11.
+Actualizado: 2026-07-12.
 
 ## Columnas canonicas del dashboard
 
@@ -643,3 +643,85 @@ data/sample/ubicacion_usuario_demo.csv
 ```
 
 Los outputs de `data/processed/` siguen siendo generados y no versionables. Los inputs de `data/sample/` son demo versionables.
+
+## Sprint 10: carga real controlada
+
+Plantilla versionable:
+
+```text
+data/sample/precios_reales_template.csv
+```
+
+Demo versionable con errores controlados:
+
+```text
+data/sample/precios_reales_demo.csv
+```
+
+Validador:
+
+```text
+scripts/09_validar_precios_reales.py
+```
+
+Salidas generadas:
+
+```text
+data/processed/precios_reales_validados.csv
+data/processed/reporte_validacion_precios_reales.csv
+```
+
+### Columnas de entrada real/manual
+
+| Columna | Tipo esperado | Regla |
+|---|---|---|
+| `comercio` | texto | obligatorio |
+| `sucursal` | texto | obligatorio |
+| `localidad` | texto | obligatorio; alcance inicial `Capital`, `Rawson`, `Santa Lucia`, `Rivadavia` |
+| `direccion` | texto | referencia de sucursal |
+| `producto` | texto | obligatorio |
+| `marca` | texto | puede estar vacio |
+| `categoria` | texto | obligatorio |
+| `presentacion` | texto | obligatorio |
+| `precio` | numero/texto numerico | obligatorio, mayor a cero |
+| `fecha_relevamiento` | fecha | `YYYY-MM-DD`, `DD/MM/YYYY`, `DD-MM-YYYY` o `YYYYMMDD` |
+| `fuente` | texto | `manual_gondola`, `manual_ticket`, `web_oficial` u origen equivalente |
+| `observacion` | texto | opcional |
+
+### Salida validada
+
+`precios_reales_validados.csv` conserva las columnas canonicas del dashboard y agrega trazabilidad:
+
+- `comercio`
+- `sucursal`
+- `localidad`
+- `producto`
+- `marca`
+- `categoria`
+- `presentacion`
+- `precio`
+- `fecha_relevamiento`
+- `fuente`
+- `direccion`
+- `observacion`
+
+Las 10 primeras columnas canonicas son compatibles con:
+
+- `scripts/04_matching_productos.py --input data/processed/precios_reales_validados.csv`
+- `scripts/06_aplicar_promociones.py --prices ...`
+- `scripts/05_calcular_lista_compra.py --prices ...`
+- `dashboard/index.html`
+
+### Reporte de validacion
+
+`reporte_validacion_precios_reales.csv` usa:
+
+| Columna | Regla |
+|---|---|
+| `fila` | numero de linea CSV, contando encabezado |
+| `campo` | campo afectado |
+| `tipo_error` | `columna_faltante`, `campo_obligatorio`, `precio_invalido`, `fecha_invalida`, `localidad_fuera_alcance`, `duplicado`, `precio_sospechoso` |
+| `valor_detectado` | valor original detectado |
+| `sugerencia` | accion recomendada |
+
+Las filas con errores fatales se excluyen. `precio_sospechoso` se reporta como alerta y la fila se conserva para revision operativa.
