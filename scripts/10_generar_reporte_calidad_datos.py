@@ -57,12 +57,23 @@ VALIDATION_REPORT_COLUMNS = [
     "sugerencia",
 ]
 
+CONSOLIDATION_REPORT_COLUMNS = [
+    "archivo_origen",
+    "filas_invalidas",
+    "duplicados_internos",
+    "duplicados_entre_archivos",
+    "precios_sospechosos",
+    "estado_archivo",
+]
+
 FATAL_ISSUE_TYPES = {
     "columna_faltante",
     "campo_obligatorio",
     "precio_invalido",
     "fecha_invalida",
     "localidad_fuera_alcance",
+    "archivo_invalido",
+    "consolidacion_fila_invalida",
 }
 
 REVIEW_ISSUE_TYPES = {"duplicado", "precio_sospechoso"}
@@ -106,6 +117,54 @@ def validate_columns(rows: list[dict[str, str]], required: list[str], name: str)
     missing = [column for column in required if column not in columns]
     if missing:
         raise ValueError(f"Faltan columnas obligatorias en {name}: {', '.join(missing)}")
+
+
+def normalize_validation_rows(rows: list[dict[str, str]]) -> list[dict[str, str]]:
+    if not rows:
+        return []
+    columns = set(rows[0].keys())
+    if set(VALIDATION_REPORT_COLUMNS).issubset(columns):
+        return rows
+    if not set(CONSOLIDATION_REPORT_COLUMNS).issubset(columns):
+        validate_columns(rows, VALIDATION_REPORT_COLUMNS, "reporte de validacion")
+
+    expanded: list[dict[str, str]] = []
+    mappings = [
+        ("filas_invalidas", "consolidacion_fila_invalida", "filas consolidadas invalidas"),
+        ("duplicados_internos", "duplicado", "duplicados internos"),
+        ("duplicados_entre_archivos", "duplicado", "duplicados entre archivos"),
+        ("precios_sospechosos", "precio_sospechoso", "precios sospechosos"),
+    ]
+    for row in rows:
+        for field, issue_type, label in mappings:
+            count = parse_int(row.get(field)) or 0
+            for index in range(count):
+                expanded.append(
+                    {
+                        "fila": f"{clean(row.get('archivo_origen'))}#{index + 1}",
+                        "campo": field,
+                        "tipo_error": issue_type,
+                        "valor_detectado": str(count),
+                        "sugerencia": f"Revisar {label} en el reporte de consolidacion.",
+                        "comercio": clean(row.get("comercio")),
+                        "sucursal": clean(row.get("sucursal")),
+                        "localidad": clean(row.get("localidad")),
+                    }
+                )
+        if clean(row.get("estado_archivo")) == "INVALIDO" and not (parse_int(row.get("filas_invalidas")) or 0):
+            expanded.append(
+                {
+                    "fila": clean(row.get("archivo_origen")),
+                    "campo": "archivo",
+                    "tipo_error": "archivo_invalido",
+                    "valor_detectado": clean(row.get("estado_archivo")),
+                    "sugerencia": clean(row.get("mensaje")) or "Revisar el archivo de origen.",
+                    "comercio": clean(row.get("comercio")),
+                    "sucursal": clean(row.get("sucursal")),
+                    "localidad": clean(row.get("localidad")),
+                }
+            )
+    return expanded
 
 
 def clean(value: Any) -> str:
@@ -233,8 +292,7 @@ def quality_score(stats: GroupStats, calculation_date: date, stale_days: int = 7
 
 def build_group_stats(valid_rows: list[dict[str, str]], validation_rows: list[dict[str, str]]) -> dict[tuple[str, str, str], GroupStats]:
     validate_columns(valid_rows, PRICE_REQUIRED_COLUMNS, "precios validados")
-    if validation_rows:
-        validate_columns(validation_rows, VALIDATION_REPORT_COLUMNS, "reporte de validacion")
+    validation_rows = normalize_validation_rows(validation_rows)
 
     groups: dict[tuple[str, str, str], GroupStats] = {}
     rows_by_line: dict[int, dict[str, str]] = {}

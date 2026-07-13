@@ -1,0 +1,4 @@
+comercio,sucursal,localidad,direccion,producto,marca,categoria,presentacion,precio,fecha_relevamiento,fuente,observacion
+Carrefour,Rawson,Rawson,Av. Mendoza 2450,Yerba Mate Playadito 1 kg,Playadito,Almacen,1 kg,3375,2026-07-10,manual_web,
+Carrefour,Rawson,Rawson,Av. Mendoza 2450,Aceite girasol Natura 900 ml,Natura,Almacen,900 ml,2450,2026-07-10,manual_web,
+Carrefour,Rawson,Rawson,Av. Mendoza 2450,Leche entera Ilolay 1 l,Ilolay,Lacteos,1 l,25,2026-07-10,manual_web,Precio sospechoso controlado

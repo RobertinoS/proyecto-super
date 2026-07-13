@@ -1,0 +1,5 @@
+comercio,sucursal,localidad,direccion,producto,marca,categoria,presentacion,precio,fecha_relevamiento,fuente,observacion
+Vea,Centro,Capital,Av. Libertador 1250,Yerba Mate Playadito 1 kg,Playadito,Almacen,1 kg,3290,2026-07-10,manual_gondola,Relevamiento inicial
+Vea,Centro,Capital,Av. Libertador 1250,Cafe La Virginia 500 g,La Virginia,Infusiones,500 g,6250,2026-07-10,manual_gondola,
+Vea,Centro,Capital,Av. Libertador 1250,Fideos spaghetti Matarazzo 500 g,Matarazzo,Almacen,500 g,1850,2026-07-10,manual_gondola,
+Vea,Centro,Capital,Av. Libertador 1250,Yerba Mate Playadito 1 kg,Playadito,Almacen,1 kg,3290,2026-07-10,manual_gondola,Duplicado interno controlado

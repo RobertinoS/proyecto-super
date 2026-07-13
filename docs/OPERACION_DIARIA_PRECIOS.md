@@ -34,7 +34,7 @@ Fuentes aceptadas:
 - `web_oficial`: catalogo o precio publicado por la cadena.
 - `manual_relevamiento`: carga manual con respaldo operativo.
 
-## Validar relevamiento
+## Validar un relevamiento aislado
 
 Comando:
 
@@ -48,6 +48,35 @@ Salidas:
 data/processed/precios_reales_validados.csv
 data/processed/reporte_validacion_precios_reales.csv
 ```
+
+Este comando sigue disponible para revisar un solo CSV. En la operacion diaria con varios archivos usar la consolidacion.
+
+## Consolidar la jornada
+
+Procesar todos los CSV ubicados bajo la carpeta operativa:
+
+```bash
+python scripts/11_consolidar_relevamientos.py --input data/raw/precios_reales/manual
+```
+
+El descubrimiento es recursivo y el orden de procesamiento es lexicografico por ruta relativa. Las salidas son:
+
+```text
+data/processed/precios_reales_consolidados.csv
+data/processed/reporte_consolidacion.csv
+data/processed/manifiesto_consolidacion.csv
+```
+
+Regla inicial de duplicados:
+
+- La clave es `comercio + sucursal + producto + marca + presentacion + fecha_relevamiento`.
+- Los duplicados dentro de un archivo son excluidos por el validador individual.
+- Entre archivos se conserva el ultimo registro procesado.
+- El ganador queda con `estado_registro = CONSOLIDADO_CONFLICTO` y `conflicto_detectado = SI`.
+- El ganador conserva su ruta relativa en `archivo_origen`.
+- La prioridad se controla con prefijos ordenables: `01_` para la carga inicial, `02_` para la primera correccion y `03_` para una correccion posterior; ver `docs/NAMING_CONVENTION.md`.
+
+Antes de usar la base, revisar `reporte_consolidacion.csv`. `REVISAR` permite corregir el archivo de origen y repetir la ejecucion; `INVALIDO` indica que el archivo no aporto filas utilizables.
 
 ## Revisar errores
 
@@ -67,10 +96,16 @@ Tipos principales:
 
 ## Generar calidad de datos
 
-Despues de validar:
+Despues de validar un archivo individual:
 
 ```bash
 python scripts/10_generar_reporte_calidad_datos.py
+```
+
+Despues de consolidar varios archivos:
+
+```bash
+python scripts/10_generar_reporte_calidad_datos.py --prices data/processed/precios_reales_consolidados.csv --validation-report data/processed/reporte_consolidacion.csv
 ```
 
 Salidas:
@@ -117,9 +152,10 @@ Archivo a descartar:
 
 - Crear carpeta del dia por comercio/sucursal.
 - Cargar CSV con la plantilla vigente.
-- Validar con `scripts/09_validar_precios_reales.py`.
-- Revisar el reporte de validacion.
+- Consolidar la carpeta diaria con `scripts/11_consolidar_relevamientos.py`.
+- Revisar `reporte_consolidacion.csv` y `manifiesto_consolidacion.csv`.
 - Corregir errores fatales.
+- Ejecutar matching sobre `precios_reales_consolidados.csv`.
 - Generar reportes de calidad.
 - Cargar `resumen_calidad_fuente.csv` y `reporte_calidad_datos.csv` en el dashboard.
 - Usar para decisiones solo fuentes `OK` o `REVISAR` ya revisadas.

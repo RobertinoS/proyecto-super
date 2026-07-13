@@ -1,0 +1,4 @@
+fecha_relevamiento,fuente,observacion,comercio,sucursal,localidad,direccion,producto,marca,categoria,presentacion,precio
+2026-07-11,manual_gondola,,Vea,Rivadavia,Rivadavia,Av. Ignacio de la Roza 3100,Leche entera Ilolay 1 l,Ilolay,Lacteos,1 l,1720
+2026-07-11,manual_gondola,,Vea,Rivadavia,Rivadavia,Av. Ignacio de la Roza 3100,Arroz largo fino Gallo 1 kg,Gallo,Almacen,1 kg,2100
+2026-07-11,manual_gondola,Error controlado,Vea,Rivadavia,Rivadavia,Av. Ignacio de la Roza 3100,Azucar comun 1 kg,Ledesma,Almacen,1 kg,precio_sin_cargar
