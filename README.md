@@ -23,6 +23,8 @@ Sprint 10 agrega una operacion real controlada para cargar precios manuales o se
 
 Sprint 12 agrega consolidacion diaria multiarchivo: descubre CSV en forma recursiva, valida cada archivo, resuelve duplicados de manera determinista y genera una base unica trazable para el flujo analitico.
 
+Sprint 13 integra el modelo visual de Site con toda la funcionalidad v1.4.0. El dashboard oficial usa ahora una interfaz clara verde/lima, resumen ejecutivo, mejor feedback, accesibilidad basica y responsive validado, sin depender del sitio publicado ni de un proceso de build.
+
 ## Inicio rapido
 
 Desde `C:\Users\Rober\Desktop\Proyecto Super`:
@@ -207,7 +209,7 @@ python -m pytest
 
 1. Servir el proyecto: `python -m http.server 8026 --bind 127.0.0.1`.
 2. Abrir `http://127.0.0.1:8026/dashboard/`.
-3. Usar la navegacion lateral: `Resumen`, `Precios`, `Lista de compra`, `Comparacion` y `Ruta/cercania`.
+3. Usar la navegacion lateral: `Resumen`, `Datos y productos`, `Mi lista`, `Comparacion`, `Calidad` y `Ruta`.
 4. Cargar `data/processed/precios_con_promociones.csv` en `CSV de precios`.
 5. Cargar `data/sample/lista_compra_demo.csv` o armar una lista desde `Armar lista`.
 6. Guardar o recuperar listas con los botones de `Lista actual`.
@@ -218,6 +220,8 @@ python -m pytest
 11. Revisar ranking por comercio, ahorro, faltantes, mejor compra dividida y score de conveniencia.
 
 El dashboard muestra el estado de cada archivo cargado y permite `Limpiar sesion` para empezar de nuevo sin recargar la pagina.
+
+La cabecera muestra un resumen ejecutivo con mejor comercio, costo, ahorro, cobertura, incidencias de calidad y recomendacion de ruta. Las acciones permanecen deshabilitadas hasta que existan los datos necesarios y `Limpiar sesion` solicita confirmacion.
 
 ## Limitaciones conocidas
 

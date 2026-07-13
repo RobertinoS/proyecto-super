@@ -1,20 +1,20 @@
 # Estado del proyecto
 
-Actualizado: 2026-07-12.
+Actualizado: 2026-07-13.
 
 ## Sprint actual
 
-Sprint 12 - Consolidacion multiarchivo diaria de relevamientos reales.
+Sprint 13 - Integracion funcional del modelo visual Site.
 
-Estado: funcionalmente aprobado y preparado para release local `v1.4.0`.
+Estado: implementado, promovido a dashboard oficial y pendiente de cierre Git.
 
 Rama:
 
 ```text
-sprint-12-daily-multifile-consolidation
+sprint-13-site-ui-functional-integration
 ```
 
-Objetivo: descubrir, validar y consolidar multiples archivos reales por comercio, sucursal y fecha en una base unica trazable y compatible con el flujo existente.
+Objetivo: combinar la apariencia del modelo visual Site con toda la funcionalidad estable de Proyecto Super v1.4.0.
 
 ## Diagnostico ejecutivo
 
@@ -24,7 +24,38 @@ El repo Git dedicado esta en:
 C:\Users\Rober\Desktop\Proyecto Super
 ```
 
-Sprint 1 a Sprint 11 se mantienen compatibles. El proyecto parte de v1.3.0 en `main`; Sprint 12 agrega consolidacion recursiva, control de duplicados entre archivos y manifiesto de ejecucion. No usa scraping automatico, APIs pagas, credenciales ni backend obligatorio.
+Sprint 1 a Sprint 12 se mantienen compatibles y `main` contiene el tag `v1.4.0`. Sprint 13 crea y valida `dashboard/v2/index.html`, conserva todos los IDs y calculos, y luego promueve la candidata a `dashboard/index.html`. La interfaz funciona localmente sin backend, build, APIs pagas, credenciales ni dependencia del sitio publicado.
+
+## Artefactos Sprint 13
+
+- `design_reference/site_model/`: dos capturas y HTML de referencia aportados por el usuario.
+- `docs/UI_INTEGRATION_PLAN.md`.
+- `docs/UI_COMPONENT_MAPPING.md`.
+- `dashboard/index.html`: interfaz Site integrada y unica entrada oficial.
+- `tests/test_dashboard_site_integration.py`.
+
+## Decision tecnica Sprint 13
+
+- El dashboard v1.4.0 fue la fuente de verdad funcional.
+- Se conservaron el JavaScript embebido, los contratos CSV y todos los IDs funcionales.
+- Se cambio la capa visual a fondo claro, sidebar verde profundo, acento lima, cards blancas y tablas ligeras.
+- Se agregaron resumen ejecutivo, loader, feedback, acciones deshabilitadas, etiquetas accesibles y confirmacion de limpieza.
+- No se separo JavaScript en modulos para evitar una refactorizacion simultanea al rediseno.
+- La version anterior se conserva mediante Git; no se crearon copias legacy.
+- La candidata temporal `dashboard/v2/index.html` se elimino al confirmar que tenia el mismo hash que la version promovida.
+
+## Validaciones Sprint 13
+
+- Pruebas frontend focalizadas: 5 passed.
+- `python -m compileall scripts`: OK.
+- `python scripts/08_generar_mvp_demo.py`: OK.
+- Consolidacion y matching: 12 filas y 6 grupos.
+- Archivos demo: 32 precios, 7 comercios, 5 items y 12 recomendaciones de ruta.
+- Calidad: 4 grupos leidos por la interfaz.
+- `python -m pytest`: 51 passed.
+- HTTP local: dashboard oficial promovido respondio correctamente.
+- Desktop 1440x1000 y mobile 390x844: sin desborde horizontal ni controles fuera de pantalla.
+- Consola del navegador: sin errores.
 
 ## Artefactos Sprint 12
 

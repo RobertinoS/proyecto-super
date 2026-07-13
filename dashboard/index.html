@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Proyecto Super San Juan - Dashboard</title>
+  <title>SuperPrecios San Juan - Panel de compra</title>
   <style>
     :root {
       color-scheme: light;
@@ -177,35 +177,195 @@
       .candidate { grid-template-columns: 1fr; }
     }
   </style>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f3f6f2;
+      --panel: #ffffff;
+      --panel-soft: #f7f9f6;
+      --ink: #1b2821;
+      --muted: #69756e;
+      --line: #dfe6df;
+      --brand: #17654f;
+      --brand-dark: #0d382c;
+      --brand-2: #3478c8;
+      --accent: #a8d94f;
+      --good: #237c4b;
+      --warn: #b46b12;
+      --bad: #b33b42;
+      --shadow: 0 8px 24px rgba(30, 52, 40, 0.06);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { letter-spacing: 0; }
+    body { background: var(--bg); }
+    body.processing { cursor: progress; }
+    [hidden] { display: none !important; }
+    .main-view, .shell, .grid, .grid > *, .panel, .card { min-width: 0; }
+    .skip-link { position: fixed; left: 12px; top: -60px; z-index: 1000; background: #fff; color: var(--brand-dark); padding: 10px 14px; border-radius: 6px; box-shadow: var(--shadow); }
+    .skip-link:focus { top: 12px; }
+    .app-shell { grid-template-columns: 232px minmax(0, 1fr); }
+    .sidebar { display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; padding: 24px 18px; border: 0; background: var(--brand-dark); color: #f7fff9; overflow: auto; }
+    .brand-block { display: grid; grid-template-columns: 40px 1fr; align-items: center; gap: 10px; padding: 4px 0 22px; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+    .brand-block::before { content: "SP"; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 8px; background: var(--accent); color: #153427; font-size: 14px; font-weight: 900; }
+    .brand-block strong { color: #fff; font-size: 18px; }
+    .brand-block strong em { color: var(--accent); font-style: normal; }
+    .brand-block span { margin: 2px 0 0; color: rgba(237, 250, 241, 0.65); font-size: 11px; }
+    .nav-card { display: grid; gap: 5px; margin: 20px 0 0; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+    .nav-link { justify-content: flex-start; min-height: 44px; padding: 0 13px; border-radius: 7px; color: rgba(244, 255, 247, 0.72); font-size: 13px; }
+    .nav-link span { margin-left: auto; color: rgba(244, 255, 247, 0.38); }
+    .nav-link:first-child, .nav-link:hover, .nav-link:focus-visible { background: rgba(255, 255, 255, 0.1); color: #fff; outline: none; }
+    .sidebar-foot { margin-top: auto; padding: 18px 4px 0; border-top: 1px solid rgba(255, 255, 255, 0.13); color: #edf9f0; font-size: 12px; line-height: 1.55; }
+    .sidebar-foot::before { content: ""; display: inline-block; width: 7px; height: 7px; margin-right: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px rgba(168, 217, 79, 0.1); }
+    .sidebar-foot small { display: block; margin: 4px 0 0 16px; color: rgba(237, 250, 241, 0.55); }
+    .main-view { padding: 32px 44px 56px; }
+    .shell { max-width: 1460px; }
+    .app-header { grid-template-columns: minmax(0, 1fr) 350px; align-items: center; gap: 28px; margin-bottom: 20px; }
+    .header-copy { padding: 0; border: 0; background: transparent; box-shadow: none; }
+    .status-board { padding: 14px; border: 1px solid var(--line); border-radius: 8px; background: rgba(255, 255, 255, 0.82); box-shadow: var(--shadow); }
+    .eyebrow, .section-kicker { color: var(--good); font-size: 10px; font-weight: 900; text-transform: uppercase; }
+    h1 { font-size: 36px; line-height: 1.1; font-weight: 620; }
+    .subtitle { margin-top: 9px; font-size: 15px; }
+    .status { min-height: 44px; border-color: #e5ebe5; background: #fbfcfb; }
+    .quick-actions { grid-template-columns: 1.2fr .8fr; }
+    .processing-bar { display: flex; align-items: center; gap: 9px; margin-top: 10px; padding: 9px 11px; border-radius: 6px; background: #eef6e7; color: var(--good); font-size: 12px; font-weight: 800; }
+    .processing-bar::before { content: ""; width: 12px; height: 12px; border: 2px solid rgba(35, 124, 75, 0.22); border-top-color: var(--good); border-radius: 50%; animation: spin .75s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .workflow { gap: 10px; margin-bottom: 18px; }
+    .step-card { min-height: 82px; padding: 12px 14px; border-color: var(--line); border-radius: 7px; box-shadow: none; }
+    .step-card small { color: var(--good); font-size: 9px; }
+    .step-card strong { margin-top: 5px; }
+    .step-card p { font-size: 11px; }
+    .grid { gap: 14px; }
+    .executive-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0 0 18px; }
+    .two { grid-template-columns: minmax(0, 1.2fr) minmax(360px, .8fr); }
+    .builder-layout { grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr); }
+    .cards { gap: 14px; margin: 14px 0; }
+    .card, .panel { border-color: var(--line); border-radius: 8px; box-shadow: var(--shadow); }
+    .card { min-height: 106px; padding: 17px 18px 15px 66px; }
+    .card::before { left: 17px; top: 22px; bottom: auto; width: 34px; height: 34px; border-radius: 7px; background: #e8f5e6; }
+    .card:nth-child(2)::before { background: #e9f1fb; }
+    .card:nth-child(3)::before { background: #fff2df; }
+    .card:nth-child(4)::before { background: #f0eafa; }
+    .card span { font-size: 11px; }
+    .card strong { margin-top: 6px; font-size: 23px; }
+    .panel { padding: 18px; }
+    .panel h2 { font-size: 17px; font-weight: 650; }
+    .panel-head { margin-bottom: 14px; }
+    .uploader-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .upload { min-height: 152px; padding: 13px; border-style: solid; background: #fafcf9; }
+    .upload:focus-within { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(23, 101, 79, 0.08); }
+    .upload input[type="file"] { min-height: auto; padding: 8px; border-style: dashed; background: #fff; font-size: 12px; }
+    .file-state { border: 1px solid #e0e6e0; background: #f1f4f1; }
+    .file-state.loaded { border-color: #cfe6d8; background: #e9f6ee; }
+    .file-state.error-state { border-color: #efcdd0; background: #fbecee; }
+    .controls { grid-template-columns: minmax(0, 1fr) 220px; margin-top: 12px; padding: 12px; border: 1px solid var(--line); border-radius: 7px; background: #fff; }
+    .route-controls { grid-template-columns: 1fr 1fr 150px auto; }
+    input, select { min-height: 42px; border-color: #dce3dc; border-radius: 7px; background: #fff; }
+    input, select, button { min-width: 0; max-width: 100%; }
+    input:focus, select:focus { border-color: var(--brand); outline: 3px solid rgba(23, 101, 79, 0.08); }
+    button { min-height: 40px; border-color: #d7dfd8; border-radius: 7px; background: #fff; font-size: 12px; }
+    button:hover { border-color: var(--brand); color: var(--brand); }
+    button:focus-visible { outline: 3px solid rgba(52, 120, 200, 0.22); outline-offset: 2px; }
+    button:disabled { cursor: not-allowed; opacity: .48; filter: grayscale(.25); }
+    .primary { background: var(--brand); color: #fff; }
+    .primary:hover { background: #115844; color: #fff; }
+    .danger { color: var(--bad); }
+    .bars { gap: 11px; }
+    .bar-row { grid-template-columns: 150px 1fr 130px; }
+    .bar-track { height: 9px; background: #eef1ee; }
+    .bar-fill { background: linear-gradient(90deg, var(--brand), #83bd62); }
+    .pill { border-color: #cfe6d8; background: #edf7f0; color: var(--good); }
+    .notice { border-left-color: var(--accent); background: #f8fbf4; }
+    .table-wrap { width: 100%; max-width: 100%; border-color: var(--line); border-radius: 7px; }
+    table { background: #fff; }
+    th, td { padding: 12px; border-bottom-color: #e8ece8; }
+    th { background: #fafbfa; color: #758078; font-size: 10px; }
+    tr:hover td { background: #f8fbf8; }
+    .price { color: #17261e; }
+    .unit-price { color: var(--brand-2); }
+    .candidate, .missing-card { border-color: var(--line); background: #fafcf9; }
+    .quality-ok { color: #237c4b; background: #e5f4ea; }
+    .quality-review { color: #9a5b0e; background: #fff2d8; }
+    .quality-invalid { color: #a52f37; background: #fbe7e9; }
+    .quality-stale { color: #53606d; background: #edf0f2; }
+    .feedback { min-height: 38px; margin: 10px 0; padding: 10px 12px; border-radius: 6px; font-size: 12px; }
+    .feedback.success { color: var(--good); background: #eaf6ee; }
+    .feedback.error { color: var(--bad); background: #fbecee; }
+    .error:not(:empty) { display: block; margin-top: 8px; padding: 8px 10px; border-radius: 6px; background: #fbecee; }
+
+    @media (max-width: 1180px) {
+      .app-shell { grid-template-columns: 205px minmax(0, 1fr); }
+      .main-view { padding: 26px 24px 48px; }
+      .sidebar { position: sticky; height: 100vh; border-bottom: 0; }
+      .nav-card { display: grid; grid-template-columns: 1fr; }
+      .nav-link { justify-content: flex-start; text-align: left; }
+      .nav-link span { display: inline; }
+      .app-header { grid-template-columns: 1fr 320px; }
+      .workflow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .executive-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 900px) {
+      .app-shell { grid-template-columns: 1fr; }
+      .sidebar { position: static; height: auto; padding: 14px 18px; }
+      .brand-block { padding-bottom: 10px; }
+      .nav-card { display: flex; gap: 6px; margin-top: 4px; overflow-x: auto; }
+      .nav-link { min-width: max-content; }
+      .nav-link span, .sidebar-foot { display: none; }
+      .main-view { padding: 22px 18px 44px; }
+      .app-header, .two, .builder-layout { grid-template-columns: 1fr; }
+      .workflow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .route-controls, .builder-controls { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 600px) {
+      .main-view { padding: 18px 12px 36px; }
+      h1 { font-size: 30px; }
+      .workflow, .cards, .executive-cards, .uploader-grid, .route-controls, .builder-controls, .controls { grid-template-columns: 1fr; }
+      .nav-card { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; max-width: 100%; overflow: visible; }
+      .nav-link { min-width: 0; white-space: normal; }
+      .card { min-height: 92px; }
+      .panel { padding: 14px; }
+      .bar-row { grid-template-columns: 1fr; }
+      .quick-actions { grid-template-columns: 1fr; }
+      .list-actions { display: grid; grid-template-columns: 1fr 1fr; }
+      .list-actions button { width: 100%; }
+    }
+  </style>
 </head>
-<body>
+<body data-ui-version="site-v2">
+  <a class="skip-link" href="#resumen">Saltar al contenido</a>
   <div class="app-shell">
     <aside class="sidebar" aria-label="Navegacion del dashboard">
       <div class="brand-block">
-        <strong>Proyecto Super San Juan</strong>
-        <span>MVP local para decidir compra por precio efectivo, cobertura y cercania.</span>
+        <strong>Super<em>Precios</em></strong>
+        <span>Compra inteligente en San Juan</span>
       </div>
       <nav class="nav-card">
         <a class="nav-link" href="#resumen">Resumen <span>01</span></a>
-        <a class="nav-link" href="#precios">Precios <span>02</span></a>
-        <a class="nav-link" href="#lista">Lista de compra <span>03</span></a>
+        <a class="nav-link" href="#precios">Datos y productos <span>02</span></a>
+        <a class="nav-link" href="#lista">Mi lista <span>03</span></a>
         <a class="nav-link" href="#comparacion">Comparacion <span>04</span></a>
-        <a class="nav-link" href="#ruta">Ruta/cercania <span>05</span></a>
-        <a class="nav-link" href="#calidad">Calidad <span>06</span></a>
+        <a class="nav-link" href="#calidad">Calidad <span>05</span></a>
+        <a class="nav-link" href="#ruta">Ruta <span>06</span></a>
       </nav>
+      <div class="sidebar-foot">Operacion local activa<small>Sin backend ni servicios externos</small></div>
     </aside>
 
     <main class="main-view">
       <div class="shell">
         <header class="app-header" id="resumen">
           <div class="header-copy">
-            <p class="eyebrow">BI local para compra inteligente</p>
-            <h1>Comparador de precios de San Juan</h1>
-            <p class="subtitle">Carga archivos CSV, arma una lista de compra y compara precio efectivo, faltantes, promociones y distancia aproximada en un flujo guiado.</p>
+            <p class="eyebrow">Analisis de compra</p>
+            <h1>Panel de compra inteligente</h1>
+            <p class="subtitle">Compara precios, organiza tu lista y encontra la combinacion mas conveniente en San Juan.</p>
           </div>
           <div class="status-board">
             <p class="section-kicker">Estado de sesion</p>
-            <div class="status" id="statusBox">Esperando CSV de precios.</div>
+            <div class="status" id="statusBox" role="status" aria-live="polite">Esperando CSV de precios.</div>
+            <div class="processing-bar" id="processingBar" role="status" aria-live="polite" hidden>Procesando archivo...</div>
             <div class="quick-actions">
               <button id="recalculateAllButton" class="primary" type="button">Recalcular</button>
               <button id="clearSessionButton" class="danger" type="button">Limpiar sesion</button>
@@ -236,6 +396,15 @@
           </div>
         </section>
 
+        <section class="grid executive-cards" aria-label="Resumen ejecutivo de compra">
+          <article class="card"><span>Mejor comercio</span><strong id="execBestCommerce">-</strong></article>
+          <article class="card"><span>Costo estimado</span><strong id="execBestCost">$ 0</strong></article>
+          <article class="card"><span>Ahorro estimado</span><strong id="execSavings">$ 0</strong></article>
+          <article class="card"><span>Cobertura de lista</span><strong id="execCoverage">0%</strong></article>
+          <article class="card"><span>Incidencias de calidad</span><strong id="execQualityIssues">0</strong></article>
+          <article class="card"><span>Recomendacion de ruta</span><strong id="execRouteRecommendation">-</strong></article>
+        </section>
+
     <section class="grid two section-anchor" id="precios">
       <div class="panel">
         <div class="panel-head">
@@ -253,8 +422,8 @@
               <span class="file-state" id="priceFileState">Pendiente</span>
             </div>
             <p class="muted">Usa `data/processed/precios_matcheados.csv` o `data/processed/precios_con_promociones.csv`. Tambien acepta CSVs de sprints anteriores.</p>
-            <input id="fileInput" type="file" accept=".csv,text/csv">
-            <p id="fileError" class="error"></p>
+            <input id="fileInput" type="file" accept=".csv,text/csv" aria-label="Cargar CSV de precios">
+            <p id="fileError" class="error" aria-live="polite"></p>
           </div>
           <div class="upload">
             <div class="upload-head">
@@ -262,8 +431,8 @@
               <span class="file-state" id="listFileState">Pendiente</span>
             </div>
             <p class="muted">Puedes cargar `data/sample/lista_compra_demo.csv` o armar la lista visualmente.</p>
-            <input id="listInput" type="file" accept=".csv,text/csv">
-            <p id="listError" class="error"></p>
+            <input id="listInput" type="file" accept=".csv,text/csv" aria-label="Cargar CSV de lista de compra">
+            <p id="listError" class="error" aria-live="polite"></p>
           </div>
           <div class="upload">
             <div class="upload-head">
@@ -271,8 +440,8 @@
               <span class="file-state" id="branchFileState">Pendiente</span>
             </div>
             <p class="muted">Carga `data/sample/sucursales_demo.csv` para estimar cercania por sucursal.</p>
-            <input id="branchInput" type="file" accept=".csv,text/csv">
-            <p id="branchError" class="error"></p>
+            <input id="branchInput" type="file" accept=".csv,text/csv" aria-label="Cargar CSV de sucursales">
+            <p id="branchError" class="error" aria-live="polite"></p>
           </div>
           <div class="upload">
             <div class="upload-head">
@@ -280,19 +449,19 @@
               <span class="file-state" id="locationFileState">Pendiente</span>
             </div>
             <p class="muted">Carga `data/sample/ubicacion_usuario_demo.csv` o usa coordenadas manuales.</p>
-            <input id="userLocationInput" type="file" accept=".csv,text/csv">
-            <p id="userLocationError" class="error"></p>
+            <input id="userLocationInput" type="file" accept=".csv,text/csv" aria-label="Cargar CSV de ubicacion del usuario">
+            <p id="userLocationError" class="error" aria-live="polite"></p>
           </div>
         </div>
         <div class="controls">
-          <input id="searchInput" type="search" placeholder="Buscar producto, marca, categoria o grupo">
-          <select id="commerceFilter">
+          <input id="searchInput" type="search" placeholder="Buscar producto, marca, categoria o grupo" aria-label="Buscar producto, marca, categoria o grupo">
+          <select id="commerceFilter" aria-label="Filtrar por comercio">
             <option value="">Todos los comercios</option>
           </select>
         </div>
         <div class="route-controls">
-          <input id="manualLatInput" type="number" step="0.000001" placeholder="Latitud manual">
-          <input id="manualLonInput" type="number" step="0.000001" placeholder="Longitud manual">
+          <input id="manualLatInput" type="number" step="0.000001" placeholder="Latitud manual" aria-label="Latitud manual">
+          <input id="manualLonInput" type="number" step="0.000001" placeholder="Longitud manual" aria-label="Longitud manual">
           <input id="costKmInput" type="number" min="0" step="10" value="180" aria-label="Costo por km estimado">
           <button id="calculateRouteButton" type="button">Calcular cercania</button>
         </div>
@@ -328,7 +497,7 @@
           <span class="pill" id="catalogPill">Catalogo pendiente</span>
         </div>
         <div class="builder-controls">
-          <input id="builderSearchInput" type="search" placeholder="Buscar para agregar: yerba, leche, aceite...">
+          <input id="builderSearchInput" type="search" placeholder="Buscar para agregar: yerba, leche, aceite..." aria-label="Buscar producto para agregar a la lista">
           <input id="defaultQuantityInput" type="number" min="0.001" step="0.001" value="1" aria-label="Cantidad">
           <select id="defaultUnitSelect" aria-label="Unidad">
             <option value="kg">kg</option>
@@ -364,7 +533,7 @@
           <button id="clearStoredListButton" type="button">Limpiar guardado</button>
           <button id="clearListButton" class="danger" type="button">Vaciar lista</button>
         </div>
-        <p id="listActionMessage" class="muted"></p>
+        <p id="listActionMessage" class="feedback" role="status" aria-live="polite"></p>
         <div class="table-wrap">
           <table class="mini-table">
             <thead>
@@ -547,8 +716,8 @@
               <span class="file-state" id="qualitySummaryFileState">Pendiente</span>
             </div>
             <p class="muted">Carga `data/processed/resumen_calidad_fuente.csv`.</p>
-            <input id="qualitySummaryInput" type="file" accept=".csv,text/csv">
-            <p id="qualitySummaryError" class="error"></p>
+            <input id="qualitySummaryInput" type="file" accept=".csv,text/csv" aria-label="Cargar resumen de calidad">
+            <p id="qualitySummaryError" class="error" aria-live="polite"></p>
           </div>
           <div class="upload">
             <div class="upload-head">
@@ -556,8 +725,8 @@
               <span class="file-state" id="qualityReportFileState">Pendiente</span>
             </div>
             <p class="muted">Carga `data/processed/reporte_calidad_datos.csv` para ver incidencias.</p>
-            <input id="qualityReportInput" type="file" accept=".csv,text/csv">
-            <p id="qualityReportError" class="error"></p>
+            <input id="qualityReportInput" type="file" accept=".csv,text/csv" aria-label="Cargar reporte de calidad">
+            <p id="qualityReportError" class="error" aria-live="polite"></p>
           </div>
         </div>
       </div>
@@ -1321,7 +1490,29 @@
 
     function setListMessage(message, isError = false) {
       $("listActionMessage").textContent = message;
-      $("listActionMessage").className = isError ? "error" : "muted";
+      $("listActionMessage").className = `feedback ${isError ? "error" : "success"}`;
+    }
+
+    function setProcessing(active, message = "Procesando datos...") {
+      const bar = $("processingBar");
+      if (!bar) return;
+      bar.textContent = message;
+      bar.hidden = !active;
+      if (document.body) document.body.classList.toggle("processing", active);
+    }
+
+    function updateActionStates() {
+      const hasRows = state.rows.length > 0;
+      const hasList = state.list.length > 0;
+      const hasBranches = state.branches.length > 0;
+      const hasOrigin = Boolean(currentUserLocation());
+      $("recalculateAllButton").disabled = !hasRows;
+      $("calculateListButton").disabled = !hasRows || !hasList;
+      $("calculateRouteButton").disabled = !hasRows || !hasList || !hasBranches || !hasOrigin;
+      $("saveListButton").disabled = !hasList;
+      $("exportListButton").disabled = !hasList;
+      $("clearListButton").disabled = !hasList;
+      $("clearSessionButton").disabled = !hasRows && !hasList && !hasBranches && !state.qualityReport.length && !state.qualitySummary.length;
     }
 
     function setFileState(id, message, mode = "pending") {
@@ -1396,6 +1587,7 @@
     }
 
     function clearSession() {
+      if (typeof confirm === "function" && !confirm("Se eliminaran los archivos cargados y la lista guardada en este navegador. Continuar?")) return;
       state.rows = [];
       state.filtered = [];
       state.catalog = [];
@@ -1448,6 +1640,18 @@
       $("kpiBestCommerce").textContent = best ? best.comercio : "-";
       $("kpiBestListCost").textContent = best ? pesoPreciso.format(best.total) : "$ 0";
       $("kpiListSavings").textContent = best && mostExpensive && best.faltantes.length === 0 ? pesoPreciso.format(mostExpensive.total - best.total) : "$ 0";
+    }
+
+    function renderExecutiveSummary() {
+      const best = state.comparison[0];
+      const route = state.routeRecommendations[0];
+      const qualityIssues = state.qualityReport.reduce((sum, row) => sum + (parseNumber(row.incidencias) || 0), 0);
+      $("execBestCommerce").textContent = best ? best.comercio : "-";
+      $("execBestCost").textContent = best ? pesoPreciso.format(best.total) : "$ 0";
+      $("execSavings").textContent = best && best.savingsMostExpensive !== null ? pesoPreciso.format(best.savingsMostExpensive) : "$ 0";
+      $("execCoverage").textContent = best ? `${pct.format(best.cobertura)}%` : "0%";
+      $("execQualityIssues").textContent = number.format(qualityIssues);
+      $("execRouteRecommendation").textContent = route ? `${route.comercio} | ${pct.format(route.distancia)} km` : "-";
     }
 
     function renderBars() {
@@ -1769,6 +1973,7 @@
     function render() {
       renderKpis();
       renderShoppingKpis();
+      renderExecutiveSummary();
       renderBars();
       renderCatalog();
       renderShoppingListEditor();
@@ -1777,10 +1982,12 @@
       renderRouteTables();
       renderQualityTables();
       renderTable();
+      updateActionStates();
     }
 
     function loadFile(file) {
       $("fileError").textContent = "";
+      setProcessing(true, `Procesando ${file.name}...`);
       const reader = new FileReader();
       reader.onload = event => {
         try {
@@ -1796,7 +2003,7 @@
           refreshStatus(file.name);
           if (warnings.length) $("statusBox").textContent = `CSV cargado con ${warnings.length - 1} aviso(s) de calidad.`;
           const dates = unique(state.rows, "fecha_relevamiento").sort();
-          $("freshnessPill").textContent = `${hasPromotions() ? "Precio efectivo" : "Precio gondola"}${dates.length ? ` · Fecha ${dates[dates.length - 1]}` : ""}`;
+          $("freshnessPill").textContent = `${hasPromotions() ? "Precio efectivo" : "Precio gondola"}${dates.length ? ` | Fecha ${dates[dates.length - 1]}` : ""}`;
           applyFilters();
         } catch (error) {
           state.rows = [];
@@ -1810,12 +2017,19 @@
           $("statusBox").textContent = "No se pudo cargar el CSV de precios.";
           render();
         }
+        setProcessing(false);
+      };
+      reader.onerror = () => {
+        setProcessing(false);
+        setFileState("priceFileState", "Error", "error");
+        $("fileError").textContent = "No se pudo leer el archivo seleccionado.";
       };
       reader.readAsText(file, "utf-8");
     }
 
     function loadListFile(file) {
       $("listError").textContent = "";
+      setProcessing(true, `Procesando ${file.name}...`);
       const reader = new FileReader();
       reader.onload = event => {
         try {
@@ -1832,12 +2046,19 @@
           refreshStatus();
           render();
         }
+        setProcessing(false);
+      };
+      reader.onerror = () => {
+        setProcessing(false);
+        setFileState("listFileState", "Error", "error");
+        $("listError").textContent = "No se pudo leer el archivo seleccionado.";
       };
       reader.readAsText(file, "utf-8");
     }
 
     function loadBranchFile(file) {
       $("branchError").textContent = "";
+      setProcessing(true, `Procesando ${file.name}...`);
       const reader = new FileReader();
       reader.onload = event => {
         try {
@@ -1856,12 +2077,19 @@
           $("branchError").textContent = error.message;
           render();
         }
+        setProcessing(false);
+      };
+      reader.onerror = () => {
+        setProcessing(false);
+        setFileState("branchFileState", "Error", "error");
+        $("branchError").textContent = "No se pudo leer el archivo seleccionado.";
       };
       reader.readAsText(file, "utf-8");
     }
 
     function loadUserLocationFile(file) {
       $("userLocationError").textContent = "";
+      setProcessing(true, `Procesando ${file.name}...`);
       const reader = new FileReader();
       reader.onload = event => {
         try {
@@ -1882,12 +2110,19 @@
           $("userLocationError").textContent = error.message;
           render();
         }
+        setProcessing(false);
+      };
+      reader.onerror = () => {
+        setProcessing(false);
+        setFileState("locationFileState", "Error", "error");
+        $("userLocationError").textContent = "No se pudo leer el archivo seleccionado.";
       };
       reader.readAsText(file, "utf-8");
     }
 
     function loadQualitySummaryFile(file) {
       $("qualitySummaryError").textContent = "";
+      setProcessing(true, `Procesando ${file.name}...`);
       const reader = new FileReader();
       reader.onload = event => {
         try {
@@ -1903,12 +2138,19 @@
           $("qualitySummaryError").textContent = error.message;
           render();
         }
+        setProcessing(false);
+      };
+      reader.onerror = () => {
+        setProcessing(false);
+        setFileState("qualitySummaryFileState", "Error", "error");
+        $("qualitySummaryError").textContent = "No se pudo leer el archivo seleccionado.";
       };
       reader.readAsText(file, "utf-8");
     }
 
     function loadQualityReportFile(file) {
       $("qualityReportError").textContent = "";
+      setProcessing(true, `Procesando ${file.name}...`);
       const reader = new FileReader();
       reader.onload = event => {
         try {
@@ -1924,6 +2166,12 @@
           $("qualityReportError").textContent = error.message;
           render();
         }
+        setProcessing(false);
+      };
+      reader.onerror = () => {
+        setProcessing(false);
+        setFileState("qualityReportFileState", "Error", "error");
+        $("qualityReportError").textContent = "No se pudo leer el archivo seleccionado.";
       };
       reader.readAsText(file, "utf-8");
     }

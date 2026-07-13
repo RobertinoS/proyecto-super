@@ -969,3 +969,43 @@ python scripts/11_consolidar_relevamientos.py --input data/sample/multifile
 python scripts/04_matching_productos.py --input data/processed/precios_reales_consolidados.csv --output data/processed/precios_reales_consolidados_matcheados.csv
 python -m pytest
 ```
+
+## Sprint 13: integracion visual Site
+
+### 55. Paridad estructural y funcional
+
+```bash
+python -m pytest tests/test_dashboard_site_integration.py tests/test_dashboard_shopping_list_ui.py
+```
+
+Resultado esperado:
+
+- conserva todos los IDs del dashboard v1.4.0;
+- mantiene parsing, carga, lista, localStorage, exportacion, promociones, ranking, calidad y rutas;
+- incluye resumen ejecutivo, loader, estados deshabilitados, confirmacion y etiquetas accesibles;
+- ejecuta el JavaScript embebido sin errores.
+
+### 56. Datos demo y consolidado
+
+Generar el flujo demo y el consolidado. Validar en `dashboard/index.html`:
+
+- 32 precios con promociones, ranking de 7 comercios y 12 recomendaciones de ruta;
+- 12 precios consolidados, ranking de 2 comercios y una sola Yerba Vea Centro a `$3150.00`;
+- 4 filas de resumen y 4 filas de detalle de calidad.
+
+### 57. Comparacion visual y responsive
+
+Servir con `python -m http.server 8026 --bind 127.0.0.1` y validar:
+
+- `http://127.0.0.1:8026/dashboard/`.
+
+Comparar visualmente contra las capturas de `design_reference/site_model/` y validar 1440x1000 y 390x844, sin desborde horizontal, controles fuera de pantalla, solapamientos ni errores de consola. `dashboard/v2/` no debe existir despues de la promocion.
+
+## Suite Sprint 13
+
+```bash
+python -m compileall scripts
+python scripts/08_generar_mvp_demo.py
+python scripts/11_consolidar_relevamientos.py --input data/sample/multifile
+python -m pytest
+```
