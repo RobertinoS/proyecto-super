@@ -725,3 +725,79 @@ Las 10 primeras columnas canonicas son compatibles con:
 | `sugerencia` | accion recomendada |
 
 Las filas con errores fatales se excluyen. `precio_sospechoso` se reporta como alerta y la fila se conserva para revision operativa.
+
+## Sprint 11: calidad operativa diaria
+
+Entradas generadas:
+
+```text
+data/processed/precios_reales_validados.csv
+data/processed/reporte_validacion_precios_reales.csv
+```
+
+Script:
+
+```text
+scripts/10_generar_reporte_calidad_datos.py
+```
+
+Salidas:
+
+```text
+data/processed/reporte_calidad_datos.csv
+data/processed/resumen_calidad_fuente.csv
+```
+
+### Estructura operativa raw
+
+Los archivos reales crudos deben guardarse fuera de Git:
+
+```text
+data/raw/precios_reales/manual/{comercio}/{sucursal}/{YYYY-MM-DD}/
+```
+
+Convencion:
+
+```text
+precios_{comercio}_{sucursal}_{localidad}_{YYYY-MM-DD}_{fuente}.csv
+```
+
+### reporte_calidad_datos.csv
+
+| Columna | Regla |
+|---|---|
+| `archivo_origen` | archivo validado evaluado |
+| `comercio` | comercio evaluado |
+| `sucursal` | sucursal evaluada |
+| `localidad` | localidad de la sucursal |
+| `total_filas` | filas validas + filas observadas con incidencia |
+| `filas_validas` | filas presentes en `precios_reales_validados.csv` |
+| `filas_invalidas` | filas con incidencias no sospechosas |
+| `incidencias` | cantidad total de incidencias asignadas |
+| `duplicados` | incidencias `duplicado` |
+| `precios_sospechosos` | incidencias `precio_sospechoso` |
+| `fecha_min` | menor fecha valida del grupo |
+| `fecha_max` | mayor fecha valida del grupo |
+| `antiguedad_dias` | dias desde `fecha_max` hasta la fecha de calculo |
+| `estado_calidad` | `OK`, `REVISAR`, `INVALIDO`, `DESACTUALIZADO` |
+
+### resumen_calidad_fuente.csv
+
+| Columna | Regla |
+|---|---|
+| `comercio` | comercio evaluado |
+| `sucursal` | sucursal evaluada |
+| `localidad` | localidad |
+| `productos_validos` | productos validos unicos |
+| `categorias_cubiertas` | categorias unicas |
+| `ultima_fecha_relevamiento` | mayor fecha valida |
+| `antiguedad_dias` | dias desde ultima fecha |
+| `score_calidad` | 0 a 100 |
+| `estado_operativo` | estado operativo equivalente a calidad |
+
+### Estados
+
+- `OK`: sin errores fatales y antiguedad menor o igual a 7 dias.
+- `REVISAR`: tiene duplicados o precios sospechosos.
+- `INVALIDO`: tiene errores fatales relevantes.
+- `DESACTUALIZADO`: antiguedad mayor a 7 dias.

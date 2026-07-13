@@ -24,6 +24,8 @@ def test_dashboard_shopping_list_ui_sections_exist():
         "Sucursales CSV",
         "Ranking por conveniencia",
         "Ruta dividida sugerida",
+        "Calidad de datos",
+        "Semaforo operativo",
     ]:
         assert text in html
 
@@ -117,6 +119,18 @@ const promoCsv = [
 const promoRows = api.toObjects(promoCsv);
 const promoList = [api.createShoppingItemFromCatalog(api.buildCatalog(promoRows)[0], 1, "kg", "alta")];
 const promoComparison = api.buildShoppingComparison(promoRows, promoList);
+const qualityReportCsv = [
+  "archivo_origen,comercio,sucursal,localidad,total_filas,filas_validas,filas_invalidas,incidencias,duplicados,precios_sospechosos,fecha_min,fecha_max,antiguedad_dias,estado_calidad",
+  "precios_reales_validados.csv,Comercio A,Centro,Capital,2,2,0,0,0,0,2026-07-10,2026-07-10,2,OK",
+  "precios_reales_validados.csv,Comercio B,Oeste,Rivadavia,2,1,1,2,1,1,2026-07-09,2026-07-09,3,REVISAR"
+].join("\n");
+const qualitySummaryCsv = [
+  "comercio,sucursal,localidad,productos_validos,categorias_cubiertas,ultima_fecha_relevamiento,antiguedad_dias,score_calidad,estado_operativo",
+  "Comercio A,Centro,Capital,2,1,2026-07-10,2,100,OK",
+  "Comercio B,Oeste,Rivadavia,1,1,2026-07-09,3,75,REVISAR"
+].join("\n");
+const qualityReport = api.parseQualityReport(qualityReportCsv);
+const qualitySummary = api.parseQualitySummary(qualitySummaryCsv);
 const rawQualityCsv = [
   "comercio,sucursal,localidad,producto,marca,categoria,presentacion,precio,fecha_relevamiento,fuente",
   "Comercio A,Centro,Capital,Yerba Playadito,Playadito,Almacen,1 kg,1000,2026-07-10,test",
@@ -158,6 +172,11 @@ const result = {
   promoHasPromotions: api.hasPromotions(promoRows),
   promoEffectivePrice: api.rowBasePrice(promoRows[1]),
   promoBestCommerce: promoComparison[0].comercio,
+  qualityReportRows: qualityReport.length,
+  qualitySummaryRows: qualitySummary.length,
+  qualityBadgeOk: api.qualityBadgeClass(qualitySummary[0].estado_operativo),
+  qualityBadgeReview: api.qualityBadgeClass(qualitySummary[1].estado_operativo),
+  qualityBadgeStale: api.qualityBadgeClass("DESACTUALIZADO"),
   qualityWarnings: rawQualityRows.validationWarnings.join(" | "),
   routeBestCommerce: routeRecommendations[0].comercio,
   routeBestScore: routeRecommendations[0].score,
@@ -193,6 +212,11 @@ console.log(JSON.stringify(result));
     assert data["promoHasPromotions"] is True
     assert data["promoEffectivePrice"] == 800
     assert data["promoBestCommerce"] == "Comercio B"
+    assert data["qualityReportRows"] == 2
+    assert data["qualitySummaryRows"] == 2
+    assert "quality-ok" in data["qualityBadgeOk"]
+    assert "quality-review" in data["qualityBadgeReview"]
+    assert "quality-stale" in data["qualityBadgeStale"]
     assert "omitida" in data["qualityWarnings"]
     assert "fecha invalida" in data["qualityWarnings"]
     assert "localidad fuera" in data["qualityWarnings"]

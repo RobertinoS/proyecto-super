@@ -199,3 +199,25 @@ Reporte de validacion:
 ```text
 data/processed/reporte_validacion_precios_reales.csv
 ```
+
+## 10. Calidad operativa diaria
+
+Despues de validar precios reales, generar reportes de calidad:
+
+```bash
+python scripts/10_generar_reporte_calidad_datos.py
+```
+
+Cargar en el panel `Calidad` del dashboard:
+
+```text
+data/processed/resumen_calidad_fuente.csv
+data/processed/reporte_calidad_datos.csv
+```
+
+Interpretacion rapida:
+
+- `OK`: dato confiable y vigente.
+- `REVISAR`: duplicados o precios sospechosos.
+- `INVALIDO`: errores fatales relevantes.
+- `DESACTUALIZADO`: antiguedad mayor a 7 dias.

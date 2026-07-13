@@ -27,6 +27,7 @@ REQUIRED_COLUMNS = [
 ]
 
 OUTPUT_COLUMNS = [
+    "fila_origen",
     "comercio",
     "sucursal",
     "localidad",
@@ -47,6 +48,9 @@ REPORT_COLUMNS = [
     "tipo_error",
     "valor_detectado",
     "sugerencia",
+    "comercio",
+    "sucursal",
+    "localidad",
 ]
 
 FATAL_ERROR_TYPES = {
@@ -169,6 +173,7 @@ def add_issue(
     issue_type: str,
     value: Any,
     suggestion: str,
+    row_context: dict[str, Any] | None = None,
 ) -> None:
     issues.append(
         {
@@ -177,6 +182,9 @@ def add_issue(
             "tipo_error": issue_type,
             "valor_detectado": clean_display(value),
             "sugerencia": suggestion,
+            "comercio": clean_display((row_context or {}).get("comercio")),
+            "sucursal": clean_display((row_context or {}).get("sucursal")),
+            "localidad": clean_display((row_context or {}).get("localidad")),
         }
     )
 
@@ -241,6 +249,7 @@ def validate_real_prices(
                     "campo_obligatorio",
                     row.get(field, ""),
                     "Completar el campo antes de validar la carga real.",
+                    row,
                 )
                 row_has_fatal_error = True
 
@@ -254,6 +263,7 @@ def validate_real_prices(
                 "localidad_fuera_alcance",
                 row.get("localidad", ""),
                 "Usar una localidad de San Juan habilitada: Capital, Rawson, Santa Lucia o Rivadavia.",
+                row,
             )
             row_has_fatal_error = True
 
@@ -266,6 +276,7 @@ def validate_real_prices(
                 "precio_invalido",
                 row.get("precio", ""),
                 "Ingresar un numero mayor a cero. Se aceptan coma o punto decimal.",
+                row,
             )
             row_has_fatal_error = True
 
@@ -278,6 +289,7 @@ def validate_real_prices(
                 "fecha_invalida",
                 row.get("fecha_relevamiento", ""),
                 "Usar formato YYYY-MM-DD, DD/MM/YYYY, DD-MM-YYYY o YYYYMMDD.",
+                row,
             )
             row_has_fatal_error = True
 
@@ -289,6 +301,7 @@ def validate_real_prices(
                 "precio_sospechoso",
                 row.get("precio", ""),
                 f"Revisar contra ticket/gondola. Rango esperado: {min_suspicious_price:g} a {max_suspicious_price:g}.",
+                row,
             )
             warning_count += 1
 
@@ -302,6 +315,7 @@ def validate_real_prices(
                     "duplicado",
                     row.get("producto", ""),
                     "Existe otra fila con el mismo comercio, sucursal, localidad, producto, marca, presentacion y fecha.",
+                    row,
                 )
                 row_has_fatal_error = True
                 duplicate_count += 1
@@ -318,6 +332,7 @@ def validate_real_prices(
 
         valid_rows.append(
             {
+                "fila_origen": str(index),
                 "comercio": clean_display(row.get("comercio")),
                 "sucursal": clean_display(row.get("sucursal")),
                 "localidad": canonical_locality,

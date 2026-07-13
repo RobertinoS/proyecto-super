@@ -863,3 +863,63 @@ python -m compileall scripts
 python scripts/09_validar_precios_reales.py --input data/sample/precios_reales_demo.csv
 python -m pytest
 ```
+
+## Sprint 11: calidad operativa diaria
+
+### 49. Generacion de reportes de calidad
+
+Comandos:
+
+```bash
+python scripts/09_validar_precios_reales.py --input data/sample/precios_reales_demo.csv
+python scripts/10_generar_reporte_calidad_datos.py
+```
+
+Resultado esperado:
+
+- Genera `data/processed/reporte_calidad_datos.csv`.
+- Genera `data/processed/resumen_calidad_fuente.csv`.
+- Calcula incidencias, duplicados, precios sospechosos, fechas y antiguedad.
+
+### 50. Estados y score
+
+Prueba automatizada:
+
+```bash
+python -m pytest tests/test_data_quality_operations.py
+```
+
+Resultado esperado:
+
+- Valida estados `OK`, `REVISAR`, `INVALIDO` y `DESACTUALIZADO`.
+- Valida calculo de antiguedad.
+- Valida `score_calidad`.
+- Confirma compatibilidad con el reporte de validacion Sprint 10.
+
+### 51. Dashboard con calidad de datos
+
+Pasos:
+
+1. Servir el proyecto con `python -m http.server 8026 --bind 127.0.0.1`.
+2. Abrir `http://127.0.0.1:8026/dashboard/`.
+3. Cargar `data/processed/resumen_calidad_fuente.csv`.
+4. Cargar `data/processed/reporte_calidad_datos.csv`.
+
+Resultado esperado:
+
+- Se muestra estado por comercio/sucursal.
+- Se muestra score de calidad.
+- Se muestra antiguedad de datos.
+- Se muestra cantidad de incidencias.
+- Se ve semaforo `OK`, `REVISAR`, `INVALIDO`, `DESACTUALIZADO`.
+
+## Suite Sprint 11
+
+Comandos:
+
+```bash
+python -m compileall scripts
+python scripts/09_validar_precios_reales.py --input data/sample/precios_reales_demo.csv
+python scripts/10_generar_reporte_calidad_datos.py
+python -m pytest
+```

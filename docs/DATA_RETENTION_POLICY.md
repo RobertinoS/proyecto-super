@@ -35,6 +35,7 @@ Definir reglas para almacenamiento, limpieza y trazabilidad de archivos crudos, 
 - `data/raw/sepa/manual/*`
 - `data/raw/sepa/extracted/*`
 - `data/raw/precios_reales/*`
+- `data/raw/precios_reales/manual/*`
 - `data/processed/*`
 - `data/export/*`
 - `database/*.sqlite`
@@ -55,6 +56,7 @@ sepa_san_juan_20260709_minoristas.zip
 carrefour_san_juan_20260709_catalogo.json
 vea_capital_20260712_gondola.csv
 carrefour_rawson_20260712_ticket.csv
+precios_vea_sucursal_centro_capital_2026-07-12_manual.csv
 ```
 
 ## Retencion sugerida
