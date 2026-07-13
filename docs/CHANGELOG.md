@@ -1,5 +1,31 @@
 # Changelog
 
+## 2026-07-13 - Sprint 14 - Piloto cloud de scraping oficial
+
+Completado para release local `v1.6.0`:
+
+- auditoria de automatizacion, UptimeRobot y cuatro fuentes oficiales;
+- seleccion de Vea como piloto condicionado, con canal ONLINE explicito;
+- FastAPI desplegable con autenticacion, idempotencia y gates de calidad/publicacion;
+- fixture reproducible y smoke test limitado;
+- propuesta SQL Supabase y buckets privados;
+- Docker/Render con arranque en frio y filesystem efimero documentados;
+- workflow n8n importable sin credenciales y GitHub Action diario unico;
+- publicacion real, migracion y despliegue desactivados hasta revision.
+
+Pruebas:
+
+- compilacion de `scripts` y `cloud_backend`: OK;
+- smoke fixture: 3 productos, dry run;
+- smoke live: 1 producto, 1 pagina, dry run;
+- FastAPI local y OpenAPI: OK;
+- flujo MVP v1.5.0: OK;
+- `python -m pytest`: 74 passed, 1 warning de deprecacion externo de FastAPI TestClient.
+- Docker build pendiente por ausencia de Docker CLI local.
+- auditoria final sin secretos reales, datos crudos, outputs, logs ni archivos `.env` reales versionados;
+- JSON n8n, YAML GitHub/Render, `.env.example` y SQL propuesto validados estaticamente;
+- despliegue, activacion n8n, migracion Supabase y publicacion real diferidos a Sprint 15.
+
 ## 2026-07-13 - Sprint 13 - Integracion funcional del modelo visual Site
 
 Cambios:

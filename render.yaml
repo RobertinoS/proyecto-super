@@ -1,0 +1,40 @@
+services:
+  - type: web
+    name: proyecto-super-cloud-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./cloud_backend/Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    autoDeploy: false
+    envVars:
+      - key: APP_ENV
+        value: render
+      - key: APP_VERSION
+        value: 1.6.0
+      - key: SOURCE_MODE
+        value: fixture
+      - key: ENABLE_PUBLICATION
+        value: "false"
+      - key: REQUEST_TIMEOUT_SECONDS
+        value: "30"
+      - key: REQUEST_DELAY_SECONDS
+        value: "1.5"
+      - key: MAX_PRODUCTS_PER_RUN
+        value: "100"
+      - key: MAX_PAGES_PER_RUN
+        value: "2"
+      - key: LOG_LEVEL
+        value: INFO
+      - key: RAW_BUCKET
+        value: raw-price-snapshots
+      - key: PROCESSED_BUCKET
+        value: processed-price-datasets
+      - key: PUBLISHED_BUCKET
+        value: published-price-datasets
+      - key: SCRAPER_API_KEY
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false

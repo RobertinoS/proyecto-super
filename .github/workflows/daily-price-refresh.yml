@@ -1,0 +1,49 @@
+name: Daily Proyecto Super price refresh
+
+on:
+  schedule:
+    - cron: "17 10 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Keep publication disabled"
+        required: true
+        default: "true"
+        type: choice
+        options: ["true"]
+
+concurrency:
+  group: proyecto-super-daily-price-refresh
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  trigger-n8n:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Validate required secrets
+        env:
+          WEBHOOK_URL: ${{ secrets.N8N_PRODUCTION_WEBHOOK_URL }}
+          WEBHOOK_TOKEN: ${{ secrets.N8N_WEBHOOK_TOKEN }}
+        run: |
+          test -n "$WEBHOOK_URL" || { echo "N8N_PRODUCTION_WEBHOOK_URL is missing"; exit 1; }
+          test -n "$WEBHOOK_TOKEN" || { echo "N8N_WEBHOOK_TOKEN is missing"; exit 1; }
+
+      - name: Trigger production n8n workflow once
+        env:
+          WEBHOOK_URL: ${{ secrets.N8N_PRODUCTION_WEBHOOK_URL }}
+          WEBHOOK_TOKEN: ${{ secrets.N8N_WEBHOOK_TOKEN }}
+        run: |
+          execution_id="gha-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          http_code=$(curl --silent --show-error \
+            --retry 2 --retry-all-errors --retry-delay 20 \
+            --connect-timeout 30 --max-time 360 \
+            --output response.json --write-out "%{http_code}" \
+            --request POST "$WEBHOOK_URL" \
+            --header "Content-Type: application/json" \
+            --header "X-Webhook-Token: $WEBHOOK_TOKEN" \
+            --data "{\"source\":\"vea\",\"dry_run\":true,\"execution_id\":\"${execution_id}\",\"trigger_type\":\"github_actions\"}")
+          cat response.json
+          test "$http_code" -ge 200 -a "$http_code" -lt 300 || { echo "n8n returned HTTP $http_code"; exit 1; }

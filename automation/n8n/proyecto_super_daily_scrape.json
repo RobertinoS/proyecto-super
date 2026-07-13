@@ -1,0 +1,167 @@
+{
+  "name": "Proyecto Super - Daily Official Price Refresh",
+  "nodes": [
+    {
+      "parameters": {"httpMethod": "POST", "path": "proyecto-super/daily-refresh", "responseMode": "responseNode", "options": {}},
+      "id": "webhook-trigger",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-900, 0],
+      "webhookId": "configure-after-import"
+    },
+    {
+      "parameters": {
+        "jsCode": "const headers = $json.headers || {}; const expected = $env.N8N_WEBHOOK_TOKEN || ''; const supplied = headers['x-webhook-token'] || headers['X-Webhook-Token'] || ''; if (!expected || supplied !== expected) throw new Error('Unauthorized webhook'); const body = $json.body || {}; return [{json:{source: body.source || 'vea', dry_run: true, max_products: Math.min(Number(body.max_products || 50), 100), max_pages: Math.min(Number(body.max_pages || 1), 2), execution_id: body.execution_id || `n8n-${Date.now()}`, trigger_type: body.trigger_type || 'n8n', approved: body.approved === true}}];"
+      },
+      "id": "validate-request",
+      "name": "Validate Token and Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-680, 0]
+    },
+    {
+      "parameters": {"url": "={{ $env.FASTAPI_BASE_URL + '/health' }}", "options": {"timeout": 120000}},
+      "id": "warm-api",
+      "name": "Warm FastAPI",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-450, 0],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 30000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {"conditions": {"options": {"caseSensitive": true}, "conditions": [{"leftValue": "={{ $json.status }}", "rightValue": "ok", "operator": {"type": "string", "operation": "equals"}}]}},
+      "id": "health-gate",
+      "name": "API Healthy?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [-220, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.FASTAPI_BASE_URL + '/jobs/scrape' }}",
+        "sendHeaders": true,
+        "headerParameters": {"parameters": [{"name": "X-API-Key", "value": "={{ $env.SCRAPER_API_KEY }}"}]},
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify($('Validate Token and Payload').first().json) }}",
+        "options": {"timeout": 120000}
+      },
+      "id": "scrape-job",
+      "name": "Run Vea Scrape",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [20, -100],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.FASTAPI_BASE_URL + '/pipeline/process' }}",
+        "sendHeaders": true,
+        "headerParameters": {"parameters": [{"name": "X-API-Key", "value": "={{ $env.SCRAPER_API_KEY }}"}]},
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({run_id: $json.run_id, dry_run: true, max_invalid_pct: 10}) }}",
+        "options": {"timeout": 120000}
+      },
+      "id": "process-pipeline",
+      "name": "Process and Validate",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [250, -100],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {"conditions": {"options": {"caseSensitive": true}, "conditions": [{"leftValue": "={{ $json.status }}", "rightValue": "READY_FOR_APPROVAL", "operator": {"type": "string", "operation": "equals"}}, {"leftValue": "={{ $json.rows_processed }}", "rightValue": 0, "operator": {"type": "number", "operation": "gt"}}]}},
+      "id": "quality-gate",
+      "name": "Quality Gate",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [480, -100]
+    },
+    {
+      "parameters": {"jsCode": "const input = $json; const approved = $('Validate Token and Payload').first().json.approved === true; const enabled = ($env.ENABLE_CLOUD_PUBLICATION || 'false').toLowerCase() === 'true'; return [{json:{...input, should_publish: approved && enabled}}];"},
+      "id": "publication-gate-data",
+      "name": "Build Publication Gate",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [700, -180]
+    },
+    {
+      "parameters": {"conditions": {"options": {"caseSensitive": true}, "conditions": [{"leftValue": "={{ $json.should_publish }}", "rightValue": true, "operator": {"type": "boolean", "operation": "true"}}]}},
+      "id": "publication-gate",
+      "name": "Publication Approved?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [920, -180]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.FASTAPI_BASE_URL + '/pipeline/publish' }}",
+        "sendHeaders": true,
+        "headerParameters": {"parameters": [{"name": "X-API-Key", "value": "={{ $env.SCRAPER_API_KEY }}"}]},
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({run_id: $json.run_id, approved: true, approved_by: 'n8n-reviewed', dry_run: true}) }}",
+        "options": {"timeout": 120000}
+      },
+      "id": "publish-dry-run",
+      "name": "Publish Dry Run Only",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1150, -260],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {"jsCode": "return [{json:{status:'COMPLETED_PENDING_APPROVAL', publication:'SKIPPED', reason:'Sprint 14 safe gate', run_id:$json.run_id, rows_processed:$json.rows_processed || 0}}];"},
+      "id": "skip-publication",
+      "name": "Skip Publication",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1150, -80]
+    },
+    {
+      "parameters": {"respondWith": "json", "responseBody": "={{ $json }}", "options": {"responseCode": 200}},
+      "id": "respond-success",
+      "name": "Structured Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [1390, -170]
+    },
+    {
+      "parameters": {"respondWith": "json", "responseBody": "={{ {status:'FAILED', stage:'health_or_quality', publication:'BLOCKED', details:$json} }}", "options": {"responseCode": 503}},
+      "id": "respond-error",
+      "name": "Structured Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [700, 120]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {"main": [[{"node": "Validate Token and Payload", "type": "main", "index": 0}]]},
+    "Validate Token and Payload": {"main": [[{"node": "Warm FastAPI", "type": "main", "index": 0}]]},
+    "Warm FastAPI": {"main": [[{"node": "API Healthy?", "type": "main", "index": 0}]]},
+    "API Healthy?": {"main": [[{"node": "Run Vea Scrape", "type": "main", "index": 0}], [{"node": "Structured Error", "type": "main", "index": 0}]]},
+    "Run Vea Scrape": {"main": [[{"node": "Process and Validate", "type": "main", "index": 0}]]},
+    "Process and Validate": {"main": [[{"node": "Quality Gate", "type": "main", "index": 0}]]},
+    "Quality Gate": {"main": [[{"node": "Build Publication Gate", "type": "main", "index": 0}], [{"node": "Structured Error", "type": "main", "index": 0}]]},
+    "Build Publication Gate": {"main": [[{"node": "Publication Approved?", "type": "main", "index": 0}]]},
+    "Publication Approved?": {"main": [[{"node": "Publish Dry Run Only", "type": "main", "index": 0}], [{"node": "Skip Publication", "type": "main", "index": 0}]]},
+    "Publish Dry Run Only": {"main": [[{"node": "Structured Success", "type": "main", "index": 0}]]},
+    "Skip Publication": {"main": [[{"node": "Structured Success", "type": "main", "index": 0}]]}
+  },
+  "active": false,
+  "settings": {"executionOrder": "v1", "saveDataErrorExecution": "all", "saveDataSuccessExecution": "all"},
+  "versionId": "configure-after-import",
+  "meta": {"templateCredsSetupCompleted": false},
+  "tags": []
+}

@@ -1,5 +1,31 @@
 # Plan de pruebas
 
+## Sprint 14 - Cloud y fuente piloto
+
+Pruebas automaticas en `cloud_backend/tests/`:
+
+- configuracion segura y ausencia de secretos en respuestas;
+- autenticacion 401/403 y comparacion de API key;
+- `/health`, `/sources`, `/jobs/scrape`, `/jobs/{run_id}`;
+- interfaz base y adaptador Vea con fixture;
+- normalizacion, canal ONLINE, SKU/EAN y `raw_hash`;
+- limites de productos/paginas, timeout, reintentos y respuesta vacia;
+- idempotencia por `execution_id`;
+- Supabase no configurado como no-op y almacenamiento simulado;
+- rechazo por calidad y publicacion bloqueada sin aprobacion;
+- estructura JSON de n8n, GitHub Actions y ausencia de secretos;
+- compatibilidad de columnas con Proyecto Super.
+
+Comandos:
+
+```powershell
+python -m compileall scripts cloud_backend
+python scripts/12_smoke_test_fuente_piloto.py
+python -m pytest
+```
+
+El smoke por defecto usa fixture. `--live` es manual, maximo 10 productos, una pagina, `dry_run` y sin publicacion. Nunca se ejecuta en pytest/CI.
+
 Actualizado: 2026-07-12.
 
 ## Sprint 1: CSV local

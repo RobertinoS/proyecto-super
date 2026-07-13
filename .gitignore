@@ -6,6 +6,8 @@ venv/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+.coverage
+htmlcov/
 
 # Environment / secrets
 .env
@@ -45,3 +47,4 @@ tmp/
 temp/
 *.tmp
 *.bak
+.env.local
