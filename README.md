@@ -21,6 +21,8 @@ El MVP permite:
 
 Sprint 10 agrega una operacion real controlada para cargar precios manuales o semimanuales por comercio/sucursal, validarlos y convertirlos en CSV limpio compatible con matching, promociones, listas y dashboard.
 
+Sprint 12 agrega consolidacion diaria multiarchivo: descubre CSV en forma recursiva, valida cada archivo, resuelve duplicados de manera determinista y genera una base unica trazable para el flujo analitico.
+
 ## Inicio rapido
 
 Desde `C:\Users\Rober\Desktop\Proyecto Super`:
@@ -109,6 +111,39 @@ docs/OPERACION_DIARIA_PRECIOS.md
 docs/NAMING_CONVENTION.md
 ```
 
+## Consolidacion diaria multiarchivo
+
+Guardar los relevamientos reales fuera de Git usando esta estructura:
+
+```text
+data/raw/precios_reales/manual/{comercio}/{sucursal}/{YYYY-MM-DD}/
+```
+
+Probar el flujo reproducible de Sprint 12:
+
+```bash
+python scripts/11_consolidar_relevamientos.py --input data/sample/multifile
+```
+
+Para una operacion real, reemplazar `data/sample/multifile` por `data/raw/precios_reales/manual`. El comando genera:
+
+```text
+data/processed/precios_reales_consolidados.csv
+data/processed/reporte_consolidacion.csv
+data/processed/manifiesto_consolidacion.csv
+```
+
+Continuar con matching y calidad:
+
+```bash
+python scripts/04_matching_productos.py --input data/processed/precios_reales_consolidados.csv --output data/processed/precios_reales_consolidados_matcheados.csv
+python scripts/10_generar_reporte_calidad_datos.py --prices data/processed/precios_reales_consolidados.csv --validation-report data/processed/reporte_consolidacion.csv
+```
+
+El dashboard carga `data/processed/precios_reales_consolidados_matcheados.csv` como cualquier archivo de precios matcheados. La clave de duplicado es `comercio + sucursal + producto + marca + presentacion + fecha_relevamiento`. La regla inicial conserva el registro del ultimo archivo procesado segun el orden lexicografico de su ruta relativa; el ganador conserva `archivo_origen` y queda marcado con `estado_registro = CONSOLIDADO_CONFLICTO` y `conflicto_detectado = SI`.
+
+Para correcciones sucesivas usar prefijos ordenables `01_`, `02_`, `03_`: `01_` es la carga inicial, `02_` la primera correccion y `03_` una correccion posterior. Nunca sobrescribir el archivo previo.
+
 ## Estructura de carpetas
 
 ```text
@@ -192,12 +227,14 @@ El dashboard muestra el estado de cada archivo cargado y permite `Limpiar sesion
 - El matching es auditable y simple; puede requerir ampliar `data/sample/product_dictionary.csv`.
 - Las promociones demo no reemplazan condiciones reales de cada cadena.
 - No hay backend ni multiusuario; `localStorage` queda solo en el navegador local.
+- La prioridad entre archivos duplicados depende del nombre/ruta: usar prefijos ordenables o el sufijo `_corregido` segun `docs/NAMING_CONVENTION.md`.
 
 ## Proximos pasos recomendados
 
 - Incorporar fuentes oficiales/manuales reales por cadena y localidad.
 - Agregar preferencia de usuario: maximo de paradas, medio de pago, distancia maxima y tolerancia a faltantes.
 - Separar datos reales de datos demo con un procedimiento operativo diario.
+- Evaluar una bandeja de revision manual para conflictos y precios sospechosos antes de publicar datos.
 - Calibrar `costo_km_estimado` y validar coordenadas reales de sucursales.
 
 El proyecto mantiene dos caminos compatibles:

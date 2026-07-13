@@ -19,6 +19,11 @@ Thumbs.db
 # Raw data policy: no versionar archivos crudos pesados o temporales
 data/raw/*
 !data/raw/.gitkeep
+!data/raw/precios_reales/
+data/raw/precios_reales/*
+!data/raw/precios_reales/manual/
+data/raw/precios_reales/manual/*
+!data/raw/precios_reales/manual/.gitkeep
 
 # Processed/export data: outputs generados
 data/processed/*

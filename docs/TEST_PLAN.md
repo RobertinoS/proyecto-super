@@ -923,3 +923,49 @@ python scripts/09_validar_precios_reales.py --input data/sample/precios_reales_d
 python scripts/10_generar_reporte_calidad_datos.py
 python -m pytest
 ```
+
+## Sprint 12: consolidacion multiarchivo
+
+### 52. Descubrimiento y validacion individual
+
+```bash
+python -m pytest tests/test_multifile_consolidation.py
+```
+
+Resultado esperado:
+
+- Descubre recursivamente los cinco CSV de `data/sample/multifile/` en orden estable.
+- Acepta distinto orden de columnas con el mismo contrato logico.
+- Reporta el duplicado interno, la fila invalida y el precio sospechoso controlados.
+
+### 53. Consolidacion, conflictos y manifiesto
+
+```bash
+python scripts/11_consolidar_relevamientos.py --input data/sample/multifile
+```
+
+Resultado esperado:
+
+- Genera `precios_reales_consolidados.csv`, `reporte_consolidacion.csv` y `manifiesto_consolidacion.csv`.
+- Procesa 5 archivos y 15 filas.
+- Consolida 12 filas unicas.
+- Conserva la correccion de Vea Centro a `$3150.00` y marca el conflicto.
+
+### 54. Compatibilidad aguas abajo y dashboard
+
+```bash
+python scripts/04_matching_productos.py --input data/processed/precios_reales_consolidados.csv --output data/processed/precios_reales_consolidados_matcheados.csv
+python scripts/10_generar_reporte_calidad_datos.py --prices data/processed/precios_reales_consolidados.csv --validation-report data/processed/reporte_consolidacion.csv
+python -m http.server 8026 --bind 127.0.0.1
+```
+
+Abrir `http://127.0.0.1:8026/dashboard/`, cargar `precios_reales_consolidados_matcheados.csv`, cargar la lista demo y calcular ranking. El resultado debe usar 12 filas sin duplicar la correccion y el flujo v1.3.0 debe seguir operativo.
+
+## Suite Sprint 12
+
+```bash
+python -m compileall scripts
+python scripts/11_consolidar_relevamientos.py --input data/sample/multifile
+python scripts/04_matching_productos.py --input data/processed/precios_reales_consolidados.csv --output data/processed/precios_reales_consolidados_matcheados.csv
+python -m pytest
+```

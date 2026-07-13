@@ -801,3 +801,47 @@ precios_{comercio}_{sucursal}_{localidad}_{YYYY-MM-DD}_{fuente}.csv
 - `REVISAR`: tiene duplicados o precios sospechosos.
 - `INVALIDO`: tiene errores fatales relevantes.
 - `DESACTUALIZADO`: antiguedad mayor a 7 dias.
+
+## Sprint 12: consolidacion multiarchivo diaria
+
+Entrada:
+
+```text
+data/raw/precios_reales/manual/{comercio}/{sucursal}/{YYYY-MM-DD}/*.csv
+```
+
+El sample reproducible equivalente esta en `data/sample/multifile/`. Todos los CSV deben cumplir las 12 columnas de entrada real/manual de Sprint 10, aunque pueden presentarlas en distinto orden.
+
+### precios_reales_consolidados.csv
+
+Conserva `fila_origen` y las 12 columnas de la salida validada, y agrega:
+
+| Columna | Regla |
+|---|---|
+| `archivo_origen` | ruta relativa del CSV dentro de la carpeta de entrada |
+| `fecha_procesamiento` | fecha/hora ISO 8601 de la ejecucion |
+| `estado_registro` | `VALIDO` o `CONSOLIDADO_CONFLICTO` |
+| `conflicto_detectado` | `SI` si el registro reemplazo un duplicado de otro archivo; `NO` en otro caso |
+
+La clave de duplicado entre archivos es `comercio + sucursal + producto + marca + presentacion + fecha_relevamiento`, normalizada sin distinguir mayusculas ni tildes. El ultimo archivo segun orden lexicografico de ruta relativa reemplaza al anterior.
+
+### reporte_consolidacion.csv
+
+| Columna | Regla |
+|---|---|
+| `archivo_origen` | ruta relativa procesada |
+| `filas_leidas` | filas de datos del CSV |
+| `filas_validas` | filas aceptadas por el validador individual |
+| `filas_invalidas` | filas excluidas por errores fatales, incluidos duplicados internos |
+| `duplicados_internos` | repeticiones detectadas dentro del mismo CSV |
+| `duplicados_entre_archivos` | registros reemplazados por conflicto con un archivo previo |
+| `precios_sospechosos` | alertas de rango; la fila se conserva |
+| `estado_archivo` | `OK`, `REVISAR` o `INVALIDO` |
+| `mensaje` | resumen legible de incidencias |
+| `comercio`, `sucursal`, `localidad` | contexto adicional para integrar calidad de datos |
+
+### manifiesto_consolidacion.csv
+
+Incluye `ejecucion_id`, `fecha_hora`, `carpeta_origen`, `archivos_procesados`, `filas_totales`, `filas_consolidadas`, `incidencias_totales` y `resultado`.
+
+`precios_reales_consolidados.csv` es compatible como entrada de matching. `reporte_consolidacion.csv` es aceptado por `scripts/10_generar_reporte_calidad_datos.py` como alternativa al reporte fila por fila de Sprint 10.

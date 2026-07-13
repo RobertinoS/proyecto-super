@@ -48,6 +48,20 @@ data/raw/precios_reales/manual/carrefour/hiper_rawson/2026-07-12/precios_carrefo
 - No sobrescribir relevamientos anteriores; crear una carpeta por fecha.
 - Si una carga se corrige, guardar nueva version con sufijo claro, por ejemplo `_corregido`.
 
+## Orden de consolidacion
+
+`scripts/11_consolidar_relevamientos.py` procesa los archivos por ruta relativa en orden lexicografico ascendente. La clave de duplicado es `comercio + sucursal + producto + marca + presentacion + fecha_relevamiento`; si dos archivos contienen la misma clave, gana el ultimo archivo procesado.
+
+Para que la prioridad sea evidente y auditable, usar prefijos de dos digitos cuando haya mas de una entrega para la misma sucursal y fecha:
+
+```text
+01_precios_vea_sucursal_centro_capital_2026-07-12_manual.csv
+02_precios_vea_sucursal_centro_capital_2026-07-12_manual_corregido.csv
+03_precios_vea_sucursal_centro_capital_2026-07-12_manual_corregido_2.csv
+```
+
+`01_` representa la carga inicial, `02_` la primera correccion y `03_` una correccion posterior. No reutilizar el mismo nombre ni sobrescribir el archivo inicial. El registro ganador conserva la ruta relativa en `archivo_origen` y queda marcado con `estado_registro = CONSOLIDADO_CONFLICTO` y `conflicto_detectado = SI`.
+
 ## Archivos procesados
 
 Los outputs se generan en `data/processed/` y no se versionan:
@@ -57,4 +71,7 @@ precios_reales_validados.csv
 reporte_validacion_precios_reales.csv
 reporte_calidad_datos.csv
 resumen_calidad_fuente.csv
+precios_reales_consolidados.csv
+reporte_consolidacion.csv
+manifiesto_consolidacion.csv
 ```

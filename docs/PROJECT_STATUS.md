@@ -4,15 +4,17 @@ Actualizado: 2026-07-12.
 
 ## Sprint actual
 
-Sprint 11 - Flujo operativo diario real y calidad de datos.
+Sprint 12 - Consolidacion multiarchivo diaria de relevamientos reales.
+
+Estado: funcionalmente aprobado y preparado para release local `v1.4.0`.
 
 Rama:
 
 ```text
-sprint-11-data-quality-operations
+sprint-12-daily-multifile-consolidation
 ```
 
-Objetivo: ordenar la operacion diaria de precios reales/manuales por comercio, sucursal y fecha, con control de calidad, trazabilidad y reportes de cobertura.
+Objetivo: descubrir, validar y consolidar multiples archivos reales por comercio, sucursal y fecha en una base unica trazable y compatible con el flujo existente.
 
 ## Diagnostico ejecutivo
 
@@ -22,7 +24,37 @@ El repo Git dedicado esta en:
 C:\Users\Rober\Desktop\Proyecto Super
 ```
 
-Sprint 1 a Sprint 10 se mantienen compatibles. El proyecto mantiene v1.2.0 en `main` y este sprint agrega operacion diaria, convencion de nombres, reportes de calidad y panel de semaforo en dashboard. No usa scraping automatico, APIs pagas, credenciales ni backend obligatorio.
+Sprint 1 a Sprint 11 se mantienen compatibles. El proyecto parte de v1.3.0 en `main`; Sprint 12 agrega consolidacion recursiva, control de duplicados entre archivos y manifiesto de ejecucion. No usa scraping automatico, APIs pagas, credenciales ni backend obligatorio.
+
+## Artefactos Sprint 12
+
+- `data/sample/multifile/`
+- `data/raw/precios_reales/manual/.gitkeep`
+- `scripts/11_consolidar_relevamientos.py`
+- `tests/test_multifile_consolidation.py`
+- integracion compatible en `scripts/10_generar_reporte_calidad_datos.py`
+- actualizaciones en README y documentacion operativa/tecnica.
+
+## Decision tecnica Sprint 12
+
+- Los CSV se descubren recursivamente y se procesan por ruta relativa en orden lexicografico.
+- Cada archivo reutiliza `scripts/09_validar_precios_reales.py`; las filas fatales no ingresan al consolidado.
+- Los duplicados internos se excluyen. Entre archivos gana el ultimo registro procesado y queda marcado como conflicto.
+- El consolidado conserva archivo de origen y fecha de procesamiento.
+- El manifiesto resume cada corrida; todos los outputs permanecen ignorados por Git.
+- `scripts/10_generar_reporte_calidad_datos.py` mantiene el reporte Sprint 10 y suma soporte al reporte de consolidacion.
+
+## Validaciones Sprint 12
+
+- `python -m compileall scripts`: OK.
+- Consolidacion sample: 5 archivos, 15 filas leidas, 12 consolidadas y 1 conflicto entre archivos.
+- Matching: 12 filas, 6 grupos y confianza promedio `0.8792`.
+- Calidad desde consolidacion: 4 comercio/sucursal evaluados.
+- Lista demo: ranking de 2 comercios; Vea resulta primero con `$7100.00` y 60% de cobertura.
+- `python scripts/08_generar_mvp_demo.py`: OK, flujo v1.3.0 compatible.
+- `python -m pytest`: 48 passed.
+- Dashboard por HTTP: OK, estructura visible y consola sin errores.
+- Validacion funcional del CSV consolidado: 12 filas, una sola Yerba Vea Centro y precio ganador `$3150.00`.
 
 ## Artefactos Sprint 11
 

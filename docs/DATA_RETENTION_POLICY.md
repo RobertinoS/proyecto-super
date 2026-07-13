@@ -27,6 +27,7 @@ Definir reglas para almacenamiento, limpieza y trazabilidad de archivos crudos, 
 - `data/sample/ubicacion_usuario_demo.csv`: ubicacion demo Sprint 7.
 - `data/sample/precios_reales_template.csv`: plantilla versionable Sprint 10.
 - `data/sample/precios_reales_demo.csv`: demo realista con errores controlados Sprint 10.
+- `data/sample/multifile/`: relevamientos ficticios multiarchivo Sprint 12.
 - `.gitkeep` en carpetas vacias necesarias.
 
 ## Datos no versionables
@@ -64,6 +65,7 @@ precios_vea_sucursal_centro_capital_2026-07-12_manual.csv
 - Raw SEPA/manual: conservar solo lo necesario para reproducir la ultima corrida validada.
 - Processed: regenerar cuando sea necesario; no versionar outputs.
 - Samples: mantener chicos, ficticios o simulados y aptos para pruebas.
+- Manifiestos y reportes en `data/processed/`: regenerables; no versionar aunque contengan trazabilidad de una corrida real.
 
 ## Limpieza
 

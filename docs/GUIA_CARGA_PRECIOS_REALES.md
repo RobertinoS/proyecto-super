@@ -94,6 +94,28 @@ python scripts/04_matching_productos.py --input data/processed/precios_reales_va
 
 Luego se puede cargar `data/processed/precios_reales_matcheados.csv` en el dashboard.
 
+## Consolidar varios archivos
+
+Cuando existan relevamientos de varias sucursales o fechas, colocarlos bajo:
+
+```text
+data/raw/precios_reales/manual/{comercio}/{sucursal}/{YYYY-MM-DD}/
+```
+
+Ejecutar una sola vez:
+
+```bash
+python scripts/11_consolidar_relevamientos.py --input data/raw/precios_reales/manual
+```
+
+Revisar `data/processed/reporte_consolidacion.csv` y continuar solo cuando las incidencias sean conocidas. La base consolidada se prepara para el dashboard con:
+
+```bash
+python scripts/04_matching_productos.py --input data/processed/precios_reales_consolidados.csv --output data/processed/precios_reales_consolidados_matcheados.csv
+```
+
+La muestra `data/sample/multifile/` permite practicar sin usar datos reales.
+
 ## Trazabilidad
 
 Mantener una convencion de nombres:
@@ -111,6 +133,8 @@ changomas_capital_20260712_web.csv
 ```
 
 Conservar el reporte de validacion para revisar que filas se excluyeron o quedaron como alerta.
+
+En consolidacion, `archivo_origen`, `fecha_procesamiento`, `estado_registro` y `conflicto_detectado` permiten rastrear cada fila ganadora. Una correccion debe usar un nombre posterior en orden lexicografico, preferentemente con prefijos `01_`, `02_`.
 
 ## Reporte de calidad
 

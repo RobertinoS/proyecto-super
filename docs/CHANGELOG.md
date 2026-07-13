@@ -1,5 +1,30 @@
 # Changelog
 
+## 2026-07-12 - Sprint 12 - Consolidacion multiarchivo diaria
+
+Cambios:
+
+- Se agrego `data/sample/multifile/` con cinco CSV, cuatro sucursales, dos fechas e incidencias controladas.
+- Se creo `scripts/11_consolidar_relevamientos.py` para descubrimiento recursivo, validacion individual y consolidacion trazable.
+- Se definio una regla determinista: ante duplicados entre archivos, gana el ultimo archivo en orden lexicografico de ruta relativa.
+- Se generan `precios_reales_consolidados.csv`, `reporte_consolidacion.csv` y `manifiesto_consolidacion.csv`.
+- Se amplio `scripts/10_generar_reporte_calidad_datos.py` para aceptar el reporte de consolidacion sin romper el formato Sprint 10.
+- Se agregaron pruebas en `tests/test_multifile_consolidation.py`.
+- Se versiona solo `.gitkeep` de la estructura raw; los CSV reales siguen ignorados.
+- Se actualizaron README, operacion diaria, convencion de nombres, guia de carga, contrato, pruebas, estado y retencion.
+- Se documento la secuencia auditable `01_`, `02_`, `03_` para cargas y correcciones sucesivas.
+
+Pruebas:
+
+- `python -m compileall scripts`: OK.
+- Consolidador sample: 5 archivos, 15 filas y 12 registros unicos.
+- Matching consolidado: 12 filas y 6 grupos.
+- Calidad consolidada: 4 comercio/sucursal evaluados.
+- Ranking lista demo: 2 comercios, sin duplicar la correccion de Vea Centro.
+- `python scripts/08_generar_mvp_demo.py`: OK.
+- `python -m pytest`: 48 passed.
+- Dashboard por HTTP: OK, consola sin errores y funciones reales validadas con el CSV consolidado.
+
 ## 2026-07-12 - Sprint 11 - Flujo operativo diario y calidad de datos
 
 Cambios:
