@@ -2,6 +2,8 @@
 
 Comparador local de precios para supermercados, autoservicios y mayoristas de San Juan.
 
+Version: `v1.6.0` - base cloud de Sprint 14 lista para despliegue controlado, con publicacion real desactivada.
+
 ## MVP v1.0
 
 Objetivo: permitir que una persona use datos CSV locales para comparar precios, promociones, listas de compra y conveniencia por distancia aproximada sin depender de backend, credenciales, APIs pagas ni Codex.
@@ -24,6 +26,46 @@ Sprint 10 agrega una operacion real controlada para cargar precios manuales o se
 Sprint 12 agrega consolidacion diaria multiarchivo: descubre CSV en forma recursiva, valida cada archivo, resuelve duplicados de manera determinista y genera una base unica trazable para el flujo analitico.
 
 Sprint 13 integra el modelo visual de Site con toda la funcionalidad v1.4.0. El dashboard oficial usa ahora una interfaz clara verde/lima, resumen ejecutivo, mejor feedback, accesibilidad basica y responsive validado, sin depender del sitio publicado ni de un proceso de build.
+
+Sprint 14 agrega una base cloud aislada y opcional: FastAPI desplegable, adaptador piloto Vea, persistencia propuesta en Supabase y orquestacion GitHub Actions -> n8n -> FastAPI. El dashboard local v1.5.0 sigue funcionando sin backend.
+
+## Sprint 14: piloto cloud seguro
+
+El modo predeterminado usa fixture local, no consulta internet y no publica:
+
+```powershell
+python -m pip install -r requirements.txt
+$env:SCRAPER_API_KEY = "local-test-key"
+uvicorn cloud_backend.app.main:app --port 8014
+```
+
+Abrir `http://127.0.0.1:8014/docs`. Endpoints publicos: `/health`, `/sources`. Endpoints protegidos: `/jobs/*`, `/pipeline/*` mediante `X-API-Key`.
+
+Smoke test reproducible sin red:
+
+```powershell
+python scripts/12_smoke_test_fuente_piloto.py
+```
+
+Prueba real minima, manual y no publicable:
+
+```powershell
+python scripts/12_smoke_test_fuente_piloto.py --live --max-products 3 --max-pages 1
+```
+
+La fuente piloto es Vea y se etiqueta `canal_precio=ONLINE`. No representa precio fisico por sucursal hasta validar cobertura/seleccion de tienda. `ENABLE_PUBLICATION=false` es obligatorio durante Sprint 14.
+
+Documentacion cloud:
+
+```text
+docs/EXISTING_AUTOMATION_AUDIT.md
+docs/CLOUD_ARCHITECTURE.md
+docs/OFFICIAL_SOURCES_AUDIT.md
+docs/N8N_CLOUD_SETUP.md
+docs/RENDER_DEPLOYMENT.md
+docs/SUPABASE_CLOUD_SETUP.md
+docs/SECURITY_CHECKLIST.md
+```
 
 ## Inicio rapido
 
@@ -150,6 +192,9 @@ Para correcciones sucesivas usar prefijos ordenables `01_`, `02_`, `03_`: `01_` 
 
 ```text
 dashboard/          Dashboard HTML standalone.
+cloud_backend/      FastAPI y adaptadores cloud opcionales.
+automation/n8n/     Workflow n8n importable, sin credenciales.
+supabase/            Migraciones SQL propuestas, no autoejecutadas.
 scripts/            Flujo local de procesamiento y release demo.
 data/sample/        Datos demo versionables.
 data/raw/           Datos crudos locales ignorados por Git.

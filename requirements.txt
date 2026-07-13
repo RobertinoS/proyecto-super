@@ -10,3 +10,4 @@ pydantic
 pytest
 duckdb
 pyarrow
+-r cloud_backend/requirements-cloud.txt

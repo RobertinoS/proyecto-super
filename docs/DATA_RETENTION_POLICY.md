@@ -1,6 +1,6 @@
 # Politica de retencion y limpieza - datos
 
-Actualizado: 2026-07-12.
+Actualizado: 2026-07-13.
 
 ## Objetivo
 
@@ -15,6 +15,8 @@ Definir reglas para almacenamiento, limpieza y trazabilidad de archivos crudos, 
 5. `data/sample/` se usa para datos demo o simulados versionables.
 6. No se deben guardar credenciales, tokens, claves API ni informacion sensible.
 7. Si un archivo crudo contiene datos duplicados, corruptos o fuera de alcance, debe eliminarse luego de inventario.
+8. Los snapshots cloud persistentes se guardan en Supabase Storage, no en el filesystem efimero de Render.
+9. Nunca almacenar cookies privadas, headers de autenticacion ni service role dentro de snapshots.
 
 ## Datos versionables permitidos
 
@@ -41,6 +43,15 @@ Definir reglas para almacenamiento, limpieza y trazabilidad de archivos crudos, 
 - `data/export/*`
 - `database/*.sqlite`
 - `logs/*`
+- `.env`, `.env.local` y cualquier archivo con secretos cloud
+
+## Retencion cloud propuesta
+
+- `raw-price-snapshots`: 30 dias inicialmente.
+- `processed-price-datasets`: 90 dias.
+- `published-price-datasets`: conservar versiones efectivamente usadas y su manifiesto.
+- `execution_events`: 180 dias, ajustable por volumen.
+- Suspender limpieza automatica hasta probar backup, restauracion y trazabilidad.
 
 ## Convencion de nombres recomendada
 

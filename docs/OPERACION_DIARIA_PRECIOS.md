@@ -1,5 +1,21 @@
 # Operacion diaria de precios reales
 
+## Extension cloud Sprint 14
+
+El flujo manual de este documento sigue vigente. La automatizacion cloud piloto opera en paralelo y no reemplaza relevamientos fisicos:
+
+```text
+GitHub Actions -> n8n -> FastAPI -> Vea ONLINE -> Supabase -> aprobacion -> dataset
+```
+
+- UptimeRobot solo comprueba `/healthz` de n8n.
+- GitHub Actions dispara una vez al dia.
+- FastAPI puede dormir y n8n la despierta con `/health`.
+- Durante Sprint 14 `SOURCE_MODE=fixture` para validacion y `ENABLE_PUBLICATION=false`.
+- Una corrida live debe etiquetarse `ONLINE` y no mezclarse con `manual_gondola`.
+- Revisar calidad y aprobar explicitamente antes de publicar.
+- Ante fuente vacia, error, duplicado o calidad insuficiente, no publicar.
+
 Este procedimiento ordena la carga manual o semimanual de precios reales por comercio, sucursal y fecha. No usa scraping automatico, backend, APIs pagas ni credenciales.
 
 ## Estructura operativa

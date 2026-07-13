@@ -4,17 +4,17 @@ Actualizado: 2026-07-13.
 
 ## Sprint actual
 
-Sprint 13 - Integracion funcional del modelo visual Site.
+Sprint 14 - Piloto cloud de scraping oficial.
 
-Estado: implementado, promovido a dashboard oficial y pendiente de cierre Git.
+Estado: funcionalmente completo. Base cloud lista para despliegue controlado en Sprint 15; sin despliegue ni migraciones ejecutadas y con publicacion real desactivada.
 
 Rama:
 
 ```text
-sprint-13-site-ui-functional-integration
+sprint-14-cloud-scraping-pilot
 ```
 
-Objetivo: combinar la apariencia del modelo visual Site con toda la funcionalidad estable de Proyecto Super v1.4.0.
+Objetivo: dejar una base cloud desplegable, segura e idempotente para una fuente oficial piloto sin depender de la PC local.
 
 ## Diagnostico ejecutivo
 
@@ -24,7 +24,48 @@ El repo Git dedicado esta en:
 C:\Users\Rober\Desktop\Proyecto Super
 ```
 
-Sprint 1 a Sprint 12 se mantienen compatibles y `main` contiene el tag `v1.4.0`. Sprint 13 crea y valida `dashboard/v2/index.html`, conserva todos los IDs y calculos, y luego promueve la candidata a `dashboard/index.html`. La interfaz funciona localmente sin backend, build, APIs pagas, credenciales ni dependencia del sitio publicado.
+Sprint 1 a Sprint 13 se mantienen compatibles y la rama parte de `main` con tag `v1.5.0`. Sprint 14 agrega `cloud_backend/` como capa aislada; no modifica la logica del dashboard. La fuente piloto Vea usa fixture por defecto, limites estrictos y canal `ONLINE`. La publicacion real, el despliegue Render y la migracion Supabase quedan desactivados hasta revision manual.
+
+## Artefactos Sprint 14
+
+- FastAPI en `cloud_backend/` con health, fuentes, jobs y pipeline.
+- Adaptador Vea con fixture reproducible, limites, timeout, delay y reintentos.
+- `render.yaml`, Dockerfile y `.env.example` sin secretos reales.
+- SQL revisable en `supabase/migrations/001_cloud_scraping_foundation.sql`.
+- Workflow n8n importable y GitHub Action diario unico.
+- Auditorias y guias cloud en `docs/`.
+- Smoke test `scripts/12_smoke_test_fuente_piloto.py`.
+
+## Decisiones Sprint 14
+
+- UptimeRobot solo mantiene/supervisa n8n; FastAPI duerme y n8n la precalienta.
+- GitHub Actions ejecuta una vez al dia y no actua como keepalive.
+- `execution_id` y `raw_hash` controlan idempotencia.
+- `/health` y `/sources` son publicos; jobs/pipeline requieren `X-API-Key`.
+- Vea se selecciona por JSON publico y presencia oficial San Juan, pero se etiqueta ONLINE.
+- `SOURCE_MODE=fixture` y `ENABLE_PUBLICATION=false` son defaults seguros.
+
+## Validaciones Sprint 14
+
+- `python -m compileall scripts cloud_backend`: OK.
+- Smoke fixture: 3 productos, 0 incidencias, dry run, sin publicacion.
+- Smoke live controlado: 1 producto, 1 pagina, dry run, sin persistencia/publicacion.
+- FastAPI local: `/health`, `/sources`, scrape, job, process y publish dry run OK; falta de API key devuelve 401.
+- `/docs`: HTTP 200 en `http://127.0.0.1:8014/docs`.
+- Flujo MVP `scripts/08_generar_mvp_demo.py`: OK, 32 precios y 12 recomendaciones de ruta.
+- `python -m pytest`: 74 passed; las 51 pruebas previas continúan aprobadas.
+- JSON n8n, YAML Render/GitHub y SQL: parseo/contratos automaticos OK.
+- Docker no se construyo localmente porque Docker CLI no esta instalado; queda pendiente validar imagen en CI/Render.
+
+## Cierre funcional Sprint 14
+
+- Release objetivo: `v1.6.0`.
+- Base cloud reproducible y auditada localmente.
+- Despliegue externo pendiente para Sprint 15.
+- Migracion Supabase propuesta y no ejecutada.
+- Workflow n8n importable e inactivo.
+- GitHub Actions versionado, todavia sin secretos externos configurados.
+- Publicacion real bloqueada por `ENABLE_PUBLICATION=false` y aprobacion explicita.
 
 ## Artefactos Sprint 13
 

@@ -1,0 +1,53 @@
+[
+  {
+    "productId": "1366129",
+    "productName": "Galletitas Surtido Bagley 400 Gr",
+    "brand": "BAGLEY",
+    "categories": ["/Almacen/Desayuno y Merienda/Galletitas Dulces/", "/Almacen/"],
+    "link": "https://www.vea.com.ar/galletitas-surtido-bagley-400-gr/p",
+    "items": [
+      {
+        "itemId": "1364915",
+        "ean": "7790040147720",
+        "sellers": [
+          {
+            "commertialOffer": {
+              "Price": 3488.0,
+              "ListPrice": 3988.0,
+              "AvailableQuantity": 42,
+              "Teasers": [{"name": "Oferta online"}]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "productId": "2000002",
+    "productName": "Yerba Mate Playadito 1 Kg",
+    "brand": "PLAYADITO",
+    "categories": ["/Almacen/Infusiones/Yerba Mate/", "/Almacen/"],
+    "link": "https://www.vea.com.ar/yerba-mate-playadito-1-kg/p",
+    "items": [
+      {
+        "itemId": "20000021",
+        "ean": "7793704000911",
+        "sellers": [{"commertialOffer": {"Price": 4250.0, "ListPrice": 4250.0, "AvailableQuantity": 18, "Teasers": []}}]
+      }
+    ]
+  },
+  {
+    "productId": "2000003",
+    "productName": "Aceite Girasol Natura 900 Ml",
+    "brand": "NATURA",
+    "categories": ["/Almacen/Aceites/", "/Almacen/"],
+    "link": "https://www.vea.com.ar/aceite-girasol-natura-900-ml/p",
+    "items": [
+      {
+        "itemId": "20000031",
+        "ean": "7790272001005",
+        "sellers": [{"commertialOffer": {"Price": 2390.0, "ListPrice": 2390.0, "AvailableQuantity": 25, "Teasers": []}}]
+      }
+    ]
+  }
+]

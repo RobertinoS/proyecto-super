@@ -1,5 +1,24 @@
 # Contrato de datos
 
+## Sprint 14 - Observacion cloud oficial
+
+Cada adaptador cloud intenta producir:
+
+| Columna | Regla |
+|---|---|
+| `comercio`, `sucursal`, `localidad` | identidad declarada; no inferir sucursal fisica |
+| `canal_precio` | `ONLINE`, `TIENDA_FISICA`, `CATALOGO`, `MANUAL` o `CONTROL` |
+| `producto`, `marca`, `categoria`, `presentacion` | descripcion normalizada y trazable |
+| `sku`, `ean` | identificadores oficiales si estan publicados |
+| `precio_regular`, `precio_promocional`, `precio_efectivo` | numeros positivos; no mezclar condiciones |
+| `condicion_promocion`, `medio_pago` | texto oficial o vacio; no inferir |
+| `stock_publicado` | valor expuesto por canal; no garantiza gondola |
+| `fecha_hora_extraccion` | ISO 8601 UTC |
+| `url_origen`, `archivo_origen`, `extractor_version` | trazabilidad |
+| `raw_hash` | SHA-256 para idempotencia dentro de la corrida |
+
+El pipeline agrega `precio`, `fecha_relevamiento`, `fuente` y `quality_status`, manteniendo las columnas canonicas del MVP. Para Vea Sprint 14: `canal_precio=ONLINE`, `sucursal=Online nacional`; no equivale a precio de tienda fisica San Juan.
+
 Actualizado: 2026-07-12.
 
 ## Columnas canonicas del dashboard
