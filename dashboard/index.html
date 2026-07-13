@@ -144,11 +144,16 @@
     .missing-card { border: 1px solid var(--line); border-radius: 8px; background: var(--panel-soft); padding: 12px; min-height: 118px; }
     .missing-card strong { display: block; margin-bottom: 6px; }
     .missing-card p { margin: 0; color: var(--muted); line-height: 1.45; font-size: 13px; }
+    .quality-badge { display: inline-flex; align-items: center; border-radius: 999px; padding: 4px 8px; font-size: 11px; font-weight: 900; white-space: nowrap; }
+    .quality-ok { color: var(--good); background: rgba(21, 128, 61, 0.12); }
+    .quality-review { color: #b45309; background: rgba(245, 158, 11, 0.14); }
+    .quality-invalid { color: var(--bad); background: rgba(185, 28, 28, 0.12); }
+    .quality-stale { color: #4338ca; background: rgba(79, 70, 229, 0.12); }
 
     @media (max-width: 1180px) {
       .app-shell { grid-template-columns: 1fr; }
       .sidebar { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
-      .nav-card { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+      .nav-card { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; }
       .nav-link { justify-content: center; text-align: center; }
       .nav-link span { display: none; }
       .app-header, .workflow { grid-template-columns: 1fr; }
@@ -186,6 +191,7 @@
         <a class="nav-link" href="#lista">Lista de compra <span>03</span></a>
         <a class="nav-link" href="#comparacion">Comparacion <span>04</span></a>
         <a class="nav-link" href="#ruta">Ruta/cercania <span>05</span></a>
+        <a class="nav-link" href="#calidad">Calidad <span>06</span></a>
       </nav>
     </aside>
 
@@ -524,6 +530,67 @@
       </div>
     </section>
 
+    <section class="grid two section-gap section-anchor" id="calidad">
+      <div class="panel">
+        <div class="topbar" style="margin-bottom: 12px;">
+          <div>
+            <p class="section-kicker">Operacion diaria</p>
+            <h2>Calidad de datos</h2>
+            <p class="muted" id="qualityNote">Carga los reportes generados por `scripts/10_generar_reporte_calidad_datos.py`.</p>
+          </div>
+          <span class="pill" id="qualityPill">Calidad pendiente</span>
+        </div>
+        <div class="uploader-grid">
+          <div class="upload">
+            <div class="upload-head">
+              <strong>Resumen calidad</strong>
+              <span class="file-state" id="qualitySummaryFileState">Pendiente</span>
+            </div>
+            <p class="muted">Carga `data/processed/resumen_calidad_fuente.csv`.</p>
+            <input id="qualitySummaryInput" type="file" accept=".csv,text/csv">
+            <p id="qualitySummaryError" class="error"></p>
+          </div>
+          <div class="upload">
+            <div class="upload-head">
+              <strong>Reporte detalle</strong>
+              <span class="file-state" id="qualityReportFileState">Pendiente</span>
+            </div>
+            <p class="muted">Carga `data/processed/reporte_calidad_datos.csv` para ver incidencias.</p>
+            <input id="qualityReportInput" type="file" accept=".csv,text/csv">
+            <p id="qualityReportError" class="error"></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="topbar" style="margin-bottom: 12px;">
+          <div>
+            <h2>Semaforo operativo</h2>
+            <p class="muted" id="qualityTableNote">Sin reportes de calidad cargados.</p>
+          </div>
+          <span class="pill" id="qualityCountPill">0 fuentes</span>
+        </div>
+        <div class="table-wrap">
+          <table class="compact-table">
+            <thead>
+              <tr>
+                <th>Estado</th>
+                <th>Comercio</th>
+                <th>Sucursal</th>
+                <th>Localidad</th>
+                <th>Score</th>
+                <th>Antiguedad</th>
+                <th>Incidencias</th>
+              </tr>
+            </thead>
+            <tbody id="qualityRows">
+              <tr><td colspan="7"><div class="empty">Carga resumen_calidad_fuente.csv y reporte_calidad_datos.csv.</div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
     <section class="panel section-gap">
       <div class="topbar" style="margin-bottom: 12px;">
         <div>
@@ -570,6 +637,8 @@
     const listColumns = ["item_lista", "grupo_comparacion", "cantidad", "unidad", "prioridad"];
     const branchColumns = ["comercio", "sucursal", "localidad", "direccion", "latitud", "longitud", "zona", "horario_referencia"];
     const userLocationColumns = ["nombre_ubicacion", "latitud", "longitud", "localidad", "descripcion"];
+    const qualityReportColumns = ["archivo_origen", "comercio", "sucursal", "localidad", "total_filas", "filas_validas", "filas_invalidas", "incidencias", "duplicados", "precios_sospechosos", "fecha_min", "fecha_max", "antiguedad_dias", "estado_calidad"];
+    const qualitySummaryColumns = ["comercio", "sucursal", "localidad", "productos_validos", "categorias_cubiertas", "ultima_fecha_relevamiento", "antiguedad_dias", "score_calidad", "estado_operativo"];
     const storageKey = "proyecto-super-lista-compra-v1";
     const unitAliases = {
       kg: "kg", kilo: "kg", kilos: "kg",
@@ -588,11 +657,15 @@
       split: [],
       branches: [],
       userLocation: null,
+      qualityReport: [],
+      qualitySummary: [],
       files: {
         prices: "",
         list: "",
         branches: "",
-        location: ""
+        location: "",
+        qualityReport: "",
+        qualitySummary: ""
       },
       routeRecommendations: [],
       splitRoute: []
@@ -701,6 +774,35 @@
       });
       if (!rows.length) throw new Error("El CSV de ubicacion esta vacio.");
       return rows[0];
+    }
+
+    function normalizeQualityState(value) {
+      return String(value || "").trim().toUpperCase() || "SIN ESTADO";
+    }
+
+    function parseQualityReport(text) {
+      return rowsToObjects(text, qualityReportColumns, "reporte de calidad").map(row => ({
+        ...row,
+        total_filas_num: parseNumber(row.total_filas),
+        filas_validas_num: parseNumber(row.filas_validas),
+        filas_invalidas_num: parseNumber(row.filas_invalidas),
+        incidencias_num: parseNumber(row.incidencias),
+        duplicados_num: parseNumber(row.duplicados),
+        precios_sospechosos_num: parseNumber(row.precios_sospechosos),
+        antiguedad_num: parseNumber(row.antiguedad_dias),
+        estado_calidad: normalizeQualityState(row.estado_calidad)
+      }));
+    }
+
+    function parseQualitySummary(text) {
+      return rowsToObjects(text, qualitySummaryColumns, "resumen de calidad").map(row => ({
+        ...row,
+        productos_validos_num: parseNumber(row.productos_validos),
+        categorias_cubiertas_num: parseNumber(row.categorias_cubiertas),
+        antiguedad_num: parseNumber(row.antiguedad_dias),
+        score_num: parseNumber(row.score_calidad),
+        estado_operativo: normalizeQualityState(row.estado_operativo)
+      }));
     }
 
     function parseNumber(value) {
@@ -1234,6 +1336,8 @@
       setFileState("listFileState", "Pendiente");
       setFileState("branchFileState", "Pendiente");
       setFileState("locationFileState", "Pendiente");
+      setFileState("qualitySummaryFileState", "Pendiente");
+      setFileState("qualityReportFileState", "Pendiente");
     }
 
     function setList(list, message = "") {
@@ -1300,15 +1404,17 @@
       state.split = [];
       state.branches = [];
       state.userLocation = null;
+      state.qualityReport = [];
+      state.qualitySummary = [];
       state.routeRecommendations = [];
       state.splitRoute = [];
-      state.files = { prices: "", list: "", branches: "", location: "" };
-      ["fileInput", "listInput", "branchInput", "userLocationInput", "searchInput", "builderSearchInput", "manualLatInput", "manualLonInput"].forEach(id => {
+      state.files = { prices: "", list: "", branches: "", location: "", qualityReport: "", qualitySummary: "" };
+      ["fileInput", "listInput", "branchInput", "userLocationInput", "qualitySummaryInput", "qualityReportInput", "searchInput", "builderSearchInput", "manualLatInput", "manualLonInput"].forEach(id => {
         if ($(id)) $(id).value = "";
       });
       $("commerceFilter").innerHTML = `<option value="">Todos los comercios</option>`;
       $("costKmInput").value = "180";
-      ["fileError", "listError", "branchError", "userLocationError"].forEach(id => $(id).textContent = "");
+      ["fileError", "listError", "branchError", "userLocationError", "qualitySummaryError", "qualityReportError"].forEach(id => $(id).textContent = "");
       $("freshnessPill").textContent = "CSV local";
       $("routeInputNote").textContent = "Distancia aproximada por Haversine; no reemplaza navegacion real.";
       clearStoredList();
@@ -1573,6 +1679,62 @@
       `).join("") || `<tr><td colspan="8"><div class="empty">Sin ruta dividida calculada.</div></td></tr>`;
     }
 
+    function qualityKey(row) {
+      return [row.comercio, row.sucursal, row.localidad].map(norm).join("|");
+    }
+
+    function qualityBadgeClass(stateValue) {
+      const value = normalizeQualityState(stateValue);
+      if (value === "OK") return "quality-badge quality-ok";
+      if (value === "REVISAR") return "quality-badge quality-review";
+      if (value === "INVALIDO") return "quality-badge quality-invalid";
+      if (value === "DESACTUALIZADO") return "quality-badge quality-stale";
+      return "quality-badge";
+    }
+
+    function renderQualityTables() {
+      const reportByKey = new Map(state.qualityReport.map(row => [qualityKey(row), row]));
+      const rows = state.qualitySummary.length
+        ? state.qualitySummary.map(row => ({ ...row, detail: reportByKey.get(qualityKey(row)) || null }))
+        : state.qualityReport.map(row => ({
+            comercio: row.comercio,
+            sucursal: row.sucursal,
+            localidad: row.localidad,
+            score_num: NaN,
+            antiguedad_num: row.antiguedad_num,
+            estado_operativo: row.estado_calidad,
+            detail: row
+          }));
+      const states = rows.reduce((acc, row) => {
+        const stateValue = normalizeQualityState(row.estado_operativo || row.estado_calidad);
+        acc[stateValue] = (acc[stateValue] || 0) + 1;
+        return acc;
+      }, {});
+      const stateText = Object.entries(states).map(([key, value]) => `${key}: ${value}`).join(" · ");
+
+      $("qualityPill").textContent = rows.length ? stateText : "Calidad pendiente";
+      $("qualityCountPill").textContent = `${rows.length} fuentes`;
+      $("qualityTableNote").textContent = rows.length ? `${rows.length} comercio/sucursal evaluados. ${stateText}` : "Sin reportes de calidad cargados.";
+      $("qualityRows").innerHTML = rows.map(row => {
+        const detail = row.detail || {};
+        const stateValue = normalizeQualityState(row.estado_operativo || row.estado_calidad);
+        const incidences = Number.isFinite(detail.incidencias_num) ? detail.incidencias_num : 0;
+        const score = Number.isFinite(row.score_num) ? String(row.score_num) : "-";
+        const age = Number.isFinite(row.antiguedad_num) ? `${row.antiguedad_num} dias` : "-";
+        return `
+          <tr>
+            <td><span class="${qualityBadgeClass(stateValue)}">${safe(stateValue)}</span></td>
+            <td class="group">${safe(row.comercio)}</td>
+            <td>${safe(row.sucursal)}</td>
+            <td>${safe(row.localidad)}</td>
+            <td>${safe(score)}</td>
+            <td>${safe(age)}</td>
+            <td>${safe(incidences)}</td>
+          </tr>
+        `;
+      }).join("") || `<tr><td colspan="7"><div class="empty">Carga resumen_calidad_fuente.csv y reporte_calidad_datos.csv.</div></td></tr>`;
+    }
+
     function renderTable() {
       const rows = state.filtered.slice(0, 250);
       $("tableNote").textContent = `${number.format(rows.length)} visibles de ${number.format(state.filtered.length)} resultados filtrados. Modo: ${priceModeLabel(state.filtered)}.`;
@@ -1613,6 +1775,7 @@
       renderShoppingTables();
       renderMissing();
       renderRouteTables();
+      renderQualityTables();
       renderTable();
     }
 
@@ -1723,6 +1886,48 @@
       reader.readAsText(file, "utf-8");
     }
 
+    function loadQualitySummaryFile(file) {
+      $("qualitySummaryError").textContent = "";
+      const reader = new FileReader();
+      reader.onload = event => {
+        try {
+          state.qualitySummary = parseQualitySummary(event.target.result);
+          state.files.qualitySummary = file.name;
+          setFileState("qualitySummaryFileState", file.name, "loaded");
+          $("qualityNote").textContent = `${state.qualitySummary.length} fuentes cargadas desde resumen de calidad.`;
+          render();
+        } catch (error) {
+          state.qualitySummary = [];
+          state.files.qualitySummary = "";
+          setFileState("qualitySummaryFileState", "Error", "error");
+          $("qualitySummaryError").textContent = error.message;
+          render();
+        }
+      };
+      reader.readAsText(file, "utf-8");
+    }
+
+    function loadQualityReportFile(file) {
+      $("qualityReportError").textContent = "";
+      const reader = new FileReader();
+      reader.onload = event => {
+        try {
+          state.qualityReport = parseQualityReport(event.target.result);
+          state.files.qualityReport = file.name;
+          setFileState("qualityReportFileState", file.name, "loaded");
+          $("qualityNote").textContent = `${state.qualityReport.length} filas de detalle de calidad cargadas.`;
+          render();
+        } catch (error) {
+          state.qualityReport = [];
+          state.files.qualityReport = "";
+          setFileState("qualityReportFileState", "Error", "error");
+          $("qualityReportError").textContent = error.message;
+          render();
+        }
+      };
+      reader.readAsText(file, "utf-8");
+    }
+
     function bootStoredList() {
       try {
         const stored = readStoredList();
@@ -1752,6 +1957,14 @@
     $("userLocationInput").addEventListener("change", event => {
       const file = event.target.files && event.target.files[0];
       if (file) loadUserLocationFile(file);
+    });
+    $("qualitySummaryInput").addEventListener("change", event => {
+      const file = event.target.files && event.target.files[0];
+      if (file) loadQualitySummaryFile(file);
+    });
+    $("qualityReportInput").addEventListener("change", event => {
+      const file = event.target.files && event.target.files[0];
+      if (file) loadQualityReportFile(file);
     });
     $("searchInput").addEventListener("input", applyFilters);
     $("commerceFilter").addEventListener("change", applyFilters);
@@ -1820,6 +2033,9 @@
       parseList,
       parseBranches,
       parseUserLocation,
+      parseQualityReport,
+      parseQualitySummary,
+      qualityBadgeClass,
       buildCatalog,
       createShoppingItemFromCatalog,
       upsertListItem,

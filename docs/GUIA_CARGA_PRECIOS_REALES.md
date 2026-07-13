@@ -111,3 +111,25 @@ changomas_capital_20260712_web.csv
 ```
 
 Conservar el reporte de validacion para revisar que filas se excluyeron o quedaron como alerta.
+
+## Reporte de calidad
+
+Luego de validar una carga, generar calidad operativa:
+
+```bash
+python scripts/10_generar_reporte_calidad_datos.py
+```
+
+El reporte permite decidir si una fuente queda:
+
+- `OK`: aprobada para uso.
+- `REVISAR`: requiere control manual por duplicados o precios sospechosos.
+- `INVALIDO`: corregir antes de usar.
+- `DESACTUALIZADO`: relevar nuevamente.
+
+Procedimiento completo:
+
+```text
+docs/OPERACION_DIARIA_PRECIOS.md
+docs/NAMING_CONVENTION.md
+```

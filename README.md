@@ -89,6 +89,26 @@ Guia operativa:
 docs/GUIA_CARGA_PRECIOS_REALES.md
 ```
 
+Generar reportes de calidad operativa:
+
+```bash
+python scripts/10_generar_reporte_calidad_datos.py
+```
+
+Salidas:
+
+```text
+data/processed/reporte_calidad_datos.csv
+data/processed/resumen_calidad_fuente.csv
+```
+
+Guias Sprint 11:
+
+```text
+docs/OPERACION_DIARIA_PRECIOS.md
+docs/NAMING_CONVENTION.md
+```
+
 ## Estructura de carpetas
 
 ```text
@@ -236,6 +256,13 @@ data/sample/precios_reales_template.csv o data/sample/precios_reales_demo.csv
         -> scripts/09_validar_precios_reales.py
         -> data/processed/precios_reales_validados.csv
         -> scripts/04_matching_productos.py --input data/processed/precios_reales_validados.csv
+        -> dashboard/index.html
+
+Sprint 11 calidad operativa:
+data/processed/precios_reales_validados.csv + data/processed/reporte_validacion_precios_reales.csv
+        -> scripts/10_generar_reporte_calidad_datos.py
+        -> data/processed/reporte_calidad_datos.csv
+        -> data/processed/resumen_calidad_fuente.csv
         -> dashboard/index.html
 ```
 

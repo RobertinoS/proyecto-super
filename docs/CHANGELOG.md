@@ -1,5 +1,50 @@
 # Changelog
 
+## 2026-07-12 - Sprint 11 - Flujo operativo diario y calidad de datos
+
+Cambios:
+
+- Se creo `docs/OPERACION_DIARIA_PRECIOS.md` con flujo diario/semanal.
+- Se creo `docs/NAMING_CONVENTION.md` con convencion de nombres para archivos reales.
+- Se agrego `scripts/10_generar_reporte_calidad_datos.py`.
+- Se generan `data/processed/reporte_calidad_datos.csv` y `data/processed/resumen_calidad_fuente.csv`.
+- Se agregaron estados `OK`, `REVISAR`, `INVALIDO`, `DESACTUALIZADO`.
+- Se agrego `score_calidad`.
+- Se mejoro `scripts/09_validar_precios_reales.py` con `fila_origen` y contexto de incidencia.
+- Se agrego panel `Calidad` en `dashboard/index.html`.
+- Se agregaron pruebas `tests/test_data_quality_operations.py`.
+- Se actualizaron README, guia de uso, guia de carga real, contrato de datos, plan de pruebas, estado y politica de retencion.
+
+Archivos creados:
+
+- `docs/OPERACION_DIARIA_PRECIOS.md`
+- `docs/NAMING_CONVENTION.md`
+- `scripts/10_generar_reporte_calidad_datos.py`
+- `tests/test_data_quality_operations.py`
+
+Archivos modificados:
+
+- `dashboard/index.html`
+- `scripts/09_validar_precios_reales.py`
+- `tests/test_dashboard_shopping_list_ui.py`
+- `README.md`
+- `docs/GUIA_USO_MVP.md`
+- `docs/GUIA_CARGA_PRECIOS_REALES.md`
+- `docs/DATA_CONTRACT.md`
+- `docs/TEST_PLAN.md`
+- `docs/PROJECT_STATUS.md`
+- `docs/DATA_RETENTION_POLICY.md`
+- `docs/CHANGELOG.md`
+
+Pruebas ejecutadas:
+
+- `python -m compileall scripts`: OK.
+- `python scripts/09_validar_precios_reales.py --input data/sample/precios_reales_demo.csv`: OK.
+- `python scripts/10_generar_reporte_calidad_datos.py`: OK, genero reportes de calidad.
+- `python scripts/08_generar_mvp_demo.py`: OK, flujo v1.2.0 compatible.
+- `python -m pytest`: 42 passed.
+- Dashboard por HTTP local: OK, carga resumen/detalle de calidad y mantiene flujo MVP.
+
 ## 2026-07-12 - Sprint 10 - Operacion real controlada
 
 Cambios:
