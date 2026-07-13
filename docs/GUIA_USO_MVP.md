@@ -37,10 +37,13 @@ http://127.0.0.1:8026/dashboard/
 El dashboard esta organizado en una navegacion lateral:
 
 - `Resumen`
-- `Precios`
-- `Lista de compra`
+- `Datos y productos`
+- `Mi lista`
 - `Comparacion`
-- `Ruta/cercania`
+- `Calidad`
+- `Ruta`
+
+`Resumen` muestra mejor comercio, costo estimado, ahorro, cobertura, incidencias y recomendacion de ruta. Al inicio estos valores aparecen vacios y las acciones que necesitan datos se muestran deshabilitadas.
 
 Primer archivo a cargar:
 
@@ -94,7 +97,7 @@ data/sample/lista_compra_demo.csv
 
 La lista se puede guardar en el navegador con `Guardar`, recuperar con `Recuperar` y exportar con `Exportar CSV`.
 
-Tambien se puede usar `Recalcular` para actualizar los paneles con los datos cargados y `Limpiar sesion` para borrar la sesion local y empezar de nuevo.
+Tambien se puede usar `Recalcular` para actualizar los paneles con los datos cargados y `Limpiar sesion` para borrar la sesion local y empezar de nuevo. La limpieza pide confirmacion antes de eliminar archivos cargados y la lista guardada.
 
 ## 5. Calcular ranking
 

@@ -1,5 +1,29 @@
 # Changelog
 
+## 2026-07-13 - Sprint 13 - Integracion funcional del modelo visual Site
+
+Cambios:
+
+- Se inventariaron dos capturas y el HTML de `design_reference/site_model/`.
+- Se crearon `docs/UI_INTEGRATION_PLAN.md` y `docs/UI_COMPONENT_MAPPING.md` antes de implementar.
+- Se creo `dashboard/v2/index.html` como candidata aislada.
+- Se aplico la direccion Site: tema claro, sidebar verde, acento lima, cards blancas, barras y tablas ligeras.
+- Se conservaron IDs, contratos CSV, validaciones y logica completa de v1.4.0.
+- Se agregaron resumen ejecutivo, loader de archivos, feedback, acciones deshabilitadas y confirmacion al limpiar.
+- Se mejoraron etiquetas, foco de teclado, contraste y responsive.
+- Tras validar paridad, se promovio la candidata a `dashboard/index.html` sin crear una copia legacy.
+- Se elimino `dashboard/v2/` al confirmar igualdad de hash; Git conserva el historial de la candidata.
+- Se agregaron pruebas en `tests/test_dashboard_site_integration.py`.
+
+Pruebas:
+
+- `python -m compileall scripts`: OK.
+- Flujo demo y consolidacion multiarchivo: OK.
+- Datos demo, promociones, lista, calidad y ruta leidos por el JavaScript real: OK.
+- `python -m pytest`: 51 passed.
+- Desktop 1440x1000 y mobile 390x844: sin desborde horizontal.
+- Consola del navegador: sin errores.
+
 ## 2026-07-12 - Sprint 12 - Consolidacion multiarchivo diaria
 
 Cambios:
