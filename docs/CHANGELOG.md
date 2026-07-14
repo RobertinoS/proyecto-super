@@ -2,8 +2,8 @@
 
 ## Sin release - Sprint 15 - Staging controlado
 
-Preparacion local completada y lista para commit desplegable. No implica cierre
-funcional del sprint, merge, tag ni activacion externa:
+Preparacion local y validacion manual staging completadas. No implica cierre
+funcional del sprint, tag ni activacion automatica:
 
 - plan de despliegue, aislamiento Supabase, storage, variables, FastAPI,
   evidencia E2E, gate de publicacion y runbook de incidentes;
@@ -12,14 +12,24 @@ funcional del sprint, merge, tag ni activacion externa:
 - validador estatico de migraciones que protege el hash de `001`;
 - limites staging 5 productos/1 pagina, fixture y publicacion desactivada;
 - kill switch GitHub y execution ID estable entre reintentos;
-- n8n inactivo con warm-up progresivo en tres intentos;
+- n8n versionado inactivo con warm-up progresivo en tres intentos;
 - run ID deterministico, recuperacion Supabase y upserts idempotentes;
 - persistencia privada de trazabilidad en dry run y gate de publicacion intacto;
 - validador de idempotencia local/remoto sin imprimir credenciales.
 
-Pendiente: crear Supabase staging aislado, ejecutar migraciones revisadas,
-desplegar FastAPI, importar n8n inactivo, validar UptimeRobot y completar el E2E
-externo. Publicacion sigue bloqueada; no se habilita schedule de GitHub.
+Validacion manual externa no sensible:
+
+- FastAPI Render activa y Supabase staging aislado;
+- n8n Test URL y Production URL correctas, con `Structured Success` y
+  `rows_processed=3`;
+- idempotencia confirmada sin duplicados y publicacion bloqueada;
+- export n8n endurecido: normalizacion de `trigger_type`, payload limitado al
+  contrato `/jobs/scrape` y salidas HTTP de scrape/proceso separadas hacia
+  `Structured Error`.
+
+Pendiente: E2E de GitHub Actions mediante `workflow_dispatch` y evidencia no
+sensible de esa corrida. Publicacion sigue bloqueada; no se habilita schedule
+de GitHub y `PROJECT_SUPER_AUTOMATION_ENABLED` permanece en `false`.
 
 Validacion local:
 

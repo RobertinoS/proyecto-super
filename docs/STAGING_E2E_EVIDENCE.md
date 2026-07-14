@@ -21,6 +21,20 @@ cierre funcional de Sprint 15.
 - GitHub Actions: el E2E mediante `workflow_dispatch` sigue pendiente; el
   kill switch `PROJECT_SUPER_AUTOMATION_ENABLED=false` debe conservarse.
 
+## Auditoria del export n8n
+
+- El artefacto versionado permanece con `active=false`; esto protege futuras
+  importaciones y no altera la validacion manual ya realizada en staging.
+- `trigger_type` se normaliza a `manual`, `manual_staging`,
+  `github_actions`, `n8n` o `smoke_test` antes de invocar FastAPI.
+- `/jobs/scrape` recibe solo `source`, `dry_run`, `max_products`,
+  `max_pages`, `execution_id` y `trigger_type`.
+- `Run Vea Scrape` y `Process and Validate` envian sus salidas de error a
+  `Structured Error`; un HTTP fallido no alcanza `Quality Gate`.
+- El workflow fuerza `dry_run=true`, limita la ejecucion a 5 productos y 1
+  pagina, y conserva tres warm-ups de 120 segundos con esperas de 20 y 40
+  segundos.
+
 ## Validacion local reproducible
 
 - Fecha: 2026-07-13.

@@ -30,13 +30,18 @@ FastAPI -> Supabase, primero con fixture y siempre con publicacion bloqueada.
 - FastAPI usa run ID deterministico, recuperacion desde Supabase, eventos,
   source health y upserts idempotentes.
 - GitHub Actions incorpora kill switch y no ejecuta scraping directo.
-- n8n sigue inactivo, con tres warm-ups y esperas progresivas.
+- El artefacto n8n versionado permanece inactivo para importaciones nuevas;
+  conserva tres warm-ups y esperas progresivas. La URL Production se valido
+  manualmente en el entorno staging sin habilitar schedule interno.
 - Render queda en fixture, limites 5/1, auto deploy y publicacion desactivados.
 - Evidencia local de idempotencia: 3 productos, mismo run ID y `DRY_RUN`.
 - Validacion manual externa no sensible: FastAPI Render staging esta activa;
   Supabase staging esta aislado; las URLs Test y Production de n8n procesan el
   fixture con respuesta estructurada y `rows_processed=3`; la repeticion
   idempotente no genera duplicados y la publicacion queda bloqueada.
+- Export n8n auditado: normaliza `trigger_type`, limita `/jobs/scrape` a los
+  campos FastAPI reconocidos y deriva los errores HTTP de scrape/proceso a la
+  respuesta estructurada de error, sin alcanzar Quality Gate.
 - GitHub Actions E2E sigue pendiente. El schedule no debe habilitarse y la
   variable `PROJECT_SUPER_AUTOMATION_ENABLED` debe conservar el valor `false`
   hasta completar esa prueba manual.
