@@ -1,5 +1,33 @@
 # Configuracion n8n y UptimeRobot
 
+## Validacion UptimeRobot Sprint 15
+
+La revision es manual; no se modifica UptimeRobot desde el repo.
+
+- [ ] Monitor HTTP(s) existente apunta al dominio de n8n y termina en
+  `/healthz` o equivalente.
+- [ ] La URL no contiene `/webhook/` ni parametros secretos.
+- [ ] Intervalo menor a 15 minutos, respuesta 200 y alertas activas.
+- [ ] No existe monitor para mantener FastAPI despierta.
+- [ ] No se creo un segundo monitor ni otro n8n.
+
+Registrar solo resultado y fecha; no guardar el dominio privado completo.
+
+Resultado 2026-07-13: el endpoint publico `/healthz` del unico servicio n8n
+observado en Render respondio HTTP 200 con `status=ok`. La cuenta de UptimeRobot
+requiere autenticacion en esta sesion, por lo que URL configurada, intervalo y
+alertas permanecen pendientes de verificacion manual. No se modifico el monitor.
+
+## Workflow staging Sprint 15
+
+Importar `Proyecto Super - Daily Price Refresh - Staging` desactivado. El JSON
+realiza hasta tres GET `/health` separados, con timeout 120 segundos y esperas
+progresivas de 20 y 40 segundos. Usa limite 5/1, fuerza `dry_run=true` y no
+activa schedule interno. Mismo `execution_id` conserva el mismo run en FastAPI.
+
+No importar hasta que FastAPI provenga de un commit auditado y Supabase staging
+este aislado. Configurar `ENABLE_CLOUD_PUBLICATION=false`.
+
 ## UptimeRobot: checklist manual
 
 - [ ] Monitor HTTP(s) apunta al dominio de n8n.

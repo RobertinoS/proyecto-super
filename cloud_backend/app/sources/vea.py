@@ -123,7 +123,8 @@ class VeaSource(BaseSource):
             "source": self.source_name,
             "sku": item.get("itemId") or product.get("productId"),
             "price": price,
-            "observed_at": observed_at,
+            "product": name,
+            "stock": offer.get("AvailableQuantity"),
         }
         raw_hash = hashlib.sha256(json.dumps(raw_key, sort_keys=True).encode("utf-8")).hexdigest()
         return {

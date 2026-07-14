@@ -60,7 +60,8 @@ def test_cloud_artifacts_contain_no_plausible_real_secrets():
     text = "\n".join(path.read_text(encoding="utf-8") for path in paths)
     forbidden = ["eyJhbGciOi", "sbp_", "ghp_", "github_pat_", "postgresql://"]
     assert not any(value in text for value in forbidden)
-    assert "replace-only-in-render-secret-store" in text
+    assert "SCRAPER_API_KEY=replace_me" in text
+    assert "SUPABASE_SERVICE_ROLE_KEY=replace_me" in text
 
 
 def test_supabase_migration_defines_idempotency_constraints():

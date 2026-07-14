@@ -1,5 +1,36 @@
 # Changelog
 
+## Sin release - Sprint 15 - Staging controlado
+
+Preparacion local completada y lista para commit desplegable. No implica cierre
+funcional del sprint, merge, tag ni activacion externa:
+
+- plan de despliegue, aislamiento Supabase, storage, variables, FastAPI,
+  evidencia E2E, gate de publicacion y runbook de incidentes;
+- decision obligatoria de usar `proyecto-super-staging` separado de n8n;
+- migracion `002` no destructiva con hardening y buckets privados;
+- validador estatico de migraciones que protege el hash de `001`;
+- limites staging 5 productos/1 pagina, fixture y publicacion desactivada;
+- kill switch GitHub y execution ID estable entre reintentos;
+- n8n inactivo con warm-up progresivo en tres intentos;
+- run ID deterministico, recuperacion Supabase y upserts idempotentes;
+- persistencia privada de trazabilidad en dry run y gate de publicacion intacto;
+- validador de idempotencia local/remoto sin imprimir credenciales.
+
+Pendiente: crear Supabase staging aislado, ejecutar migraciones revisadas,
+desplegar FastAPI, importar n8n inactivo, validar UptimeRobot y completar el E2E
+externo. Publicacion sigue bloqueada; no se habilita schedule de GitHub.
+
+Validacion local:
+
+- compilacion, demo MVP, consolidacion y fixture: OK;
+- migraciones: `001` intacta, 5 tablas y 3 buckets esperados;
+- idempotencia: mismo run ID, proceso estable y publicacion `DRY_RUN`;
+- FastAPI HTTP: health/docs, 401, 403, scrape, job, process y gates OK;
+- n8n existente: `/healthz` HTTP 200, sin crear servicios nuevos;
+- `python -m pytest`: 87 passed, 1 warning externo;
+- live y E2E externo no ejecutados por la regla de corte.
+
 ## 2026-07-13 - Sprint 14 - Piloto cloud de scraping oficial
 
 Completado para release local `v1.6.0`:

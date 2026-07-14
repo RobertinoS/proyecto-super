@@ -17,6 +17,8 @@ class PipelineService:
         record = self.runs.get(run_id)
         if not record:
             raise KeyError(run_id)
+        if record.get("quality") and record["quality"].get("response"):
+            return ProcessResponse.model_validate(record["quality"]["response"])
         rows = record["observations"]
         processed: list[dict[str, Any]] = []
         incidents: list[str] = list(record.get("incidents") or [])
@@ -46,25 +48,8 @@ class PipelineService:
         score = round(max(0.0, 100.0 - invalid_pct), 2)
         status = "READY_FOR_APPROVAL" if processed and invalid_pct <= max_invalid_pct else "QUALITY_REJECTED"
         record["processed"] = processed
-        record["quality"] = {"status": status, "score": score, "invalid": invalid, "incidents": incidents}
         record["summary"].status = status
-        if not dry_run:
-            if not self.runs.supabase.configured:
-                raise RuntimeError("Supabase no esta configurado para persistir el dataset procesado")
-            if processed:
-                buffer = io.StringIO()
-                writer = csv.DictWriter(buffer, fieldnames=list(processed[0]))
-                writer.writeheader()
-                writer.writerows(processed)
-                date_path = datetime.now(timezone.utc).strftime("%Y/%m/%d")
-                path = f"processed/{date_path}/{run_id}/precios_procesados.csv"
-                self.runs.supabase.upload_bytes(
-                    self.runs.supabase.settings.processed_bucket,
-                    path,
-                    buffer.getvalue().encode("utf-8"),
-                    "text/csv",
-                )
-        return ProcessResponse(
+        response = ProcessResponse(
             run_id=run_id,
             status=status,
             rows_processed=len(processed),
@@ -72,3 +57,36 @@ class PipelineService:
             quality_score=score,
             incidents=incidents,
         )
+        record["quality"] = {
+            "status": status,
+            "score": score,
+            "invalid": invalid,
+            "incidents": incidents,
+            "response": response.model_dump(mode="json"),
+        }
+        if not dry_run and not self.runs.supabase.configured:
+            raise RuntimeError("Supabase no esta configurado para persistir el dataset procesado")
+        if self.runs.supabase.configured:
+            self.runs.persist_summary(run_id)
+            self.runs.supabase.mark_observations_quality(run_id, "OK" if status == "READY_FOR_APPROVAL" else "INVALIDO")
+            self.runs.supabase.save_execution_event(
+                record["summary"].execution_id,
+                run_id,
+                "PIPELINE_PROCESSED",
+                status,
+                metadata={"rows_processed": len(processed), "rows_invalid": invalid, "quality_score": score},
+            )
+            if processed:
+                buffer = io.StringIO()
+                writer = csv.DictWriter(buffer, fieldnames=list(processed[0]))
+                writer.writeheader()
+                writer.writerows(processed)
+                date_path = record["summary"].started_at.astimezone(timezone.utc).strftime("%Y/%m/%d")
+                path = f"processed/{date_path}/{run_id}/precios_procesados.csv"
+                self.runs.supabase.upload_bytes(
+                    self.runs.supabase.settings.processed_bucket,
+                    path,
+                    buffer.getvalue().encode("utf-8"),
+                    "text/csv",
+                )
+        return response

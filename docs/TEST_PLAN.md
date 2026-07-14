@@ -1,5 +1,43 @@
 # Plan de pruebas
 
+## Sprint 15 - Staging controlado
+
+Pruebas automatizadas, sin red externa:
+
+- inmutabilidad y estructura de migraciones `001`/`002`;
+- ausencia de tablas n8n y operaciones SQL destructivas;
+- buckets privados y revocacion de roles de navegador;
+- defaults staging y limites 5 productos/1 pagina;
+- kill switch `PROJECT_SUPER_AUTOMATION_ENABLED`;
+- `workflow_dispatch`, schedule y Secrets de GitHub;
+- n8n inactivo, tres warm-ups, esperas 20/40 y publicacion bloqueada;
+- health degradado si staging no tiene Supabase;
+- autenticacion 401/403;
+- idempotencia durable simulada tras reinicio de `RunService`;
+- upserts de runs, observaciones, eventos y publicaciones dry run;
+- fixture y source mode live limitado sin ejecutar live en pytest;
+- compatibilidad completa con las 74 pruebas de v1.6.0.
+
+Comandos:
+
+```powershell
+python -m compileall scripts cloud_backend
+python scripts/08_generar_mvp_demo.py
+python scripts/11_consolidar_relevamientos.py --input data/sample/multifile
+python scripts/12_smoke_test_fuente_piloto.py
+python scripts/13_validate_supabase_migrations.py
+python scripts/14_validate_staging_idempotency.py
+python -m pytest
+```
+
+Pruebas externas manuales: seguir `docs/FASTAPI_STAGING_DEPLOYMENT.md` y
+`docs/STAGING_E2E_EVIDENCE.md`. No usar pytest para Render, Supabase, n8n,
+GitHub ni Vea live. Para live usar solo el smoke separado, maximo 1 pagina y 1 a
+5 productos, y restaurar fixture.
+
+El cierre requiere evidencia externa de una fila `scrape_runs`, observaciones
+sin duplicados, eventos, source health y ningun dataset publico.
+
 ## Sprint 14 - Cloud y fuente piloto
 
 Pruebas automaticas en `cloud_backend/tests/`:

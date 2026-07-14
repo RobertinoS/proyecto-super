@@ -31,12 +31,14 @@ def create_app(settings: Settings | None = None, sources: dict | None = None) ->
 
     @app.get("/health")
     def health() -> dict:
+        staging_ready = config.app_env != "staging" or config.supabase_configured
         return {
-            "status": "ok",
+            "status": "ok" if staging_ready else "degraded",
             "app_version": config.app_version,
             "environment": config.app_env,
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "supabase_configured": config.supabase_configured,
+            "staging_ready": staging_ready,
             "available_sources": sorted(app.state.sources),
             "uptime": round(time.monotonic() - app.state.started_monotonic, 3),
             "build_info": {"sha": config.build_sha, "source_mode": config.source_mode},

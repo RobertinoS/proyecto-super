@@ -4,6 +4,47 @@ Comparador local de precios para supermercados, autoservicios y mayoristas de Sa
 
 Version: `v1.6.0` - base cloud de Sprint 14 lista para despliegue controlado, con publicacion real desactivada.
 
+Sprint 15 se desarrolla en `sprint-15-controlled-staging-deployment`. Endurece
+staging, idempotencia durable, kill switches y runbooks, pero no cambia la
+version estable hasta completar la evidencia externa y la auditoria Git.
+
+## Sprint 15: staging controlado
+
+La opcion aprobada es un proyecto Supabase separado llamado
+`proyecto-super-staging`. No aplicar migraciones en la base operativa de n8n.
+
+Validacion local segura:
+
+```powershell
+python -m compileall scripts cloud_backend
+python scripts/13_validate_supabase_migrations.py
+python scripts/14_validate_staging_idempotency.py
+python -m pytest
+```
+
+Defaults del candidato: `APP_ENV=staging`, `SOURCE_MODE=fixture`,
+`ENABLE_PUBLICATION=false`, 5 productos y 1 pagina. En staging, `/health`
+informa `degraded` y bloquea jobs si Supabase durable no esta configurado.
+`dry_run` impide publicar, pero conserva trazabilidad privada cuando el staging
+esta correctamente configurado.
+
+Documentacion de despliegue:
+
+```text
+docs/STAGING_DEPLOYMENT_PLAN.md
+docs/SUPABASE_ISOLATION_DECISION.md
+docs/STAGING_STORAGE_CHECKLIST.md
+docs/EXTERNAL_CONFIGURATION_CHECKLIST.md
+docs/FASTAPI_STAGING_DEPLOYMENT.md
+docs/STAGING_E2E_EVIDENCE.md
+docs/PUBLICATION_GATE.md
+docs/STAGING_INCIDENT_RUNBOOK.md
+```
+
+No desplegar una copia sin commit: Render debe construir un commit auditado. El
+workflow GitHub permanece gobernado por
+`PROJECT_SUPER_AUTOMATION_ENABLED=false` hasta la prueba E2E manual.
+
 ## MVP v1.0
 
 Objetivo: permitir que una persona use datos CSV locales para comparar precios, promociones, listas de compra y conveniencia por distancia aproximada sin depender de backend, credenciales, APIs pagas ni Codex.

@@ -1,5 +1,19 @@
 # Configuracion Supabase para scraping cloud
 
+## Decision Sprint 15
+
+Usar exclusivamente un proyecto separado `proyecto-super-staging`; no aplicar
+SQL sobre la base operativa de n8n. Ver
+`docs/SUPABASE_ISOLATION_DECISION.md`. Ejecutar `001` y luego `002` solo despues
+de verificar el proyecto. `002` crea/refuerza buckets privados, revoca roles de
+navegador y agrega contratos de staging sin borrar datos.
+
+Validacion previa obligatoria:
+
+```powershell
+python scripts/13_validate_supabase_migrations.py
+```
+
 No ejecutar migraciones automaticamente. Revisar `supabase/migrations/001_cloud_scraping_foundation.sql` en un proyecto de prueba y aplicar manualmente.
 
 ## Tablas propuestas

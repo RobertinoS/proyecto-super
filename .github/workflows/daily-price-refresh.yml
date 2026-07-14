@@ -19,7 +19,15 @@ concurrency:
 permissions: {}
 
 jobs:
+  automation-disabled:
+    if: ${{ vars.PROJECT_SUPER_AUTOMATION_ENABLED != 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Report disabled automation
+        run: echo "Proyecto Super automation is disabled by PROJECT_SUPER_AUTOMATION_ENABLED"
+
   trigger-n8n:
+    if: ${{ vars.PROJECT_SUPER_AUTOMATION_ENABLED == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -36,14 +44,14 @@ jobs:
           WEBHOOK_URL: ${{ secrets.N8N_PRODUCTION_WEBHOOK_URL }}
           WEBHOOK_TOKEN: ${{ secrets.N8N_WEBHOOK_TOKEN }}
         run: |
-          execution_id="gha-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          execution_id="gha-${GITHUB_RUN_ID}"
           http_code=$(curl --silent --show-error \
             --retry 2 --retry-all-errors --retry-delay 20 \
-            --connect-timeout 30 --max-time 360 \
+            --connect-timeout 30 --max-time 540 \
             --output response.json --write-out "%{http_code}" \
             --request POST "$WEBHOOK_URL" \
             --header "Content-Type: application/json" \
             --header "X-Webhook-Token: $WEBHOOK_TOKEN" \
-            --data "{\"source\":\"vea\",\"dry_run\":true,\"execution_id\":\"${execution_id}\",\"trigger_type\":\"github_actions\"}")
-          cat response.json
+            --data "{\"source\":\"vea\",\"dry_run\":true,\"max_products\":3,\"max_pages\":1,\"execution_id\":\"${execution_id}\",\"trigger_type\":\"github_actions\"}")
+          python -c "import json; data=json.load(open('response.json')); print(json.dumps({k:data.get(k) for k in ('status','execution_id','run_id','duplicate_execution')}, ensure_ascii=True))"
           test "$http_code" -ge 200 -a "$http_code" -lt 300 || { echo "n8n returned HTTP $http_code"; exit 1; }

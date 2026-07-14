@@ -4,17 +4,47 @@ Actualizado: 2026-07-13.
 
 ## Sprint actual
 
-Sprint 14 - Piloto cloud de scraping oficial.
+Sprint 15 - Despliegue staging controlado.
 
-Estado: funcionalmente completo. Base cloud lista para despliegue controlado en Sprint 15; sin despliegue ni migraciones ejecutadas y con publicacion real desactivada.
+Estado: preparacion local completada y candidata a despliegue desde Git. El
+despliegue externo, proyecto Supabase staging aislado, importacion n8n y
+evidencia E2E siguen pendientes. Sprint 15 no esta cerrado funcionalmente y la
+publicacion real permanece desactivada.
 
 Rama:
 
 ```text
-sprint-14-cloud-scraping-pilot
+sprint-15-controlled-staging-deployment
 ```
 
-Objetivo: dejar una base cloud desplegable, segura e idempotente para una fuente oficial piloto sin depender de la PC local.
+Objetivo: validar en staging aislado el circuito GitHub Actions -> n8n ->
+FastAPI -> Supabase, primero con fixture y siempre con publicacion bloqueada.
+
+## Estado Sprint 15
+
+- Main inicial limpio en tag `v1.6.0`.
+- Aislamiento elegido: proyecto separado `proyecto-super-staging`; el Supabase
+  de n8n queda fuera de alcance.
+- Migracion `001` permanece byte a byte sin cambios; `002` agrega hardening y
+  buckets privados sin eliminar datos.
+- FastAPI usa run ID deterministico, recuperacion desde Supabase, eventos,
+  source health y upserts idempotentes.
+- GitHub Actions incorpora kill switch y no ejecuta scraping directo.
+- n8n sigue inactivo, con tres warm-ups y esperas progresivas.
+- Render queda en fixture, limites 5/1, auto deploy y publicacion desactivados.
+- Evidencia local de idempotencia: 3 productos, mismo run ID y `DRY_RUN`.
+- Acciones externas pendientes: Supabase staging todavia no fue creado, las
+  migraciones no fueron ejecutadas, FastAPI no fue desplegada, n8n no fue
+  importado y el E2E cloud no fue ejecutado. Sprint 15 aun no cumple aceptacion
+  funcional cloud.
+- Render fue auditado en modo lectura: existe un unico n8n y `/healthz` responde
+  200. Supabase/UptimeRobot requieren login; no se crearon servicios, proyectos,
+  workflows ni monitores externos. El remote `origin` ya esta configurado para
+  publicar esta rama candidata tras la auditoria Git.
+- Regresion local completa: demo, consolidacion, smoke fixture, migraciones e
+  idempotencia OK; `python -m pytest`: 87 passed, 1 warning externo.
+- Docker CLI no esta instalado, por lo que la imagen se validara en Render solo
+  despues de disponer de un commit remoto auditable.
 
 ## Diagnostico ejecutivo
 
