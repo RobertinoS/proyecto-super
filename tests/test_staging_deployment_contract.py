@@ -80,20 +80,38 @@ def test_github_action_has_kill_switch_manual_trigger_and_no_direct_scraping():
     assert "curl" in text and "--max-time" in text and "--retry 2" in text
 
 
-def test_n8n_workflow_is_staging_inactive_and_has_progressive_warmup():
+def test_n8n_workflow_is_staging_inactive_and_has_safe_payload_error_routes():
     path = ROOT / "automation" / "n8n" / "proyecto_super_daily_scrape.json"
     workflow = json.loads(path.read_text(encoding="utf-8"))
-    names = {node["name"] for node in workflow["nodes"]}
+    nodes = {node["name"]: node for node in workflow["nodes"]}
+    names = set(nodes)
     assert workflow["active"] is False
     assert workflow["name"].endswith("Staging")
     assert {"Warm FastAPI", "Warm FastAPI Retry 2", "Warm FastAPI Retry 3", "Wait 20s", "Wait 40s"} <= names
     warm_nodes = [node for node in workflow["nodes"] if node["name"].startswith("Warm FastAPI")]
     assert len(warm_nodes) == 3
     assert all(node["parameters"]["options"]["timeout"] == 120000 for node in warm_nodes)
+
+    validation = nodes["Validate Token and Payload"]["parameters"]["jsCode"]
+    for trigger_type in ("manual", "manual_staging", "github_actions", "n8n", "smoke_test"):
+        assert f"'{trigger_type}'" in validation
+    assert "Math.min(" in validation and "Math.max(" in validation and "5" in validation
+    assert "max_pages: 1" in validation
+    assert "dry_run: true" in validation
+
+    scrape_body = nodes["Run Vea Scrape"]["parameters"]["body"]
+    for field in ("source", "dry_run", "max_products", "max_pages", "execution_id", "trigger_type"):
+        assert f"{field}:" in scrape_body
+    assert "approved:" not in scrape_body
+
+    connections = workflow["connections"]
+    for node_name, success_target in (("Run Vea Scrape", "Process and Validate"), ("Process and Validate", "Quality Gate")):
+        assert nodes[node_name]["onError"] == "continueErrorOutput"
+        outputs = connections[node_name]["main"]
+        assert outputs[0][0]["node"] == success_target
+        assert outputs[1][0]["node"] == "Structured Error"
+
     text = path.read_text(encoding="utf-8")
-    assert "Math.min(Number(body.max_products || 3), 5)" in text
-    assert "Math.min(Number(body.max_pages || 1), 1)" in text
-    assert "dry_run: true" in text
     assert "ENABLE_CLOUD_PUBLICATION" in text
     assert not re.search(r"(?:api[_-]?key|token)\s*[:=]\s*['\"][A-Za-z0-9_-]{20,}", text, re.IGNORECASE)
 

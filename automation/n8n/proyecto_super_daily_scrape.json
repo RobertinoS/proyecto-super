@@ -1,220 +1,686 @@
 {
-  "name": "Proyecto Super - Daily Price Refresh - Staging",
+  "name": "Proyecto Súper — Daily Price Refresh — Staging",
   "nodes": [
     {
-      "parameters": {"httpMethod": "POST", "path": "proyecto-super/daily-refresh", "responseMode": "responseNode", "options": {}},
-      "id": "webhook-trigger",
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "proyecto-super/daily-refresh",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "2efa9407-3fdd-4d11-9638-0633729f703c",
       "name": "Webhook Trigger",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [-900, 0],
+      "position": [
+        -2208,
+        368
+      ],
       "webhookId": "configure-after-import"
     },
     {
       "parameters": {
-        "jsCode": "const headers = $json.headers || {}; const expected = $env.N8N_WEBHOOK_TOKEN || ''; const supplied = headers['x-webhook-token'] || headers['X-Webhook-Token'] || ''; if (!expected || supplied !== expected) throw new Error('Unauthorized webhook'); const body = $json.body || {}; return [{json:{source: body.source || 'vea', dry_run: true, max_products: Math.min(Number(body.max_products || 3), 5), max_pages: Math.min(Number(body.max_pages || 1), 1), execution_id: body.execution_id || `n8n-${Date.now()}`, trigger_type: body.trigger_type || 'n8n', approved: body.approved === true}}];"
+        "jsCode": "const headers = $json.headers || {};\nconst expected = $env.N8N_WEBHOOK_TOKEN || '';\nconst supplied =\n  headers['x-webhook-token'] ||\n  headers['X-Webhook-Token'] ||\n  '';\n\nif (!expected || supplied !== expected) {\n  throw new Error('Unauthorized webhook');\n}\n\nconst body = $json.body || {};\n\nconst allowedTriggerTypes = new Set([\n  'manual',\n  'manual_staging',\n  'github_actions',\n  'n8n',\n  'smoke_test',\n]);\n\nconst requestedTriggerType = String(body.trigger_type || 'n8n');\nconst triggerType = allowedTriggerTypes.has(requestedTriggerType)\n  ? requestedTriggerType\n  : 'n8n';\n\nreturn [\n  {\n    json: {\n      source: body.source || 'vea',\n      dry_run: true,\n      max_products: Math.min(\n        Math.max(Number(body.max_products || 3), 1),\n        5\n      ),\n      max_pages: 1,\n      execution_id: body.execution_id || `n8n-${Date.now()}`,\n      trigger_type: triggerType,\n      approved: body.approved === true,\n    },\n  },\n];"
       },
-      "id": "validate-request",
+      "id": "9b995ced-bfa4-4315-894f-738ed11f857b",
       "name": "Validate Token and Payload",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [-680, 0]
+      "position": [
+        -1984,
+        368
+      ]
     },
     {
-      "parameters": {"url": "={{ $env.FASTAPI_BASE_URL + '/health' }}", "options": {"timeout": 120000}},
-      "id": "warm-api",
+      "parameters": {
+        "url": "={{ $env.FASTAPI_BASE_URL + '/health' }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "b48213d9-57e1-4528-a739-8279c9f527b4",
       "name": "Warm FastAPI",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [-450, 0],
+      "position": [
+        -1760,
+        368
+      ],
       "onError": "continueRegularOutput"
     },
     {
-      "parameters": {"conditions": {"options": {"caseSensitive": true}, "conditions": [{"leftValue": "={{ $json.status }}", "rightValue": "ok", "operator": {"type": "string", "operation": "equals"}}]}},
-      "id": "health-gate",
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "ok",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a49525ca-b6ec-47e8-a4f3-621df924f766",
       "name": "API Healthy?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
-      "position": [-220, 0]
+      "position": [
+        -1536,
+        368
+      ]
     },
     {
-      "parameters": {"amount": 20},
-      "id": "wait-before-warm-2",
+      "parameters": {
+        "amount": 20
+      },
+      "id": "a004bf6d-7854-4615-9230-e1d863f7fd13",
       "name": "Wait 20s",
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
-      "position": [-20, 100]
+      "position": [
+        -1312,
+        480
+      ],
+      "webhookId": "de62c028-d37e-44ae-9949-4659be61c6c7"
     },
     {
-      "parameters": {"url": "={{ $env.FASTAPI_BASE_URL + '/health' }}", "options": {"timeout": 120000}},
-      "id": "warm-api-2",
+      "parameters": {
+        "url": "={{ $env.FASTAPI_BASE_URL + '/health' }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "67aa964d-27d0-410b-9616-eafd1411bf90",
       "name": "Warm FastAPI Retry 2",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [180, 100],
+      "position": [
+        -1088,
+        480
+      ],
       "onError": "continueRegularOutput"
     },
     {
-      "parameters": {"conditions": {"options": {"caseSensitive": true}, "conditions": [{"leftValue": "={{ $json.status }}", "rightValue": "ok", "operator": {"type": "string", "operation": "equals"}}]}},
-      "id": "health-gate-2",
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "ok",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "3718ac7f-5ea5-4c34-9cce-7b3d40296c97",
       "name": "API Healthy Retry 2?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
-      "position": [380, 100]
+      "position": [
+        -864,
+        480
+      ]
     },
     {
-      "parameters": {"amount": 40},
-      "id": "wait-before-warm-3",
+      "parameters": {
+        "amount": 40
+      },
+      "id": "4c9877b8-bb62-45f2-afca-56f11fd655e9",
       "name": "Wait 40s",
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
-      "position": [580, 180]
+      "position": [
+        -640,
+        576
+      ],
+      "webhookId": "16c8cdcf-ed5a-4484-abbf-11c6511f882d"
     },
     {
-      "parameters": {"url": "={{ $env.FASTAPI_BASE_URL + '/health' }}", "options": {"timeout": 120000}},
-      "id": "warm-api-3",
+      "parameters": {
+        "url": "={{ $env.FASTAPI_BASE_URL + '/health' }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "76e8d8b7-49a4-463c-9975-4b275f7d83a9",
       "name": "Warm FastAPI Retry 3",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [780, 180],
+      "position": [
+        -416,
+        576
+      ],
       "onError": "continueRegularOutput"
     },
     {
-      "parameters": {"conditions": {"options": {"caseSensitive": true}, "conditions": [{"leftValue": "={{ $json.status }}", "rightValue": "ok", "operator": {"type": "string", "operation": "equals"}}]}},
-      "id": "health-gate-3",
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "ok",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "88fd5315-1516-402d-a11d-461c006513b1",
       "name": "API Healthy Final?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
-      "position": [980, 180]
+      "position": [
+        -192,
+        576
+      ]
     },
     {
       "parameters": {
         "method": "POST",
         "url": "={{ $env.FASTAPI_BASE_URL + '/jobs/scrape' }}",
         "sendHeaders": true,
-        "headerParameters": {"parameters": [{"name": "X-API-Key", "value": "={{ $env.SCRAPER_API_KEY }}"}]},
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-API-Key",
+              "value": "={{ $env.SCRAPER_API_KEY }}"
+            }
+          ]
+        },
         "sendBody": true,
         "contentType": "raw",
         "rawContentType": "application/json",
-        "body": "={{ JSON.stringify($('Validate Token and Payload').first().json) }}",
-        "options": {"timeout": 120000}
+        "body": "={{ JSON.stringify({\n  source: $('Validate Token and Payload').first().json.source,\n  dry_run: true,\n  max_products: $('Validate Token and Payload').first().json.max_products,\n  max_pages: $('Validate Token and Payload').first().json.max_pages,\n  execution_id: $('Validate Token and Payload').first().json.execution_id,\n  trigger_type: $('Validate Token and Payload').first().json.trigger_type\n}) }}",
+        "options": {
+          "timeout": 120000
+        }
       },
-      "id": "scrape-job",
+      "id": "7d8edd3d-f514-4453-b4ce-2523d9387cf4",
       "name": "Run Vea Scrape",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [180, -120],
-      "onError": "continueRegularOutput"
+      "position": [
+        32,
+        336
+      ],
+      "onError": "continueErrorOutput"
     },
     {
       "parameters": {
         "method": "POST",
         "url": "={{ $env.FASTAPI_BASE_URL + '/pipeline/process' }}",
         "sendHeaders": true,
-        "headerParameters": {"parameters": [{"name": "X-API-Key", "value": "={{ $env.SCRAPER_API_KEY }}"}]},
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-API-Key",
+              "value": "={{ $env.SCRAPER_API_KEY }}"
+            }
+          ]
+        },
         "sendBody": true,
         "contentType": "raw",
         "rawContentType": "application/json",
         "body": "={{ JSON.stringify({run_id: $json.run_id, dry_run: true, max_invalid_pct: 10}) }}",
-        "options": {"timeout": 120000}
+        "options": {
+          "timeout": 120000
+        }
       },
-      "id": "process-pipeline",
+      "id": "2070d741-552f-4231-aa7f-2992b551771f",
       "name": "Process and Validate",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [410, -120],
-      "onError": "continueRegularOutput"
+      "position": [
+        256,
+        272
+      ],
+      "onError": "continueErrorOutput"
     },
     {
-      "parameters": {"conditions": {"options": {"caseSensitive": true}, "conditions": [{"leftValue": "={{ $json.status }}", "rightValue": "READY_FOR_APPROVAL", "operator": {"type": "string", "operation": "equals"}}, {"leftValue": "={{ $json.rows_processed }}", "rightValue": 0, "operator": {"type": "number", "operation": "gt"}}]}},
-      "id": "quality-gate",
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "READY_FOR_APPROVAL",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "leftValue": "={{ $json.rows_processed }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "bce84d80-758e-441d-9eec-a5e630420d55",
       "name": "Quality Gate",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
-      "position": [640, -120]
+      "position": [
+        480,
+        144
+      ]
     },
     {
-      "parameters": {"jsCode": "const input = $json; const approved = $('Validate Token and Payload').first().json.approved === true; const enabled = ($env.ENABLE_CLOUD_PUBLICATION || 'false').toLowerCase() === 'true'; return [{json:{...input, should_publish: approved && enabled}}];"},
-      "id": "publication-gate-data",
+      "parameters": {
+        "jsCode": "const input = $json; const approved = $('Validate Token and Payload').first().json.approved === true; const enabled = ($env.ENABLE_CLOUD_PUBLICATION || 'false').toLowerCase() === 'true'; return [{json:{...input, should_publish: approved && enabled}}];"
+      },
+      "id": "dc501613-79df-4274-be3d-d3415cb20e9d",
       "name": "Build Publication Gate",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [860, -200]
+      "position": [
+        704,
+        96
+      ]
     },
     {
-      "parameters": {"conditions": {"options": {"caseSensitive": true}, "conditions": [{"leftValue": "={{ $json.should_publish }}", "rightValue": true, "operator": {"type": "boolean", "operation": "true"}}]}},
-      "id": "publication-gate",
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.should_publish }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "d7e15bd5-cc83-49da-9520-0a50daeddd6d",
       "name": "Publication Approved?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
-      "position": [1080, -200]
+      "position": [
+        928,
+        96
+      ]
     },
     {
       "parameters": {
         "method": "POST",
         "url": "={{ $env.FASTAPI_BASE_URL + '/pipeline/publish' }}",
         "sendHeaders": true,
-        "headerParameters": {"parameters": [{"name": "X-API-Key", "value": "={{ $env.SCRAPER_API_KEY }}"}]},
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-API-Key",
+              "value": "={{ $env.SCRAPER_API_KEY }}"
+            }
+          ]
+        },
         "sendBody": true,
         "contentType": "raw",
         "rawContentType": "application/json",
         "body": "={{ JSON.stringify({run_id: $json.run_id, approved: true, approved_by: 'n8n-reviewed', dry_run: true}) }}",
-        "options": {"timeout": 120000}
+        "options": {
+          "timeout": 120000
+        }
       },
-      "id": "publish-dry-run",
+      "id": "f0e3ff9f-8880-4ae9-a950-0f3ae7754fcb",
       "name": "Publish Dry Run Only",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [1310, -280],
+      "position": [
+        1152,
+        0
+      ],
       "onError": "continueRegularOutput"
     },
     {
-      "parameters": {"jsCode": "return [{json:{status:'COMPLETED_PENDING_APPROVAL', publication:'BLOCKED', reason:'Sprint 15 staging gate', run_id:$json.run_id, rows_processed:$json.rows_processed || 0}}];"},
-      "id": "skip-publication",
+      "parameters": {
+        "jsCode": "return [{json:{status:'COMPLETED_PENDING_APPROVAL', publication:'BLOCKED', reason:'Sprint 15 staging gate', run_id:$json.run_id, rows_processed:$json.rows_processed || 0}}];"
+      },
+      "id": "da493ea6-0024-4ed9-8271-90783a9eaed0",
       "name": "Skip Publication",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1310, -100]
+      "position": [
+        1152,
+        192
+      ]
     },
     {
-      "parameters": {"respondWith": "json", "responseBody": "={{ $json }}", "options": {"responseCode": 200}},
-      "id": "respond-success",
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "b141b012-10e6-499c-a9c1-0ccc826b9722",
       "name": "Structured Success",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.4,
-      "position": [1550, -190]
+      "position": [
+        1376,
+        96
+      ]
     },
     {
-      "parameters": {"respondWith": "json", "responseBody": "={{ {status:'FAILED', stage:'health_or_quality', publication:'BLOCKED', details:$json} }}", "options": {"responseCode": 503}},
-      "id": "respond-error",
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {status:'FAILED', stage:'health_or_quality', publication:'BLOCKED', details:$json} }}",
+        "options": {
+          "responseCode": 503
+        }
+      },
+      "id": "adfcee19-588c-4a53-b893-3724ffb1a32c",
       "name": "Structured Error",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.4,
-      "position": [1210, 240]
+      "position": [
+        704,
+        432
+      ]
     }
   ],
+  "pinData": {},
   "connections": {
-    "Webhook Trigger": {"main": [[{"node": "Validate Token and Payload", "type": "main", "index": 0}]]},
-    "Validate Token and Payload": {"main": [[{"node": "Warm FastAPI", "type": "main", "index": 0}]]},
-    "Warm FastAPI": {"main": [[{"node": "API Healthy?", "type": "main", "index": 0}]]},
-    "API Healthy?": {"main": [[{"node": "Run Vea Scrape", "type": "main", "index": 0}], [{"node": "Wait 20s", "type": "main", "index": 0}]]},
-    "Wait 20s": {"main": [[{"node": "Warm FastAPI Retry 2", "type": "main", "index": 0}]]},
-    "Warm FastAPI Retry 2": {"main": [[{"node": "API Healthy Retry 2?", "type": "main", "index": 0}]]},
-    "API Healthy Retry 2?": {"main": [[{"node": "Run Vea Scrape", "type": "main", "index": 0}], [{"node": "Wait 40s", "type": "main", "index": 0}]]},
-    "Wait 40s": {"main": [[{"node": "Warm FastAPI Retry 3", "type": "main", "index": 0}]]},
-    "Warm FastAPI Retry 3": {"main": [[{"node": "API Healthy Final?", "type": "main", "index": 0}]]},
-    "API Healthy Final?": {"main": [[{"node": "Run Vea Scrape", "type": "main", "index": 0}], [{"node": "Structured Error", "type": "main", "index": 0}]]},
-    "Run Vea Scrape": {"main": [[{"node": "Process and Validate", "type": "main", "index": 0}]]},
-    "Process and Validate": {"main": [[{"node": "Quality Gate", "type": "main", "index": 0}]]},
-    "Quality Gate": {"main": [[{"node": "Build Publication Gate", "type": "main", "index": 0}], [{"node": "Structured Error", "type": "main", "index": 0}]]},
-    "Build Publication Gate": {"main": [[{"node": "Publication Approved?", "type": "main", "index": 0}]]},
-    "Publication Approved?": {"main": [[{"node": "Publish Dry Run Only", "type": "main", "index": 0}], [{"node": "Skip Publication", "type": "main", "index": 0}]]},
-    "Publish Dry Run Only": {"main": [[{"node": "Structured Success", "type": "main", "index": 0}]]},
-    "Skip Publication": {"main": [[{"node": "Structured Success", "type": "main", "index": 0}]]}
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Validate Token and Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Token and Payload": {
+      "main": [
+        [
+          {
+            "node": "Warm FastAPI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Warm FastAPI": {
+      "main": [
+        [
+          {
+            "node": "API Healthy?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "API Healthy?": {
+      "main": [
+        [
+          {
+            "node": "Run Vea Scrape",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait 20s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 20s": {
+      "main": [
+        [
+          {
+            "node": "Warm FastAPI Retry 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Warm FastAPI Retry 2": {
+      "main": [
+        [
+          {
+            "node": "API Healthy Retry 2?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "API Healthy Retry 2?": {
+      "main": [
+        [
+          {
+            "node": "Run Vea Scrape",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait 40s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 40s": {
+      "main": [
+        [
+          {
+            "node": "Warm FastAPI Retry 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Warm FastAPI Retry 3": {
+      "main": [
+        [
+          {
+            "node": "API Healthy Final?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "API Healthy Final?": {
+      "main": [
+        [
+          {
+            "node": "Run Vea Scrape",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Structured Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run Vea Scrape": {
+      "main": [
+        [
+          {
+            "node": "Process and Validate",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Structured Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process and Validate": {
+      "main": [
+        [
+          {
+            "node": "Quality Gate",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Structured Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Quality Gate": {
+      "main": [
+        [
+          {
+            "node": "Build Publication Gate",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Structured Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Publication Gate": {
+      "main": [
+        [
+          {
+            "node": "Publication Approved?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Publication Approved?": {
+      "main": [
+        [
+          {
+            "node": "Publish Dry Run Only",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Skip Publication",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Publish Dry Run Only": {
+      "main": [
+        [
+          {
+            "node": "Structured Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Skip Publication": {
+      "main": [
+        [
+          {
+            "node": "Structured Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
   },
   "active": false,
-  "settings": {"executionOrder": "v1", "saveDataErrorExecution": "all", "saveDataSuccessExecution": "all"},
-  "versionId": "configure-after-import",
-  "meta": {"templateCredsSetupCompleted": false},
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "1b49ae7a-0a59-4d20-a6fe-0dcdf56ca0c9",
+  "meta": {
+    "instanceId": "6477b6cbbdb82e76e6dd59c10be15a774ebb20a9bd1c5b70da2547d2f3650e5d"
+  },
+  "nodeGroups": [],
+  "id": "uWBLAMG8qDepv8fU",
   "tags": []
 }

@@ -20,10 +20,22 @@ alertas permanecen pendientes de verificacion manual. No se modifico el monitor.
 
 ## Workflow staging Sprint 15
 
-Importar `Proyecto Super - Daily Price Refresh - Staging` desactivado. El JSON
-realiza hasta tres GET `/health` separados, con timeout 120 segundos y esperas
-progresivas de 20 y 40 segundos. Usa limite 5/1, fuerza `dry_run=true` y no
-activa schedule interno. Mismo `execution_id` conserva el mismo run en FastAPI.
+El artefacto `Proyecto Super - Daily Price Refresh - Staging` se versiona con
+`active=false` para que una importacion nueva no habilite ejecuciones por
+accidente. El JSON realiza hasta tres GET `/health` separados, con timeout 120
+segundos y esperas progresivas de 20 y 40 segundos. Usa limite 5/1, fuerza
+`dry_run=true` y no tiene schedule interno. Mismo `execution_id` conserva el
+mismo run en FastAPI.
+
+Validacion manual 2026-07-14: la URL Test y la URL Production del workflow
+staging devolvieron `Structured Success` con `rows_processed=3`, sin duplicados
+en una repeticion y con publicacion bloqueada. Esta evidencia no habilita el
+schedule de GitHub ni cierra Sprint 15.
+
+El payload se normaliza antes de `/jobs/scrape`: acepta solo los `trigger_type`
+del contrato FastAPI y envia `source`, `dry_run`, `max_products`, `max_pages`,
+`execution_id` y `trigger_type`. Los errores de `Run Vea Scrape` y `Process and
+Validate` van a `Structured Error`, por lo que no llegan a `Quality Gate`.
 
 No importar hasta que FastAPI provenga de un commit auditado y Supabase staging
 este aislado. Configurar `ENABLE_CLOUD_PUBLICATION=false`.
@@ -50,7 +62,8 @@ UptimeRobot no debe apuntar al webhook productivo de scraping.
 3. Configurar variables/credenciales: `N8N_WEBHOOK_TOKEN`, `FASTAPI_BASE_URL`, `SCRAPER_API_KEY`, `ENABLE_CLOUD_PUBLICATION=false`.
 4. Regenerar el webhook de produccion y guardarlo como GitHub Secret `N8N_PRODUCTION_WEBHOOK_URL`.
 5. Guardar el token como `N8N_WEBHOOK_TOKEN` en GitHub y n8n; no escribirlo en JSON.
-6. Verificar que `/health` tolera arranque en frio: timeout 120 s, 3 intentos, espera 30 s.
+6. Verificar que `/health` tolera arranque en frio: timeout 120 s, 3 intentos,
+   esperas de 20 y 40 s.
 7. Ejecutar manualmente con `dry_run=true`, limite bajo y `SOURCE_MODE=fixture`.
 8. Revisar cada nodo, logs y respuesta estructurada antes de activar.
 
