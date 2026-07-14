@@ -1,15 +1,15 @@
 # Estado del proyecto
 
-Actualizado: 2026-07-13.
+Actualizado: 2026-07-14.
 
 ## Sprint actual
 
 Sprint 15 - Despliegue staging controlado.
 
-Estado: preparacion local completada y candidata a despliegue desde Git. El
-despliegue externo, proyecto Supabase staging aislado, importacion n8n y
-evidencia E2E siguen pendientes. Sprint 15 no esta cerrado funcionalmente y la
-publicacion real permanece desactivada.
+Estado: preparacion local y validacion manual de staging completadas. FastAPI
+staging, Supabase staging aislado y n8n con fixture fueron validados de forma
+manual. Falta probar el circuito E2E disparado por GitHub Actions. Sprint 15 no
+esta cerrado funcionalmente y la publicacion real permanece desactivada.
 
 Rama:
 
@@ -33,14 +33,17 @@ FastAPI -> Supabase, primero con fixture y siempre con publicacion bloqueada.
 - n8n sigue inactivo, con tres warm-ups y esperas progresivas.
 - Render queda en fixture, limites 5/1, auto deploy y publicacion desactivados.
 - Evidencia local de idempotencia: 3 productos, mismo run ID y `DRY_RUN`.
-- Acciones externas pendientes: Supabase staging todavia no fue creado, las
-  migraciones no fueron ejecutadas, FastAPI no fue desplegada, n8n no fue
-  importado y el E2E cloud no fue ejecutado. Sprint 15 aun no cumple aceptacion
-  funcional cloud.
+- Validacion manual externa no sensible: FastAPI Render staging esta activa;
+  Supabase staging esta aislado; las URLs Test y Production de n8n procesan el
+  fixture con respuesta estructurada y `rows_processed=3`; la repeticion
+  idempotente no genera duplicados y la publicacion queda bloqueada.
+- GitHub Actions E2E sigue pendiente. El schedule no debe habilitarse y la
+  variable `PROJECT_SUPER_AUTOMATION_ENABLED` debe conservar el valor `false`
+  hasta completar esa prueba manual.
 - Render fue auditado en modo lectura: existe un unico n8n y `/healthz` responde
-  200. Supabase/UptimeRobot requieren login; no se crearon servicios, proyectos,
-  workflows ni monitores externos. El remote `origin` ya esta configurado para
-  publicar esta rama candidata tras la auditoria Git.
+  200. La integracion manual no creo otro n8n ni un monitor adicional. El remote
+  `origin` contiene la rama candidata; este estado se mergea solo para permitir
+  la prueba manual de GitHub Actions, no para cerrar Sprint 15.
 - Regresion local completa: demo, consolidacion, smoke fixture, migraciones e
   idempotencia OK; `python -m pytest`: 87 passed, 1 warning externo.
 - Docker CLI no esta instalado, por lo que la imagen se validara en Render solo
