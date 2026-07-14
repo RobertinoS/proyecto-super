@@ -1,5 +1,19 @@
 # Arquitectura cloud Sprint 14
 
+## Endurecimiento staging Sprint 15
+
+- Supabase debe ser un proyecto separado: `proyecto-super-staging`.
+- FastAPI staging exige Supabase configurado; de lo contrario `/health` muestra
+  `degraded` y los jobs quedan bloqueados.
+- `run_id` se deriva deterministamente de `execution_id` y el estado se recupera
+  desde Supabase tras un reinicio.
+- Observaciones, eventos y publication dry runs usan upserts/constraints
+  idempotentes. Objetos repetidos no se sobrescriben.
+- `dry_run` bloquea publicacion, no la trazabilidad privada de staging.
+- GitHub tiene kill switch; n8n permanece inactivo y ejecuta warm-up 1 + 20 s +
+  warm-up 2 + 40 s + warm-up 3.
+- FastAPI no tiene keepalive. UptimeRobot monitorea solo n8n.
+
 ## Flujo logico
 
 ```text

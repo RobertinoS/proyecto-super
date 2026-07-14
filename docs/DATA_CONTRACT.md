@@ -1,5 +1,20 @@
 # Contrato de datos
 
+## Sprint 15 - Persistencia e idempotencia staging
+
+- `execution_id` identifica el evento del orquestador y es unico.
+- `run_id` es UUID deterministico derivado de `execution_id`; sobrevive a
+  reintentos y reinicios.
+- `trigger_type=manual_staging` se acepta en API. Para mantener inmutable la
+  restriccion de `001`, se persiste como `trigger_type=manual` y
+  `trigger_context=manual_staging`, agregado por `002`.
+- `raw_hash` se calcula sin timestamp de extraccion para que un reintento del
+  mismo contenido conserve identidad. La unicidad es `(run_id, raw_hash)`.
+- `app_env=staging` distingue las corridas y `updated_at` registra cambios.
+- Eventos repetidos se deduplican por `(execution_id, event_type, status)`.
+- `dry_run=true` permite guardar trazabilidad privada en staging, pero nunca
+  escribir un dataset publicado.
+
 ## Sprint 14 - Observacion cloud oficial
 
 Cada adaptador cloud intenta producir:

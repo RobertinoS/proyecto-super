@@ -1,5 +1,19 @@
 # Checklist de seguridad cloud
 
+## Sprint 15
+
+- [ ] Supabase separado `proyecto-super-staging`; no compartir base con n8n.
+- [ ] GitHub variable `PROJECT_SUPER_AUTOMATION_ENABLED=false` por defecto.
+- [ ] Workflow n8n importado inactivo y `ENABLE_CLOUD_PUBLICATION=false`.
+- [ ] Render con fixture, limites 5/1 y `ENABLE_PUBLICATION=false`.
+- [ ] Cero monitores/keepalives para FastAPI.
+- [ ] Migraciones `001`/`002` validadas y sin operaciones destructivas.
+- [ ] Buckets privados; sin policies anon/authenticated.
+- [ ] Prueba de reintento conserva run ID y cero observaciones nuevas.
+- [ ] Logs contienen IDs/estados, nunca headers ni valores secretos.
+- [ ] Secretos distintos para webhook, FastAPI y service role.
+- [ ] Live manual vuelve a fixture al terminar.
+
 ## Antes de desplegar
 
 - Generar claves aleatorias distintas para `N8N_WEBHOOK_TOKEN` y `SCRAPER_API_KEY`.

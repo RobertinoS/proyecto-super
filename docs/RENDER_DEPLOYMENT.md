@@ -1,5 +1,10 @@
 # Despliegue manual de FastAPI en Render
 
+Para Sprint 15 usar la guia detallada `docs/FASTAPI_STAGING_DEPLOYMENT.md`.
+`render.yaml` define exclusivamente `proyecto-super-fastapi-staging`, sin
+keepalive, `autoDeploy: false`, fixture, publicacion desactivada, timeout 120 y
+limites 5 productos/1 pagina.
+
 Sprint 14 no despliega automaticamente. `render.yaml` deja `autoDeploy: false`, fixture y publicacion desactivada.
 
 ## Pasos

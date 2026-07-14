@@ -83,6 +83,21 @@ def test_health_is_public_and_does_not_expose_secret():
     assert API_KEY not in response.text
 
 
+def test_staging_health_is_degraded_without_durable_supabase():
+    settings = Settings(app_env="staging", scraper_api_key=API_KEY, source_mode="fixture")
+    client = TestClient(create_app(settings, {"fake": FakeSource()}))
+    health = client.get("/health").json()
+    assert health["status"] == "degraded"
+    assert health["staging_ready"] is False
+    run = client.post(
+        "/jobs/scrape",
+        json={"source": "fake", "dry_run": True, "trigger_type": "manual_staging"},
+        headers=auth(),
+    ).json()
+    assert run["status"] == "FAILED"
+    assert "Supabase staging no esta configurado" in run["error_summary"]
+
+
 def test_sources_is_public_and_describes_mode():
     response = client_for().get("/sources")
     assert response.status_code == 200
@@ -117,6 +132,16 @@ def test_execution_id_is_idempotent():
     second = client.post("/jobs/scrape", json=payload, headers=auth()).json()
     assert first["run_id"] == second["run_id"]
     assert second["duplicate_execution"] is True
+
+
+def test_manual_staging_trigger_is_accepted_locally():
+    response = client_for().post(
+        "/jobs/scrape",
+        json={"source": "fake", "execution_id": "manual-stage", "trigger_type": "manual_staging"},
+        headers=auth(),
+    )
+    assert response.status_code == 200
+    assert response.json()["execution_id"] == "manual-stage"
 
 
 def test_empty_and_failed_source_are_controlled():

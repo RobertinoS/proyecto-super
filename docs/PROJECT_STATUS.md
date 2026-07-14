@@ -1,20 +1,53 @@
 # Estado del proyecto
 
-Actualizado: 2026-07-13.
+Actualizado: 2026-07-14.
 
 ## Sprint actual
 
-Sprint 14 - Piloto cloud de scraping oficial.
+Sprint 15 - Despliegue staging controlado.
 
-Estado: funcionalmente completo. Base cloud lista para despliegue controlado en Sprint 15; sin despliegue ni migraciones ejecutadas y con publicacion real desactivada.
+Estado: preparacion local y validacion manual de staging completadas. FastAPI
+staging, Supabase staging aislado y n8n con fixture fueron validados de forma
+manual. Falta probar el circuito E2E disparado por GitHub Actions. Sprint 15 no
+esta cerrado funcionalmente y la publicacion real permanece desactivada.
 
 Rama:
 
 ```text
-sprint-14-cloud-scraping-pilot
+sprint-15-controlled-staging-deployment
 ```
 
-Objetivo: dejar una base cloud desplegable, segura e idempotente para una fuente oficial piloto sin depender de la PC local.
+Objetivo: validar en staging aislado el circuito GitHub Actions -> n8n ->
+FastAPI -> Supabase, primero con fixture y siempre con publicacion bloqueada.
+
+## Estado Sprint 15
+
+- Main inicial limpio en tag `v1.6.0`.
+- Aislamiento elegido: proyecto separado `proyecto-super-staging`; el Supabase
+  de n8n queda fuera de alcance.
+- Migracion `001` permanece byte a byte sin cambios; `002` agrega hardening y
+  buckets privados sin eliminar datos.
+- FastAPI usa run ID deterministico, recuperacion desde Supabase, eventos,
+  source health y upserts idempotentes.
+- GitHub Actions incorpora kill switch y no ejecuta scraping directo.
+- n8n sigue inactivo, con tres warm-ups y esperas progresivas.
+- Render queda en fixture, limites 5/1, auto deploy y publicacion desactivados.
+- Evidencia local de idempotencia: 3 productos, mismo run ID y `DRY_RUN`.
+- Validacion manual externa no sensible: FastAPI Render staging esta activa;
+  Supabase staging esta aislado; las URLs Test y Production de n8n procesan el
+  fixture con respuesta estructurada y `rows_processed=3`; la repeticion
+  idempotente no genera duplicados y la publicacion queda bloqueada.
+- GitHub Actions E2E sigue pendiente. El schedule no debe habilitarse y la
+  variable `PROJECT_SUPER_AUTOMATION_ENABLED` debe conservar el valor `false`
+  hasta completar esa prueba manual.
+- Render fue auditado en modo lectura: existe un unico n8n y `/healthz` responde
+  200. La integracion manual no creo otro n8n ni un monitor adicional. El remote
+  `origin` contiene la rama candidata; este estado se mergea solo para permitir
+  la prueba manual de GitHub Actions, no para cerrar Sprint 15.
+- Regresion local completa: demo, consolidacion, smoke fixture, migraciones e
+  idempotencia OK; `python -m pytest`: 87 passed, 1 warning externo.
+- Docker CLI no esta instalado, por lo que la imagen se validara en Render solo
+  despues de disponer de un commit remoto auditable.
 
 ## Diagnostico ejecutivo
 

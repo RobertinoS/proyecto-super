@@ -12,7 +12,7 @@ class ScrapeJobRequest(BaseModel):
     max_products: int = Field(default=25, ge=1, le=500)
     max_pages: int = Field(default=1, ge=1, le=10)
     execution_id: str | None = Field(default=None, max_length=120)
-    trigger_type: Literal["manual", "github_actions", "n8n", "smoke_test"] = "manual"
+    trigger_type: Literal["manual", "manual_staging", "github_actions", "n8n", "smoke_test"] = "manual"
 
 
 class RunSummary(BaseModel):
