@@ -1,7 +1,7 @@
 # Despliegue FastAPI staging en Render
 
-Estado: repo preparado; despliegue externo pendiente de candidato versionado y
-acceso autenticado. No crear otro n8n ni monitor UptimeRobot para FastAPI.
+Estado: FastAPI staging desplegada y validada en el E2E de Sprint 15. No crear
+otro n8n ni monitor UptimeRobot para FastAPI.
 
 ## Servicio
 
@@ -38,7 +38,7 @@ LOG_LEVEL=INFO
 Las tres variables sensibles se cargan como secretos: `SCRAPER_API_KEY`,
 `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`.
 
-## Validacion
+## Validacion completada
 
 1. Revisar build de Python 3.11 y dependencias, sin valores de entorno en logs.
 2. Confirmar que Uvicorn escucha en `$PORT`.
@@ -51,6 +51,11 @@ Las tres variables sensibles se cargan como secretos: `SCRAPER_API_KEY`,
 7. Consultar `/jobs/{run_id}` y confirmar persistencia tras redeploy/reinicio.
 8. Procesar y comprobar `READY_FOR_APPROVAL`.
 9. Probar publicacion sin aprobacion (409) y con aprobacion (DRY_RUN).
+
+La validacion externa confirmo fixture procesado, `Structured Success`,
+idempotencia sin duplicados y persistencia en Supabase staging. La prueba Vea
+ONLINE limitada se realizo en `dry_run=true`; el entorno quedo restaurado a
+`SOURCE_MODE=fixture` con `ENABLE_PUBLICATION=false`.
 
 ## Arranque en frio
 

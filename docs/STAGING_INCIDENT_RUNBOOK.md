@@ -7,6 +7,13 @@
 3. Render: `ENABLE_PUBLICATION=false` y `SOURCE_MODE=fixture`.
 4. Confirmar que UptimeRobot solo consulta la salud de n8n.
 
+Estado posterior al cierre Sprint 15: mantener los cuatro gates en estado
+seguro. El schedule de GitHub puede iniciar una corrida de control, pero
+`PROJECT_SUPER_AUTOMATION_ENABLED=false` evita que alcance n8n. Para una nueva
+ventana manual, restaurar este valor a `false` al finalizar y conservar
+`SOURCE_MODE=fixture`, `ENABLE_PUBLICATION=false` y
+`ENABLE_CLOUD_PUBLICATION=false`.
+
 ## FastAPI no responde
 
 - Revisar deploy/build y `/health`; esperar el arranque en frio previsto.

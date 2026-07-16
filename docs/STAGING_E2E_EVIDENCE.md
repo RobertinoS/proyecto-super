@@ -1,11 +1,10 @@
 # Evidencia E2E staging - Sprint 15
 
-Estado: `VALIDACION_MANUAL_PARCIAL_CONFIRMADA`.
+Estado: `COMPLETADO_V1.7.0`.
 
 La validacion manual de staging se completo sin registrar secretos, URLs de
 webhook, identificadores privados ni enlaces de consola. El E2E iniciado por
-GitHub Actions continua pendiente y es la condicion externa restante para el
-cierre funcional de Sprint 15.
+GitHub Actions se completo con fixture, persistencia aislada e idempotencia.
 
 ## Validacion manual externa
 
@@ -18,8 +17,22 @@ cierre funcional de Sprint 15.
 - Idempotencia: repeticion controlada confirmada sin registros duplicados.
 - Publicacion: bloqueada; `ENABLE_PUBLICATION=false` y
   `ENABLE_CLOUD_PUBLICATION=false`.
-- GitHub Actions: el E2E mediante `workflow_dispatch` sigue pendiente; el
-  kill switch `PROJECT_SUPER_AUTOMATION_ENABLED=false` debe conservarse.
+- GitHub Actions: el E2E mediante `workflow_dispatch` fue exitoso; el kill
+  switch `PROJECT_SUPER_AUTOMATION_ENABLED=false` debe conservarse.
+
+## E2E de cierre
+
+- GitHub Actions ejecuto manualmente el workflow diario y recibio una respuesta
+  HTTP 2xx de n8n; no se documentan identificadores de corrida.
+- n8n completo `Structured Success`; FastAPI proceso el fixture y devolvio
+  `rows_processed=3` con publicacion bloqueada.
+- Supabase staging aislado registro la ejecucion, observaciones y eventos. La
+  prueba de idempotencia no creo duplicados.
+- La publicacion efectiva fue cero. `ENABLE_PUBLICATION=false` y
+  `ENABLE_CLOUD_PUBLICATION=false` continuan activos.
+- La prueba Vea ONLINE limitada se completo con `dry_run=true`; se conserva el
+  canal `ONLINE` y no se representa como precio fisico de sucursal.
+- El entorno se restauro a `SOURCE_MODE=fixture` y el kill switch a `false`.
 
 ## Auditoria del export n8n
 
@@ -39,8 +52,7 @@ cierre funcional de Sprint 15.
 
 - Fecha: 2026-07-13.
 - Modo: fixture local, sin Supabase real.
-- `execution_id`: `sprint15-fixture-idempotency`.
-- `run_id`: `6b3cffd4-42c7-5e99-981a-d2e619447f0a`.
+- `execution_id` y `run_id`: deterministas y omitidos de esta evidencia.
 - Productos: 3.
 - Calidad: `READY_FOR_APPROVAL`.
 - Repeticion: mismo `run_id`, `duplicate_execution=true`.
@@ -54,7 +66,7 @@ Validacion HTTP local adicional:
 
 - `/health=ok`, `/docs=200`, una fuente fixture.
 - Sin API key: 401; API key incorrecta: 403.
-- `run_id`: `a8e63bcd-3b6c-518f-83cf-e9ba6c453621`.
+- `run_id`: presente y omitido de esta evidencia.
 - 3 productos, `SCRAPED`, proceso `READY_FOR_APPROVAL`.
 - Publicacion sin aprobacion: 409; con aprobacion: `DRY_RUN`.
 
@@ -65,25 +77,25 @@ Infraestructura externa observada:
 - Health publico de n8n: `/healthz` respondio HTTP 200 y `status=ok`.
 - UptimeRobot no se modifico; debe monitorear exclusivamente el health de n8n,
   nunca el webhook de scraping ni FastAPI.
-- El repo tiene remote `origin`; la rama de staging puede publicarse para que
-  GitHub Actions ejecute la prueba manual posterior.
+- El repo tiene remote `origin`; `main` es la rama predeterminada y GitHub
+  Actions quedo registrado para ejecucion manual controlada.
 - Suite completa: 87 pruebas aprobadas; una advertencia externa de deprecacion
   FastAPI TestClient/httpx.
 
-## Evidencia externa a completar
+## Evidencia externa completada
 
 | Paso | Estado | Evidencia no sensible |
 |---|---|---|
-| GitHub `workflow_dispatch` | PENDIENTE | run ID y conclusion |
-| Webhook n8n | VALIDADO MANUALMENTE | Test y Production URL correctas |
-| Warm-up FastAPI | VALIDADO MANUALMENTE | FastAPI fixture disponible para el flujo |
-| Scrape fixture | VALIDADO MANUALMENTE | `rows_processed=3` |
-| Process/calidad | VALIDADO MANUALMENTE | respuesta estructurada satisfactoria |
-| `scrape_runs` | VALIDADO MANUALMENTE | repeticion sin duplicados |
-| `price_observations` | VALIDADO MANUALMENTE | cero duplicados en prueba idempotente |
-| `source_health` | PENDIENTE DE EVIDENCIA DETALLADA | registrar solo estado no sensible |
-| `execution_events` | PENDIENTE DE EVIDENCIA DETALLADA | registrar etapas no sensibles |
-| Storage privado | PENDIENTE DE EVIDENCIA DETALLADA | paths sin URL firmada |
+| GitHub `workflow_dispatch` | VALIDADO | 2xx y workflow exitoso |
+| Webhook n8n | VALIDADO | Test y Production URL correctas |
+| Warm-up FastAPI | VALIDADO | fixture disponible para el flujo |
+| Scrape fixture | VALIDADO | `rows_processed=3` |
+| Process/calidad | VALIDADO | `Structured Success` |
+| `scrape_runs` | VALIDADO | idempotencia sin duplicados |
+| `price_observations` | VALIDADO | observaciones persistidas sin duplicados |
+| `source_health` | VALIDADO | estado actualizado por pipeline |
+| `execution_events` | VALIDADO | trazabilidad de etapas persistida |
+| Storage privado | VALIDADO | sin dataset publico |
 | Publicacion | BLOQUEADA | sin dataset publico |
 
 No registrar URL completa del webhook, tokens, service role, IDs de proyecto

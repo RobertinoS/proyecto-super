@@ -1,20 +1,20 @@
 # Estado del proyecto
 
-Actualizado: 2026-07-14.
+Actualizado: 2026-07-16.
 
-## Sprint actual
+## Release actual
 
-Sprint 15 - Despliegue staging controlado.
+Proyecto Super v1.7.0 - Despliegue staging controlado.
 
-Estado: preparacion local y validacion manual de staging completadas. FastAPI
-staging, Supabase staging aislado y n8n con fixture fueron validados de forma
-manual. Falta probar el circuito E2E disparado por GitHub Actions. Sprint 15 no
-esta cerrado funcionalmente y la publicacion real permanece desactivada.
+Estado: Sprint 15 cerrado. GitHub Actions, n8n, FastAPI y Supabase staging
+completaron el E2E manual con fixture, trazabilidad e idempotencia. La
+publicacion real sigue desactivada y la automatizacion permanece bloqueada por
+defecto.
 
-Rama:
+Rama de release:
 
 ```text
-sprint-15-controlled-staging-deployment
+main
 ```
 
 Objetivo: validar en staging aislado el circuito GitHub Actions -> n8n ->
@@ -42,13 +42,19 @@ FastAPI -> Supabase, primero con fixture y siempre con publicacion bloqueada.
 - Export n8n auditado: normaliza `trigger_type`, limita `/jobs/scrape` a los
   campos FastAPI reconocidos y deriva los errores HTTP de scrape/proceso a la
   respuesta estructurada de error, sin alcanzar Quality Gate.
-- GitHub Actions E2E sigue pendiente. El schedule no debe habilitarse y la
-  variable `PROJECT_SUPER_AUTOMATION_ENABLED` debe conservar el valor `false`
-  hasta completar esa prueba manual.
-- Render fue auditado en modo lectura: existe un unico n8n y `/healthz` responde
-  200. La integracion manual no creo otro n8n ni un monitor adicional. El remote
-  `origin` contiene la rama candidata; este estado se mergea solo para permitir
-  la prueba manual de GitHub Actions, no para cerrar Sprint 15.
+- GitHub Actions E2E manual fue exitoso: webhook productivo, warm-up, fixture,
+  proceso, eventos y persistencia Supabase staging se verificaron sin
+  duplicados. La respuesta estructurada quedo pendiente de aprobacion y la
+  publicacion efectiva fue cero.
+- Vea ONLINE se probo en modo live limitado, con trazabilidad de canal
+  `ONLINE`, limites bajos y sin publicacion. Luego `SOURCE_MODE` se restauro a
+  `fixture`.
+- El schedule sigue gobernado por `PROJECT_SUPER_AUTOMATION_ENABLED=false`.
+  Puede registrar una corrida de control, pero no llama a n8n mientras el gate
+  permanezca en `false`.
+- Render mantiene un unico n8n y `/healthz` responde 200. La integracion no
+  creo otro n8n ni un monitor adicional. `main` contiene el cierre tecnico y
+  el release se versiona con tag `v1.7.0`.
 - Regresion local completa: demo, consolidacion, smoke fixture, migraciones e
   idempotencia OK; `python -m pytest`: 87 passed, 1 warning externo.
 - Docker CLI no esta instalado, por lo que la imagen se validara en Render solo
@@ -99,7 +105,8 @@ Sprint 1 a Sprint 13 se mantienen compatibles y la rama parte de `main` con tag 
 
 - Release objetivo: `v1.6.0`.
 - Base cloud reproducible y auditada localmente.
-- Despliegue externo pendiente para Sprint 15.
+- Despliegue externo completado en Sprint 15 con staging aislado y gates de
+  publicacion activos.
 - Migracion Supabase propuesta y no ejecutada.
 - Workflow n8n importable e inactivo.
 - GitHub Actions versionado, todavia sin secretos externos configurados.

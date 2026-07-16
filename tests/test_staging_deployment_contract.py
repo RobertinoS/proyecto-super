@@ -78,6 +78,10 @@ def test_github_action_has_kill_switch_manual_trigger_and_no_direct_scraping():
     assert "vea.com.ar" not in text
     assert "cloud_backend" not in text
     assert "curl" in text and "--max-time" in text and "--retry 2" in text
+    assert "webhook_http_status=" in text
+    for field in ("status", "execution_id", "run_id", "rows_processed", "publication", "duplicate_execution"):
+        assert f'"{field}"' in text
+    assert "X-Webhook-Token: $WEBHOOK_TOKEN" in text
 
 
 def test_n8n_workflow_is_staging_inactive_and_has_safe_payload_error_routes():

@@ -2,11 +2,11 @@
 
 ## Decision Sprint 15
 
-Usar exclusivamente un proyecto separado `proyecto-super-staging`; no aplicar
-SQL sobre la base operativa de n8n. Ver
-`docs/SUPABASE_ISOLATION_DECISION.md`. Ejecutar `001` y luego `002` solo despues
-de verificar el proyecto. `002` crea/refuerza buckets privados, revoca roles de
-navegador y agrega contratos de staging sin borrar datos.
+Se uso exclusivamente un proyecto separado `proyecto-super-staging`; no se
+aplico SQL sobre la base operativa de n8n. Ver
+`docs/SUPABASE_ISOLATION_DECISION.md`. Las migraciones revisadas se aplicaron
+manualmente solo en staging. `002` crea/refuerza buckets privados, revoca roles
+de navegador y agrega contratos de staging sin borrar datos.
 
 Validacion previa obligatoria:
 
@@ -14,7 +14,9 @@ Validacion previa obligatoria:
 python scripts/13_validate_supabase_migrations.py
 ```
 
-No ejecutar migraciones automaticamente. Revisar `supabase/migrations/001_cloud_scraping_foundation.sql` en un proyecto de prueba y aplicar manualmente.
+No ejecutar migraciones automaticamente. La ejecucion manual en staging ya fue
+validada; futuras modificaciones deben revisarse en un proyecto de prueba antes
+de aplicarse.
 
 ## Tablas propuestas
 
@@ -45,6 +47,13 @@ Los buckets privados requieren JWT o URL firmada; Supabase documenta que los buc
 5. Ejecutar API en `SOURCE_MODE=fixture`, `ENABLE_PUBLICATION=false`.
 6. Verificar inserts de prueba y eliminarlos.
 7. Crear una funcion/endpoint backend para URL firmada si el dashboard cloud la necesita; no exponer service role.
+
+## Evidencia de cierre Sprint 15
+
+El E2E con fixture registro una ejecucion, observaciones y eventos en el
+proyecto staging aislado, sin duplicados ante idempotencia. La publicacion
+efectiva fue cero y los buckets permanecen privados. No se documentan IDs,
+URLs firmadas ni credenciales.
 
 ## Retencion y backup
 

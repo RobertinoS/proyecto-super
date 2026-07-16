@@ -2,11 +2,13 @@
 
 Comparador local de precios para supermercados, autoservicios y mayoristas de San Juan.
 
-Version: `v1.6.0` - base cloud de Sprint 14 lista para despliegue controlado, con publicacion real desactivada.
+Version: `v1.7.0` - staging cloud validado de forma controlada, con
+publicacion real desactivada.
 
-Sprint 15 se desarrolla en `sprint-15-controlled-staging-deployment`. Endurece
-staging, idempotencia durable, kill switches y runbooks, pero no cambia la
-version estable hasta completar la evidencia externa y la auditoria Git.
+Sprint 15 quedo cerrado como `v1.7.0`. Valida GitHub Actions -> n8n -> FastAPI
+-> Supabase staging con fixture, idempotencia y publicacion bloqueada. El
+workflow sigue protegido por el kill switch y no habilita publicacion ni modo
+live permanente.
 
 ## Sprint 15: staging controlado
 
@@ -22,7 +24,7 @@ python scripts/14_validate_staging_idempotency.py
 python -m pytest
 ```
 
-Defaults del candidato: `APP_ENV=staging`, `SOURCE_MODE=fixture`,
+Defaults operativos: `APP_ENV=staging`, `SOURCE_MODE=fixture`,
 `ENABLE_PUBLICATION=false`, 5 productos y 1 pagina. En staging, `/health`
 informa `degraded` y bloquea jobs si Supabase durable no esta configurado.
 `dry_run` impide publicar, pero conserva trazabilidad privada cuando el staging
@@ -41,9 +43,12 @@ docs/PUBLICATION_GATE.md
 docs/STAGING_INCIDENT_RUNBOOK.md
 ```
 
-No desplegar una copia sin commit: Render debe construir un commit auditado. El
-workflow GitHub permanece gobernado por
-`PROJECT_SUPER_AUTOMATION_ENABLED=false` hasta la prueba E2E manual.
+No desplegar una copia sin commit: Render debe construir un commit auditado. La
+validacion E2E manual completo el circuito con fixture y una prueba Vea ONLINE
+limitada, ambas con `dry_run=true`. `PROJECT_SUPER_AUTOMATION_ENABLED=false`,
+`ENABLE_PUBLICATION=false` y `ENABLE_CLOUD_PUBLICATION=false` permanecen como
+gates obligatorios. El schedule puede despertar GitHub Actions, pero con el
+kill switch en `false` no llama a n8n.
 
 ## MVP v1.0
 

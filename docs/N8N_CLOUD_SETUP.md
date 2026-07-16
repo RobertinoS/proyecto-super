@@ -27,18 +27,22 @@ segundos y esperas progresivas de 20 y 40 segundos. Usa limite 5/1, fuerza
 `dry_run=true` y no tiene schedule interno. Mismo `execution_id` conserva el
 mismo run en FastAPI.
 
-Validacion manual 2026-07-14: la URL Test y la URL Production del workflow
+Validacion de cierre Sprint 15: la URL Test y la URL Production del workflow
 staging devolvieron `Structured Success` con `rows_processed=3`, sin duplicados
-en una repeticion y con publicacion bloqueada. Esta evidencia no habilita el
-schedule de GitHub ni cierra Sprint 15.
+en una repeticion y con publicacion bloqueada. GitHub Actions tambien completo
+un `workflow_dispatch` controlado hacia n8n. Esta evidencia no habilita el
+schedule operativo: `PROJECT_SUPER_AUTOMATION_ENABLED=false` se conserva.
 
 El payload se normaliza antes de `/jobs/scrape`: acepta solo los `trigger_type`
 del contrato FastAPI y envia `source`, `dry_run`, `max_products`, `max_pages`,
 `execution_id` y `trigger_type`. Los errores de `Run Vea Scrape` y `Process and
 Validate` van a `Structured Error`, por lo que no llegan a `Quality Gate`.
 
-No importar hasta que FastAPI provenga de un commit auditado y Supabase staging
-este aislado. Configurar `ENABLE_CLOUD_PUBLICATION=false`.
+FastAPI proviene de un commit auditado y Supabase staging esta aislado.
+Conservar `ENABLE_CLOUD_PUBLICATION=false`, `ENABLE_PUBLICATION=false` y
+`SOURCE_MODE=fixture` como estado operativo posterior a la validacion. La
+prueba Vea ONLINE limitada usa `dry_run=true`, etiqueta el canal `ONLINE` y no
+habilita modo live permanente.
 
 ## UptimeRobot: checklist manual
 

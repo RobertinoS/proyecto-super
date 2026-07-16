@@ -1,9 +1,9 @@
 # Changelog
 
-## Sin release - Sprint 15 - Staging controlado
+## v1.7.0 - Sprint 15 - Staging controlado
 
-Preparacion local y validacion manual staging completadas. No implica cierre
-funcional del sprint, tag ni activacion automatica:
+Sprint 15 cerrado con staging aislado y validacion E2E controlada. No habilita
+publicacion real, modo live permanente ni automatizacion operativa:
 
 - plan de despliegue, aislamiento Supabase, storage, variables, FastAPI,
   evidencia E2E, gate de publicacion y runbook de incidentes;
@@ -27,9 +27,21 @@ Validacion manual externa no sensible:
   contrato `/jobs/scrape` y salidas HTTP de scrape/proceso separadas hacia
   `Structured Error`.
 
-Pendiente: E2E de GitHub Actions mediante `workflow_dispatch` y evidencia no
-sensible de esa corrida. Publicacion sigue bloqueada; no se habilita schedule
-de GitHub y `PROJECT_SUPER_AUTOMATION_ENABLED` permanece en `false`.
+Evidencia E2E de cierre, sin valores sensibles:
+
+- GitHub `workflow_dispatch` llamo al webhook productivo de n8n y recibio 2xx;
+- n8n completo warm-up, fixture, proceso y `Structured Success`;
+- Supabase staging registro ejecucion, observaciones y eventos sin duplicados;
+- la publicacion efectiva fue cero; los gates `ENABLE_PUBLICATION=false` y
+  `ENABLE_CLOUD_PUBLICATION=false` siguen activos;
+- Vea ONLINE se valido en live limitado, con `dry_run=true`, limites bajos y
+  sin representar precios fisicos de sucursal;
+- `SOURCE_MODE` fue restaurado a `fixture` y
+  `PROJECT_SUPER_AUTOMATION_ENABLED` permanece en `false`.
+
+GitHub Actions ahora registra de manera segura el 2xx y los campos no sensibles
+`status`, `execution_id`, `run_id`, `rows_processed`, `publication` y
+`duplicate_execution`, sin imprimir headers ni secretos.
 
 Validacion local:
 
@@ -39,7 +51,7 @@ Validacion local:
 - FastAPI HTTP: health/docs, 401, 403, scrape, job, process y gates OK;
 - n8n existente: `/healthz` HTTP 200, sin crear servicios nuevos;
 - `python -m pytest`: 87 passed, 1 warning externo;
-- live y E2E externo no ejecutados por la regla de corte.
+- fixture E2E y live limitado externos: validados sin publicacion.
 
 ## 2026-07-13 - Sprint 14 - Piloto cloud de scraping oficial
 
