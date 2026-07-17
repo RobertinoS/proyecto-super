@@ -19,14 +19,15 @@ class Response:
 class Session:
     def __init__(self):
         self.calls = []
+        self.response_payload = []
 
     def post(self, url, **kwargs):
         self.calls.append(("POST", url, kwargs))
-        return Response()
+        return Response(self.response_payload)
 
     def get(self, url, **kwargs):
         self.calls.append(("GET", url, kwargs))
-        return Response([])
+        return Response(self.response_payload)
 
     def patch(self, url, **kwargs):
         self.calls.append(("PATCH", url, kwargs))
@@ -95,3 +96,24 @@ def test_events_health_and_publication_use_idempotent_upserts():
     assert any("on_conflict=execution_id,event_type,status" in url for url in urls)
     assert any("source_health?on_conflict=source" in url for url in urls)
     assert any("publication_runs?on_conflict=scrape_run_id,status" in url for url in urls)
+
+
+def test_review_approval_alert_and_signed_url_use_server_side_contracts_only():
+    session = Session()
+    settings = Settings(supabase_url="https://project.supabase.co", supabase_service_role_key="test-secret")
+    service = SupabaseService(settings, session)
+    service.save_review({"id": "review", "scrape_run_id": "run", "source": "vea", "review_type": "OUTLIER", "severity": "HIGH", "status": "PENDING", "reason": "test", "idempotency_key": "review-key"})
+    service.save_dataset_approval({"id": "approval", "scrape_run_id": "run", "status": "PENDING_REVIEW", "idempotency_key": "approval-key"})
+    service.save_operational_alert({"id": "alert", "alert_type": "SOURCE_FAILURE", "severity": "HIGH", "status": "OPEN", "message": "test", "idempotency_key": "alert-key"})
+    service.save_private_dataset({"id": "dataset", "scrape_run_id": "run", "approval_id": "approval", "status": "PRIVATE_DRY_RUN", "dataset_path": "published/file.csv", "manifest_path": "published/manifest.json", "row_count": 1, "checksum_sha256": "a" * 64, "approved_by": "reviewer"})
+    session.response_payload = {"signedURL": "/object/sign/published-price-datasets/file.csv?token=temporary"}
+    url = service.create_signed_download_url("published-price-datasets", "published/file.csv", 300)
+
+    urls = [call[1] for call in session.calls]
+    assert any("review_queue?on_conflict=idempotency_key" in item for item in urls)
+    assert any("dataset_approvals?on_conflict=scrape_run_id" in item for item in urls)
+    assert any("operational_alerts?on_conflict=idempotency_key" in item for item in urls)
+    assert any("private_datasets?on_conflict=scrape_run_id,checksum_sha256" in item for item in urls)
+    assert any("/storage/v1/object/sign/published-price-datasets/published/file.csv" in item for item in urls)
+    assert url and url.startswith("https://project.supabase.co/storage/v1/object/sign/")
+    assert "test-secret" not in "\n".join(urls)

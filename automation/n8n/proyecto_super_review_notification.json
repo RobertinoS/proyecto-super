@@ -1,0 +1,96 @@
+{
+  "name": "Proyecto Super - Review Notification - Staging",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "proyecto-super-review-notification-staging",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "e278c070-7aa2-4c68-9f0d-41aa7f176f41",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [260, 300],
+      "webhookId": "proyecto-super-review-notification-staging"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $json.body || $json;\nconst required = ['run_id', 'approval_status'];\nconst missing = required.filter((key) => !body[key]);\nif (missing.length) {\n  return [{ json: { ok: false, status: 'INVALID_NOTIFICATION', missing } }];\n}\nreturn [{ json: { ok: true, status: 'PENDING_HUMAN_REVIEW', run_id: String(body.run_id), approval_status: String(body.approval_status), pending_reviews: Number(body.pending_reviews || 0), source: body.source ? String(body.source) : null } }];"
+      },
+      "id": "fe0a5e97-f933-42be-a2dc-66f2c931a06b",
+      "name": "Validate Review Notification",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [500, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [
+            { "leftValue": "={{ $json.ok }}", "rightValue": true, "operator": { "type": "boolean", "operation": "true", "singleValue": true } }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "db621b36-1148-4248-a164-d44c8e80c45b",
+      "name": "Notification Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [730, 300]
+    },
+    {
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            { "name": "status", "value": "PENDING_HUMAN_REVIEW" },
+            { "name": "message", "value": "Review notification recorded. This workflow does not approve or publish datasets." }
+          ]
+        },
+        "options": {}
+      },
+      "id": "17153a2f-2cae-419c-9d72-5e9ab61adf60",
+      "name": "Structured Review Pending",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [970, 220]
+    },
+    {
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            { "name": "status", "value": "INVALID_NOTIFICATION" },
+            { "name": "message", "value": "Notification payload is incomplete; no review or publication action was performed." }
+          ]
+        },
+        "options": {}
+      },
+      "id": "954fd31f-1e70-4fc5-bd8d-d34fed37f825",
+      "name": "Structured Error",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [970, 380]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook Trigger": { "main": [[{ "node": "Validate Review Notification", "type": "main", "index": 0 }]] },
+    "Validate Review Notification": { "main": [[{ "node": "Notification Valid?", "type": "main", "index": 0 }]] },
+    "Notification Valid?": {
+      "main": [
+        [{ "node": "Structured Review Pending", "type": "main", "index": 0 }],
+        [{ "node": "Structured Error", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "versionId": "d8bc38f1-7888-4845-9d25-d8ae2a77aa29",
+  "meta": { "templateCredsSetupCompleted": false },
+  "tags": []
+}

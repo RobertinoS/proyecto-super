@@ -3,6 +3,24 @@
 Estado: FastAPI staging desplegada y validada en el E2E de Sprint 15. No crear
 otro n8n ni monitor UptimeRobot para FastAPI.
 
+## Extension Sprint 16 pendiente de despliegue
+
+Antes de desplegar la rama Sprint 16, aplicar manualmente y revisar la
+migracion `003_review_and_private_publication.sql` solo en el proyecto staging
+aislado. Mantener:
+
+```text
+SOURCE_MODE=fixture
+ENABLE_PUBLICATION=false
+ENABLE_PRIVATE_PUBLICATION=false
+```
+
+Validar autenticacion y endpoints de reviews, operaciones y aprobacion usando
+una clave configurada exclusivamente en Render. Probar
+`POST /runs/{run_id}/private-publish` solo con `dry_run=true`; debe devolver
+`PRIVATE_DRY_RUN` sin escribir objetos. No habilitar schedule ni workflow de
+notificacion durante esta validacion.
+
 ## Servicio
 
 - Nombre: `Proyecto Super FastAPI Staging`.
@@ -25,9 +43,10 @@ Usar `docs/EXTERNAL_CONFIGURATION_CHECKLIST.md`. Valores no secretos obligatorio
 
 ```text
 APP_ENV=staging
-APP_VERSION=1.6.0
+APP_VERSION=1.7.0
 SOURCE_MODE=fixture
 ENABLE_PUBLICATION=false
+ENABLE_PRIVATE_PUBLICATION=false
 REQUEST_TIMEOUT_SECONDS=120
 REQUEST_DELAY_SECONDS=2
 MAX_PRODUCTS_PER_RUN=5

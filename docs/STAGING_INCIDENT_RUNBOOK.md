@@ -5,7 +5,8 @@
 1. GitHub: `PROJECT_SUPER_AUTOMATION_ENABLED=false`.
 2. n8n: desactivar `Proyecto Super - Daily Price Refresh - Staging`.
 3. Render: `ENABLE_PUBLICATION=false` y `SOURCE_MODE=fixture`.
-4. Confirmar que UptimeRobot solo consulta la salud de n8n.
+4. Render: `ENABLE_PRIVATE_PUBLICATION=false`.
+5. Confirmar que UptimeRobot solo consulta la salud de n8n.
 
 Estado posterior al cierre Sprint 15: mantener los cuatro gates en estado
 seguro. El schedule de GitHub puede iniciar una corrida de control, pero
@@ -13,6 +14,16 @@ seguro. El schedule de GitHub puede iniciar una corrida de control, pero
 ventana manual, restaurar este valor a `false` al finalizar y conservar
 `SOURCE_MODE=fixture`, `ENABLE_PUBLICATION=false` y
 `ENABLE_CLOUD_PUBLICATION=false`.
+
+## Revision o publicacion privada anomala
+
+- Bloquear inmediatamente `ENABLE_PRIVATE_PUBLICATION=false`; no habilitar la
+  publicacion publica como alternativa.
+- Conservar `review_queue`, `review_decisions`, `dataset_approvals` y
+  `execution_events` como evidencia; no borrar observaciones para ocultar una
+  incidencia.
+- Revocar URLs firmadas activas, revisar el manifiesto/checksum y registrar una
+  alerta operativa con el responsable de la investigacion.
 
 ## FastAPI no responde
 

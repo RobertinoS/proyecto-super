@@ -1,5 +1,13 @@
 # Evidencia E2E staging - Sprint 15
 
+## Preparacion Sprint 16 (sin validacion externa aun)
+
+La implementacion local agrega migracion 003, endpoints de revision,
+observabilidad y publicacion privada en seco. Esta seccion no constituye
+evidencia de despliegue: al momento de actualizarla no se aplico SQL 003, no se
+desplego FastAPI con Sprint 16, no se importo el workflow de aviso y no se
+escribieron datasets privados. Los gates esperados siguen en `false`.
+
 Estado: `COMPLETADO_V1.7.0`.
 
 La validacion manual de staging se completo sin registrar secretos, URLs de

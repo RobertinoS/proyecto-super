@@ -10,6 +10,51 @@ Sprint 15 quedo cerrado como `v1.7.0`. Valida GitHub Actions -> n8n -> FastAPI
 workflow sigue protegido por el kill switch y no habilita publicacion ni modo
 live permanente.
 
+## Sprint 16: revision y publicacion privada
+
+Sprint 16 esta implementado localmente y pendiente de validar en staging antes
+de su cierre. Agrega una cola de revision humana trazable, aprobacion por
+dataset, alertas operativas y una publicacion privada separada de la
+publicacion publica.
+
+Los defaults se mantienen bloqueados:
+
+```text
+SOURCE_MODE=fixture
+ENABLE_PUBLICATION=false
+ENABLE_PRIVATE_PUBLICATION=false
+PROJECT_SUPER_AUTOMATION_ENABLED=false
+```
+
+FastAPI incorpora endpoints protegidos para `reviews`, aprobaciones, datasets
+privados y operaciones. El dashboard no recibe claves: la seccion Operacion
+cloud carga exportaciones JSON saneadas para consulta y permite preparar
+decisiones locales exportables. La aplicacion durable requiere FastAPI
+autenticada.
+
+Documentacion Sprint 16:
+
+```text
+docs/SPRINT_16_IMPLEMENTATION_PLAN.md
+docs/OBSERVABILITY_RUNBOOK.md
+docs/REVIEW_WORKFLOW.md
+docs/PRIVATE_PUBLICATION_GUIDE.md
+```
+
+Validacion local:
+
+```powershell
+python -m compileall scripts cloud_backend
+python scripts/13_validate_supabase_migrations.py
+python scripts/14_validate_staging_idempotency.py
+python scripts/08_generar_mvp_demo.py
+python -m pytest
+```
+
+La migracion `003_review_and_private_publication.sql` es una propuesta
+aditiva: no se ejecuta automaticamente y solo puede aplicarse en el proyecto
+Supabase aislado de Proyecto Super.
+
 ## Sprint 15: staging controlado
 
 La opcion aprobada es un proyecto Supabase separado llamado

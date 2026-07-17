@@ -1,5 +1,25 @@
 # Changelog
 
+## Unreleased - Sprint 16 - Revision, observabilidad y publicacion privada
+
+Implementacion local pendiente de validacion staging y cierre Git:
+
+- migracion `003` aditiva para cola de revision, decisiones auditables,
+  aprobaciones de datasets y alertas operativas;
+- endpoints FastAPI protegidos para revision, aprobacion/rechazo, resumen
+  operativo, fuentes, alertas y datasets privados;
+- gate independiente `ENABLE_PRIVATE_PUBLICATION=false`, con manifiesto y
+  checksum en `PRIVATE_DRY_RUN` sin objetos publicos;
+- dashboard con Operacion cloud y Bandeja de revision sin claves ni llamadas
+  directas a FastAPI; admite JSON saneado y exporta decisiones locales;
+- workflow n8n de notificacion de revision importable pero inactivo, sin
+  aprobacion automatica ni publicacion;
+- GitHub Actions conserva kill switch y amplia solo los campos no sensibles de
+  su log estructurado.
+
+No se aplicaron migraciones, no se desplego este cambio, no se habilitaron
+schedules ni publicacion privada/publica durante la implementacion local.
+
 ## v1.7.0 - Sprint 15 - Staging controlado
 
 Sprint 15 cerrado con staging aislado y validacion E2E controlada. No habilita

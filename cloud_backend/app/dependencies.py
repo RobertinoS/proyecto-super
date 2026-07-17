@@ -13,3 +13,11 @@ def get_pipeline_service(request: Request):
 
 def get_publication_service(request: Request):
     return request.app.state.publication_service
+
+
+def get_review_service(request: Request):
+    return request.app.state.review_service
+
+
+def get_private_publication_service(request: Request):
+    return request.app.state.private_publication_service

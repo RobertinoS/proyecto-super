@@ -1,5 +1,34 @@
 # Plan de pruebas
 
+## Sprint 16 - Revision, observabilidad y publicacion privada
+
+Pruebas automatizadas sin recursos externos:
+
+- estructura aditiva de migracion `003`, RLS, claves foraneas, constraints e
+  idempotencia, sin tablas n8n ni SQL destructivo;
+- endpoints protegidos de reviews, decisiones, solicitudes y aprobaciones de
+  dataset;
+- correccion con valor anterior/nuevo, rechazo con motivo e idempotencia de
+  decisiones y aprobaciones;
+- bloqueo de aprobacion ante una revision critica o pendiente;
+- publicacion privada en `PRIVATE_DRY_RUN`, checksum, manifiesto y ausencia de
+  URL firmada cuando `ENABLE_PRIVATE_PUBLICATION=false`;
+- resumen operativo, estado de fuentes, alertas y acknowledgement;
+- dashboard: componentes cloud/revision, carga JSON saneada y rechazo de
+  campos sensibles;
+- workflow n8n de notificacion inactivo y sin credenciales/publicacion;
+- GitHub Actions: kill switch, sin scraping directo y log no sensible.
+
+Validacion staging manual pendiente:
+
+1. Aplicar `003_review_and_private_publication.sql` solo en
+   `proyecto-super-staging`.
+2. Desplegar FastAPI con fixture y ambos gates de publicacion en `false`.
+3. Ejecutar fixture manual, crear/revisar una incidencia y solicitar
+   aprobacion.
+4. Validar `PRIVATE_DRY_RUN` y que no se escriban objetos ni URLs publicas.
+5. Mantener schedule y workflow n8n de notificacion desactivados.
+
 ## Sprint 15 - Staging controlado
 
 Pruebas automatizadas, sin red externa:

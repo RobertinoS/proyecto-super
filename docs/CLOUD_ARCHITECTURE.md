@@ -1,5 +1,24 @@
 # Arquitectura cloud Sprint 14
 
+## Extension Sprint 16: revision y observabilidad
+
+La arquitectura conserva el rol de cada componente: GitHub Actions programa,
+n8n orquesta y FastAPI concentra reglas de revision/publicacion. Supabase
+staging conserva la auditoria durable; el dashboard no usa service role ni API
+key.
+
+```text
+FastAPI pipeline
+  -> review_queue / operational_alerts
+  -> dataset_approvals (decision humana)
+  -> private publication gate
+  -> bucket privado + manifiesto solo si se habilita explicitamente
+```
+
+`ENABLE_PUBLICATION=false` bloquea publicacion publica. El nuevo
+`ENABLE_PRIVATE_PUBLICATION=false` bloquea tambien escritura privada por
+defecto. La revision humana no se ejecuta desde n8n ni GitHub Actions.
+
 ## Endurecimiento staging Sprint 15
 
 - Supabase debe ser un proyecto separado: `proyecto-super-staging`.

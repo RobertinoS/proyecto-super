@@ -1,5 +1,30 @@
 # Contrato de datos
 
+## Sprint 16 - Revision y dataset privado
+
+La migracion `003_review_and_private_publication.sql` agrega contratos cloud
+solo para el proyecto aislado `proyecto-super-staging`:
+
+| Estructura | Identidad | Regla |
+|---|---|---|
+| `review_queue` | `id`, `idempotency_key` | incidencia humana por corrida/observacion; estados controlados y RLS |
+| `review_decisions` | `id`, `idempotency_key` | auditoria append-only de accion, responsable, valor anterior y correccion |
+| `dataset_approvals` | `scrape_run_id` unico | unica decision de dataset por corrida, idempotente |
+| `operational_alerts` | `id`, `idempotency_key` | alerta operacional con severidad y acknowledgement |
+| `private_datasets` | `id`, corrida + checksum | indice durable de manifiesto privado aprobado o dry run |
+
+Estados de revision: `PENDING`, `IN_REVIEW`, `APPROVED`, `REJECTED`,
+`CORRECTED`, `DISMISSED`.
+
+Estados de aprobacion: `PENDING_REVIEW`, `READY_FOR_APPROVAL`, `APPROVED`,
+`REJECTED`, `REVOKED`.
+
+Un dataset privado solo se produce tras `APPROVED`. En dry run se genera un
+manifiesto logico con checksum, pero no se escribe Storage. Si se habilita en
+una futura ventana controlada, sus rutas son
+`published/YYYY/MM/DD/run_id/precios_aprobados.csv` y
+`published/YYYY/MM/DD/run_id/manifiesto.json`; el bucket sigue privado.
+
 ## Sprint 15 - Persistencia e idempotencia staging
 
 - `execution_id` identifica el evento del orquestador y es unico.

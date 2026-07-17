@@ -2,6 +2,29 @@
 
 Actualizado: 2026-07-16.
 
+## Sprint 16 - En implementacion local
+
+Estado: implementacion funcional local en la rama
+`sprint-16-review-observability-private-publication`. No esta cerrado, no se
+ejecuto la migracion `003`, no se desplego FastAPI con estos cambios y no se
+habilito publicacion privada.
+
+- Se agregan `review_queue`, `review_decisions`, `dataset_approvals` y
+  `operational_alerts` mediante una migracion aditiva con RLS.
+- FastAPI suma endpoints protegidos de revision, aprobacion, observabilidad,
+  datasets privados y URL firmada temporal.
+- La publicacion publica permanece bloqueada por `ENABLE_PUBLICATION=false`.
+- La publicacion privada tambien permanece bloqueada por
+  `ENABLE_PRIVATE_PUBLICATION=false`; solo se prueba en `PRIVATE_DRY_RUN`.
+- El dashboard incorpora Operacion cloud y Bandeja de revision sin incluir
+  endpoint, API key, service role ni llamadas directas a FastAPI.
+- n8n conserva el workflow diario inactivo y se agrega un workflow de aviso de
+  revision inactivo que no aprueba ni publica.
+
+Pendiente externo: aplicar 003 solo en `proyecto-super-staging`, desplegar el
+backend, ejecutar fixture manual, validar decisiones y confirmar que no existe
+ningun objeto publico antes de considerar el sprint apto para cierre.
+
 ## Release actual
 
 Proyecto Super v1.7.0 - Despliegue staging controlado.

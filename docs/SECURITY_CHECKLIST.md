@@ -14,6 +14,20 @@
 - [ ] Secretos distintos para webhook, FastAPI y service role.
 - [ ] Live manual vuelve a fixture al terminar.
 
+## Sprint 16
+
+- [ ] Migracion `003` se aplica solo en `proyecto-super-staging`, nunca en el
+  Supabase operativo de n8n.
+- [ ] `ENABLE_PRIVATE_PUBLICATION=false` antes, durante y despues de pruebas
+  de implementacion local.
+- [ ] `review_queue`, decisiones, aprobaciones y alertas tienen RLS y revoke
+  para roles `anon` y `authenticated`.
+- [ ] El dashboard carga solo JSON saneado y rechaza claves con nombres de
+  secretos; no contiene API key ni URL privada.
+- [ ] Toda decision registra responsable, timestamp e idempotency key.
+- [ ] No se habilita publicacion publica, bucket publico ni schedule automatico.
+- [ ] URL firmada solo se emite desde FastAPI autenticada y por tiempo corto.
+
 ## Antes de desplegar
 
 - Generar claves aleatorias distintas para `N8N_WEBHOOK_TOKEN` y `SCRAPER_API_KEY`.

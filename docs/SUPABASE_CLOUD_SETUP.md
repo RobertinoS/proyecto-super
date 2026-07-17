@@ -18,6 +18,22 @@ No ejecutar migraciones automaticamente. La ejecucion manual en staging ya fue
 validada; futuras modificaciones deben revisarse en un proyecto de prueba antes
 de aplicarse.
 
+## Extension Sprint 16 pendiente de aplicar
+
+`003_review_and_private_publication.sql` es aditiva y no modifica 001/002.
+Solo se puede aplicar tras revisar el validador estatico y confirmar que la
+conexion apunta a `proyecto-super-staging`. Agrega:
+
+- `review_queue` y `review_decisions` para decisiones trazables;
+- `dataset_approvals` con una aprobacion por corrida;
+- `operational_alerts` para salud operativa.
+- `private_datasets` como indice durable de manifiestos/checksums privados.
+
+Las cuatro tablas mantienen RLS y revocan acceso de `anon` y
+`authenticated`. No ejecutar en el proyecto Supabase de n8n ni usarlo como
+fallback. La aplicacion manual y evidencia externa de 003 permanecen pendientes
+durante la implementacion local.
+
 ## Tablas propuestas
 
 - `scrape_runs`: corrida idempotente por `execution_id`.
@@ -37,6 +53,10 @@ Todas tienen RLS habilitado y ninguna politica anonima de escritura. El service 
 | `published-price-datasets` | privado con lectura controlada | `published/YYYY/MM/DD/run_id/precios_publicados.csv` |
 
 Los buckets privados requieren JWT o URL firmada; Supabase documenta que los buckets son privados por defecto y que las signed URLs deben tener vencimiento: [Storage Buckets](https://supabase.com/docs/guides/storage/buckets/fundamentals).
+
+Para Sprint 16 la ruta privada prevista cambia a
+`published/YYYY/MM/DD/run_id/precios_aprobados.csv` junto con
+`manifiesto.json`. No se escribe mientras `ENABLE_PRIVATE_PUBLICATION=false`.
 
 ## Creacion manual
 

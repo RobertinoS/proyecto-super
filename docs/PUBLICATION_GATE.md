@@ -1,5 +1,17 @@
 # Gate de publicacion
 
+## Extension Sprint 16: publicacion privada
+
+`ENABLE_PRIVATE_PUBLICATION=false` agrega una segunda barrera, independiente de
+la publicacion publica. Un dataset privado requiere una aprobacion durable de
+`dataset_approvals`, sin revisiones criticas o pendientes, y una llamada
+autenticada. Mientras el gate esta apagado, el resultado es `PRIVATE_DRY_RUN`:
+hay checksum, manifiesto y ruta prevista, pero no se escriben objetos.
+
+La publicacion privada, cuando se habilite en una ventana futura, solo usa el
+bucket privado `published-price-datasets` y URLs firmadas temporales. No crea
+un enlace permanente, acceso anonimo ni publicacion al dashboard publico.
+
 Sprint 15 opera con `ENABLE_PUBLICATION=false`. Ningun workflow, aprobador o
 payload puede omitir este bloqueo global.
 

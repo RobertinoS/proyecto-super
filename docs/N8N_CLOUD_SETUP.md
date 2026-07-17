@@ -1,5 +1,17 @@
 # Configuracion n8n y UptimeRobot
 
+## Sprint 16: notificacion de revision
+
+`automation/n8n/proyecto_super_review_notification.json` es un workflow
+separado e importable con `active=false`. Valida un payload de aviso y devuelve
+un estado estructurado `PENDING_HUMAN_REVIEW`; no aprueba datasets, no publica
+objetos y no tiene credenciales embebidas. No importarlo ni activarlo hasta
+validar FastAPI Sprint 16 en staging.
+
+El workflow diario conserva `PROJECT_SUPER_AUTOMATION_ENABLED=false`,
+`dry_run=true` y `ENABLE_CLOUD_PUBLICATION=false`. n8n solo puede crear una
+solicitud de aprobacion o notificar; la decision humana ocurre en FastAPI.
+
 ## Validacion UptimeRobot Sprint 15
 
 La revision es manual; no se modifica UptimeRobot desde el repo.
@@ -77,7 +89,9 @@ UptimeRobot no debe apuntar al webhook productivo de scraping.
 - `execution_id` evita duplicados.
 - Si FastAPI no esta saludable, responde error y no publica.
 - Si no hay productos o calidad falla, bloquea publicacion.
-- Sprint 14 solo permite llamada de publicacion en `dry_run`; `ENABLE_PUBLICATION=false` en API.
+- Sprint 16 solicita aprobacion de dataset, registra una alerta idempotente ante
+  fallo y responde `COMPLETED_PENDING_APPROVAL`; no llama a
+  `/pipeline/publish` ni aprueba por cuenta propia.
 - Ante 401/403, revisar credenciales sin imprimirlas.
 - Ante timeout, revisar arranque en frio y no aumentar reintentos indefinidamente.
 - Ante cambio de fuente/parsing, desactivar workflow y actualizar fixture/adaptador.
