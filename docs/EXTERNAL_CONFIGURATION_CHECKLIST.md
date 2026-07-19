@@ -11,6 +11,7 @@ se cargan directamente en la plataforma indicada.
 | `APP_VERSION` | version visible | si | Environment | `/health.app_version` |
 | `SOURCE_MODE` | fixture/live | si | Environment | `/health.build_info.source_mode` |
 | `ENABLE_PUBLICATION` | gate global | si | Environment | debe ser `false` |
+| `ENABLE_PRIVATE_PUBLICATION` | gate de escritura privada aprobada | si | Environment | debe ser `false` |
 | `SCRAPER_API_KEY` | autentica n8n | si, secreto | Secret | 401/403/200 sin imprimirla |
 | `SUPABASE_URL` | proyecto aislado | si, sensible | Secret | `/health.supabase_configured=true` |
 | `SUPABASE_SERVICE_ROLE_KEY` | backend Supabase | si, secreto | Secret | insert fixture desde API |

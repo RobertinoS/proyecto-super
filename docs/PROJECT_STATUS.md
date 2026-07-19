@@ -1,6 +1,34 @@
 # Estado del proyecto
 
-Actualizado: 2026-07-16.
+Actualizado: 2026-07-19.
+
+## Sprint 16 - Cerrado como v1.8.0
+
+Estado: validado en `proyecto-super-staging` aislado y listo para release.
+La migracion `003` se aplico solo en staging, Render ejecuto el checkpoint
+Sprint 16 y los dos workflows n8n se importaron como copias nuevas e inactivas.
+
+- Se agregan `review_queue`, `review_decisions`, `dataset_approvals` y
+  `operational_alerts` mediante una migracion aditiva con RLS.
+- FastAPI suma endpoints protegidos de revision, aprobacion, observabilidad,
+  datasets privados y URL firmada temporal.
+- La publicacion publica permanece bloqueada por `ENABLE_PUBLICATION=false`.
+- La publicacion privada tambien permanece bloqueada por
+  `ENABLE_PRIVATE_PUBLICATION=false`; solo se prueba en `PRIVATE_DRY_RUN`.
+- El dashboard incorpora Operacion cloud y Bandeja de revision sin incluir
+  endpoint, API key, service role ni llamadas directas a FastAPI.
+- n8n conserva el workflow diario inactivo y se agrega un workflow de aviso de
+  revision inactivo que no aprueba ni publica.
+- Fixture staging: tres productos procesados, calidad 100 y sin duplicados.
+- Revision humana: aprobacion registrada e idempotente; decisiones auditables.
+- Publicacion privada: `PRIVATE_DRY_RUN` con tres filas, manifiesto y checksum;
+  `private_datasets` conserva la evidencia durable.
+- Storage: bucket privado y cero objetos en `published-price-datasets`.
+- Flags finales: fixture, publicaciones desactivadas y kill switch en `false`.
+
+Rollback: conservar `v1.7.0` como referencia estable y volver a ese release en
+Render ante una regresion. Mantener los gates en `false`; no revertir la
+migracion 003 de forma destructiva.
 
 ## Release actual
 

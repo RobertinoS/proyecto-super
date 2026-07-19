@@ -64,6 +64,9 @@ jobs:
               "execution_id",
               "run_id",
               "rows_processed",
+              "quality_score",
+              "pending_reviews",
+              "approval_status",
               "publication",
               "duplicate_execution",
           )

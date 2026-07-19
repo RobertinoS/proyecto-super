@@ -61,6 +61,34 @@ class PublishResponse(BaseModel):
     dry_run: bool = True
 
 
+class ReviewDecisionRequest(BaseModel):
+    actor: str = Field(min_length=2, max_length=120)
+    notes: str | None = Field(default=None, max_length=2000)
+    corrected_value: dict[str, Any] | None = None
+    idempotency_key: str | None = Field(default=None, max_length=160)
+
+
+class DatasetApprovalRequest(BaseModel):
+    actor: str = Field(min_length=2, max_length=120)
+    reason: str | None = Field(default=None, max_length=2000)
+    idempotency_key: str | None = Field(default=None, max_length=160)
+
+
+class PrivatePublicationRequest(BaseModel):
+    actor: str = Field(min_length=2, max_length=120)
+    dry_run: bool = True
+    idempotency_key: str | None = Field(default=None, max_length=160)
+
+
+class OperationalAlertRequest(BaseModel):
+    source: str | None = Field(default=None, max_length=80)
+    run_id: str | None = Field(default=None, max_length=80)
+    alert_type: str = Field(min_length=3, max_length=120)
+    severity: Literal["LOW", "MEDIUM", "HIGH", "CRITICAL"] = "HIGH"
+    message: str = Field(min_length=3, max_length=1000)
+    idempotency_key: str | None = Field(default=None, max_length=160)
+
+
 class SourceInfo(BaseModel):
     name: str
     version: str

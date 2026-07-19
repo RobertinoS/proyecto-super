@@ -1,5 +1,33 @@
 # Changelog
 
+## v1.8.0 - Sprint 16 - Revision, observabilidad y publicacion privada
+
+Sprint 16 cerrado con validacion controlada en staging aislado:
+
+- migracion `003` aditiva para cola de revision, decisiones auditables,
+  aprobaciones de datasets y alertas operativas;
+- endpoints FastAPI protegidos para revision, aprobacion/rechazo, resumen
+  operativo, fuentes, alertas y datasets privados;
+- gate independiente `ENABLE_PRIVATE_PUBLICATION=false`, con manifiesto y
+  checksum en `PRIVATE_DRY_RUN` sin objetos publicos;
+- dashboard con Operacion cloud y Bandeja de revision sin claves ni llamadas
+  directas a FastAPI; admite JSON saneado y exporta decisiones locales;
+- workflow n8n de notificacion de revision importable pero inactivo, sin
+  aprobacion automatica ni publicacion;
+- GitHub Actions conserva kill switch y amplia solo los campos no sensibles de
+  su log estructurado;
+- migracion 003 aplicada exclusivamente en staging aislado, con RLS y sin
+  acceso directo para `anon` ni `authenticated`;
+- Render valido el checkpoint de Sprint 16 en `fixture`; los endpoints
+  protegidos rechazaron solicitudes sin API key;
+- n8n Test URL completo respuesta estructurada con tres filas, aprobacion
+  humana trazable e idempotencia confirmada;
+- `PRIVATE_DRY_RUN` valido tres filas, calidad 100, checksum y evidencia en
+  `private_datasets`, sin objetos en el bucket privado de publicacion.
+
+No se habilitaron schedules, publicacion privada/publica, modo live permanente
+ni objetos de storage publicados. Rollback operativo disponible en `v1.7.0`.
+
 ## v1.7.0 - Sprint 15 - Staging controlado
 
 Sprint 15 cerrado con staging aislado y validacion E2E controlada. No habilita

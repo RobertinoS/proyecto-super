@@ -1,5 +1,27 @@
 # Evidencia E2E staging - Sprint 15
 
+## Cierre Sprint 16 - v1.8.0
+
+La validacion se realizo exclusivamente en `proyecto-super-staging`, sin
+documentar secretos, URLs privadas ni identificadores operativos. La migracion
+003 creo las estructuras de revision y aprobacion con RLS y sin permisos
+directos para `anon` ni `authenticated`.
+
+- Render desplego el checkpoint Sprint 16 en `SOURCE_MODE=fixture`.
+- Los endpoints protegidos rechazaron solicitudes sin API key.
+- Los workflows Sprint 16 se importaron como copias nuevas e inactivas; n8n
+  Test URL completo Structured Success con `rows_processed=3`.
+- La aprobacion humana quedo auditada; el reintento fue idempotente.
+- `PRIVATE_DRY_RUN`: tres filas, calidad 100, manifiesto y checksum registrados
+  en `private_datasets`.
+- El bucket `published-price-datasets` permanece privado y su inventario de
+  objetos fue cero. La publicacion privada y publica efectivas fueron cero.
+- `PROJECT_SUPER_AUTOMATION_ENABLED=false`, `ENABLE_PUBLICATION=false`,
+  `ENABLE_CLOUD_PUBLICATION=false` y `ENABLE_PRIVATE_PUBLICATION=false`.
+
+Rollback: regresar el servicio al release `v1.7.0` y conservar todos los gates
+en `false`; no ejecutar un rollback SQL destructivo.
+
 Estado: `COMPLETADO_V1.7.0`.
 
 La validacion manual de staging se completo sin registrar secretos, URLs de

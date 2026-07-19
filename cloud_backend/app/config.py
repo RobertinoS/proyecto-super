@@ -39,6 +39,7 @@ class Settings:
     log_level: str = "INFO"
     source_mode: str = "fixture"
     enable_publication: bool = False
+    enable_private_publication: bool = False
     build_sha: str = "local"
 
     @property
@@ -63,5 +64,6 @@ class Settings:
             log_level=os.getenv("LOG_LEVEL", "INFO").upper(),
             source_mode=os.getenv("SOURCE_MODE", "fixture").lower(),
             enable_publication=_bool_env("ENABLE_PUBLICATION", False),
+            enable_private_publication=_bool_env("ENABLE_PRIVATE_PUBLICATION", False),
             build_sha=os.getenv("RENDER_GIT_COMMIT", os.getenv("BUILD_SHA", "local")),
         )

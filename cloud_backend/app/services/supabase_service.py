@@ -185,6 +185,232 @@ class SupabaseService:
         )
         response.raise_for_status()
 
+    def save_review(self, record: dict[str, Any]) -> None:
+        if not self.configured:
+            return
+        allowed = {
+            "id", "scrape_run_id", "observation_id", "source", "review_type", "severity", "status", "reason",
+            "detected_value", "suggested_action", "assigned_to", "reviewed_by", "reviewed_at", "decision",
+            "decision_notes", "idempotency_key", "created_at", "updated_at",
+        }
+        payload = {key: value for key, value in record.items() if key in allowed}
+        response = self.session.post(
+            f"{self.settings.supabase_url}/rest/v1/review_queue?on_conflict=idempotency_key",
+            headers={**self._headers(), "Prefer": "resolution=merge-duplicates,return=minimal"},
+            json=payload,
+            timeout=self.settings.request_timeout_seconds,
+        )
+        response.raise_for_status()
+
+    def list_reviews(self, filters: dict[str, str] | None = None) -> list[dict[str, Any]]:
+        if not self.configured:
+            return []
+        clauses = ["select=*"]
+        for key, value in (filters or {}).items():
+            clauses.append(f"{quote(key, safe='')}=eq.{quote(str(value), safe='')}")
+        response = self.session.get(
+            f"{self.settings.supabase_url}/rest/v1/review_queue?{'&'.join(clauses)}&order=created_at.desc",
+            headers=self._headers(),
+            timeout=self.settings.request_timeout_seconds,
+        )
+        response.raise_for_status()
+        return response.json()
+
+    def get_review(self, review_id: str) -> dict[str, Any] | None:
+        if not self.configured:
+            return None
+        response = self.session.get(
+            f"{self.settings.supabase_url}/rest/v1/review_queue?id=eq.{quote(review_id, safe='')}&select=*&limit=1",
+            headers=self._headers(),
+            timeout=self.settings.request_timeout_seconds,
+        )
+        response.raise_for_status()
+        rows = response.json()
+        return rows[0] if rows else None
+
+    def update_review(self, review_id: str, record: dict[str, Any]) -> None:
+        if not self.configured:
+            return
+        allowed = {"status", "reviewed_by", "reviewed_at", "decision", "decision_notes", "updated_at"}
+        payload = {key: value for key, value in record.items() if key in allowed}
+        response = self.session.patch(
+            f"{self.settings.supabase_url}/rest/v1/review_queue?id=eq.{quote(review_id, safe='')}",
+            headers=self._headers(),
+            json=payload,
+            timeout=self.settings.request_timeout_seconds,
+        )
+        response.raise_for_status()
+
+    def save_review_decision(self, record: dict[str, Any]) -> None:
+        if not self.configured:
+            return
+        response = self.session.post(
+            f"{self.settings.supabase_url}/rest/v1/review_decisions?on_conflict=idempotency_key",
+            headers={**self._headers(), "Prefer": "resolution=ignore-duplicates,return=minimal"},
+            json=record,
+            timeout=self.settings.request_timeout_seconds,
+        )
+        response.raise_for_status()
+
+    def save_dataset_approval(self, record: dict[str, Any]) -> None:
+        if not self.configured:
+            return
+        allowed = {
+            "id", "scrape_run_id", "status", "requested_at", "requested_by", "approved_by", "approved_at",
+            "rejected_by", "rejected_at", "rejection_reason", "quality_score", "pending_items", "approved_items",
+            "rejected_items", "idempotency_key", "created_at", "updated_at",
+        }
+        payload = {key: value for key, value in record.items() if key in allowed}
+        response = self.session.post(
+            f"{self.settings.supabase_url}/rest/v1/dataset_approvals?on_conflict=scrape_run_id",
+            headers={**self._headers(), "Prefer": "resolution=merge-duplicates,return=minimal"},
+            json=payload,
+            timeout=self.settings.request_timeout_seconds,
+        )
+        response.raise_for_status()
+
+    def get_dataset_approval(self, run_id: str) -> dict[str, Any] | None:
+        if not self.configured:
+            return None
+        response = self.session.get(
+            f"{self.settings.supabase_url}/rest/v1/dataset_approvals?scrape_run_id=eq.{quote(run_id, safe='')}&select=*&limit=1",
+            headers=self._headers(),
+            timeout=self.settings.request_timeout_seconds,
+        )
+        response.raise_for_status()
+        rows = response.json()
+        return rows[0] if rows else None
+
+    def list_dataset_approvals(self, status: str | None = None) -> list[dict[str, Any]]:
+        if not self.configured:
+            return []
+        status_filter = f"&status=eq.{quote(status, safe='')}" if status else ""
+        response = self.session.get(
+            f"{self.settings.supabase_url}/rest/v1/dataset_approvals?select=*{status_filter}&order=updated_at.desc",
+            headers=self._headers(),
+            timeout=self.settings.request_timeout_seconds,
+        )
+        response.raise_for_status()
+        return response.json()
+
+    def list_recent_scrape_runs(self, limit: int = 100) -> list[dict[str, Any]]:
+        if not self.configured:
+            return []
+        response = self.session.get(
+            f"{self.settings.supabase_url}/rest/v1/scrape_runs?select=*&order=started_at.desc&limit={max(1, min(limit, 500))}",
+            headers=self._headers(),
+            timeout=self.settings.request_timeout_seconds,
+        )
+        response.raise_for_status()
+        return response.json()
+
+    def list_source_health(self) -> list[dict[str, Any]]:
+        if not self.configured:
+            return []
+        response = self.session.get(
+            f"{self.settings.supabase_url}/rest/v1/source_health?select=*&order=source.asc",
+            headers=self._headers(),
+            timeout=self.settings.request_timeout_seconds,
+        )
+        response.raise_for_status()
+        return response.json()
+
+    def save_operational_alert(self, record: dict[str, Any]) -> None:
+        if not self.configured:
+            return
+        allowed = {
+            "id", "source", "run_id", "alert_type", "severity", "status", "message", "metadata",
+            "acknowledged_by", "acknowledged_at", "idempotency_key", "created_at",
+        }
+        payload = {key: value for key, value in record.items() if key in allowed}
+        response = self.session.post(
+            f"{self.settings.supabase_url}/rest/v1/operational_alerts?on_conflict=idempotency_key",
+            headers={**self._headers(), "Prefer": "resolution=merge-duplicates,return=minimal"},
+            json=payload,
+            timeout=self.settings.request_timeout_seconds,
+        )
+        response.raise_for_status()
+
+    def list_operational_alerts(self) -> list[dict[str, Any]]:
+        if not self.configured:
+            return []
+        response = self.session.get(
+            f"{self.settings.supabase_url}/rest/v1/operational_alerts?select=*&order=created_at.desc",
+            headers=self._headers(),
+            timeout=self.settings.request_timeout_seconds,
+        )
+        response.raise_for_status()
+        return response.json()
+
+    def update_operational_alert(self, alert_id: str, record: dict[str, Any]) -> None:
+        if not self.configured:
+            return
+        allowed = {"status", "acknowledged_by", "acknowledged_at"}
+        payload = {key: value for key, value in record.items() if key in allowed}
+        response = self.session.patch(
+            f"{self.settings.supabase_url}/rest/v1/operational_alerts?id=eq.{quote(alert_id, safe='')}",
+            headers=self._headers(),
+            json=payload,
+            timeout=self.settings.request_timeout_seconds,
+        )
+        response.raise_for_status()
+
+    def save_private_dataset(self, record: dict[str, Any]) -> None:
+        if not self.configured:
+            return
+        allowed = {
+            "id", "scrape_run_id", "approval_id", "status", "dataset_path", "manifest_path", "row_count",
+            "checksum_sha256", "approved_by", "quality_score", "created_at",
+        }
+        payload = {key: value for key, value in record.items() if key in allowed}
+        response = self.session.post(
+            f"{self.settings.supabase_url}/rest/v1/private_datasets?on_conflict=scrape_run_id,checksum_sha256",
+            headers={**self._headers(), "Prefer": "resolution=merge-duplicates,return=minimal"},
+            json=payload,
+            timeout=self.settings.request_timeout_seconds,
+        )
+        response.raise_for_status()
+
+    def get_private_dataset(self, dataset_id: str) -> dict[str, Any] | None:
+        if not self.configured:
+            return None
+        response = self.session.get(
+            f"{self.settings.supabase_url}/rest/v1/private_datasets?id=eq.{quote(dataset_id, safe='')}&select=*&limit=1",
+            headers=self._headers(),
+            timeout=self.settings.request_timeout_seconds,
+        )
+        response.raise_for_status()
+        rows = response.json()
+        return rows[0] if rows else None
+
+    def get_latest_private_dataset(self) -> dict[str, Any] | None:
+        if not self.configured:
+            return None
+        response = self.session.get(
+            f"{self.settings.supabase_url}/rest/v1/private_datasets?select=*&order=created_at.desc&limit=1",
+            headers=self._headers(),
+            timeout=self.settings.request_timeout_seconds,
+        )
+        response.raise_for_status()
+        rows = response.json()
+        return rows[0] if rows else None
+
+    def create_signed_download_url(self, bucket: str, path: str, expires_in: int = 300) -> str | None:
+        if not self.configured:
+            return None
+        response = self.session.post(
+            f"{self.settings.supabase_url}/storage/v1/object/sign/{bucket}/{path}",
+            headers=self._headers(),
+            json={"expiresIn": max(60, min(expires_in, 3600))},
+            timeout=self.settings.request_timeout_seconds,
+        )
+        response.raise_for_status()
+        payload = response.json()
+        signed_path = payload.get("signedURL") or payload.get("signedUrl")
+        if not signed_path:
+            return None
+        return signed_path if signed_path.startswith("http") else f"{self.settings.supabase_url}/storage/v1{signed_path}"
+
     def upload_json(self, bucket: str, path: str, payload: Any) -> None:
         if not self.configured:
             return

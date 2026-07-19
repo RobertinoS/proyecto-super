@@ -26,6 +26,9 @@ def test_dashboard_shopping_list_ui_sections_exist():
         "Ruta dividida sugerida",
         "Calidad de datos",
         "Semaforo operativo",
+        "Operacion cloud",
+        "Bandeja de revision",
+        "Exportar decisiones",
     ]:
         assert text in html
 
