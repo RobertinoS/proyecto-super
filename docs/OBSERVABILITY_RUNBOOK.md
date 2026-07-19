@@ -69,3 +69,10 @@ Endpoints protegidos:
 5. Restaurar `SOURCE_MODE=fixture`.
 6. Revertir el deploy de FastAPI desde Render solo despues de preservar eventos
    y evidencia no sensible.
+
+## Validacion de cierre Sprint 16
+
+La ejecucion fixture validada proceso tres filas y dejo trazabilidad de
+revision, aprobacion y `PRIVATE_DRY_RUN`. El bucket de publicacion permanece
+privado y sin objetos. Los workflows de Sprint 16 siguen inactivos y el kill
+switch de GitHub permanece en `false`.

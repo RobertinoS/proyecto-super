@@ -19,15 +19,15 @@ Pruebas automatizadas sin recursos externos:
 - workflow n8n de notificacion inactivo y sin credenciales/publicacion;
 - GitHub Actions: kill switch, sin scraping directo y log no sensible.
 
-Validacion staging manual pendiente:
+Validacion staging manual completada para v1.8.0:
 
-1. Aplicar `003_review_and_private_publication.sql` solo en
-   `proyecto-super-staging`.
-2. Desplegar FastAPI con fixture y ambos gates de publicacion en `false`.
-3. Ejecutar fixture manual, crear/revisar una incidencia y solicitar
-   aprobacion.
-4. Validar `PRIVATE_DRY_RUN` y que no se escriban objetos ni URLs publicas.
-5. Mantener schedule y workflow n8n de notificacion desactivados.
+1. La migracion 003 se aplico solo en `proyecto-super-staging`, con RLS.
+2. Render uso fixture y todos los gates de publicacion en `false`.
+3. n8n Test URL proceso tres filas; revision y aprobacion humanas quedaron
+   auditadas e idempotentes.
+4. `PRIVATE_DRY_RUN` valido tres filas, calidad 100, manifiesto y checksum sin
+   objetos de storage, URLs publicas ni publicacion efectiva.
+5. Se mantienen bloqueados el schedule, workflow de notificacion y kill switch.
 
 ## Sprint 15 - Staging controlado
 

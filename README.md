@@ -2,26 +2,27 @@
 
 Comparador local de precios para supermercados, autoservicios y mayoristas de San Juan.
 
-Version: `v1.7.0` - staging cloud validado de forma controlada, con
-publicacion real desactivada.
+Version: `v1.8.0` - revision humana, observabilidad y publicacion privada en
+modo de prueba, con toda publicacion efectiva desactivada.
 
-Sprint 15 quedo cerrado como `v1.7.0`. Valida GitHub Actions -> n8n -> FastAPI
--> Supabase staging con fixture, idempotencia y publicacion bloqueada. El
-workflow sigue protegido por el kill switch y no habilita publicacion ni modo
-live permanente.
+Sprint 16 quedo cerrado como `v1.8.0`. La validacion en staging aislado cubrio
+la migracion 003, FastAPI, n8n Test URL, revision humana, idempotencia y
+`PRIVATE_DRY_RUN` con tres filas. No se escribieron objetos en storage ni se
+habilito publicacion privada/publica, modo live permanente o schedule.
 
 ## Sprint 16: revision y publicacion privada
 
-Sprint 16 esta implementado localmente y pendiente de validar en staging antes
-de su cierre. Agrega una cola de revision humana trazable, aprobacion por
-dataset, alertas operativas y una publicacion privada separada de la
-publicacion publica.
+Sprint 16 agrega una cola de revision humana trazable, aprobacion por dataset,
+alertas operativas y una publicacion privada separada de la publicacion
+publica. La evidencia durable del `PRIVATE_DRY_RUN` se conserva en
+`private_datasets`; el bucket permanece privado y sin objetos publicados.
 
 Los defaults se mantienen bloqueados:
 
 ```text
 SOURCE_MODE=fixture
 ENABLE_PUBLICATION=false
+ENABLE_CLOUD_PUBLICATION=false
 ENABLE_PRIVATE_PUBLICATION=false
 PROJECT_SUPER_AUTOMATION_ENABLED=false
 ```
@@ -51,9 +52,9 @@ python scripts/08_generar_mvp_demo.py
 python -m pytest
 ```
 
-La migracion `003_review_and_private_publication.sql` es una propuesta
-aditiva: no se ejecuta automaticamente y solo puede aplicarse en el proyecto
-Supabase aislado de Proyecto Super.
+La migracion `003_review_and_private_publication.sql` fue aplicada solamente
+en el proyecto Supabase aislado de Proyecto Super. El rollback operativo sigue
+disponible en `v1.7.0`; no revertir la migracion con operaciones destructivas.
 
 ## Sprint 15: staging controlado
 

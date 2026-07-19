@@ -1,13 +1,12 @@
 # Estado del proyecto
 
-Actualizado: 2026-07-16.
+Actualizado: 2026-07-19.
 
-## Sprint 16 - En implementacion local
+## Sprint 16 - Cerrado como v1.8.0
 
-Estado: implementacion funcional local en la rama
-`sprint-16-review-observability-private-publication`. No esta cerrado, no se
-ejecuto la migracion `003`, no se desplego FastAPI con estos cambios y no se
-habilito publicacion privada.
+Estado: validado en `proyecto-super-staging` aislado y listo para release.
+La migracion `003` se aplico solo en staging, Render ejecuto el checkpoint
+Sprint 16 y los dos workflows n8n se importaron como copias nuevas e inactivas.
 
 - Se agregan `review_queue`, `review_decisions`, `dataset_approvals` y
   `operational_alerts` mediante una migracion aditiva con RLS.
@@ -20,10 +19,16 @@ habilito publicacion privada.
   endpoint, API key, service role ni llamadas directas a FastAPI.
 - n8n conserva el workflow diario inactivo y se agrega un workflow de aviso de
   revision inactivo que no aprueba ni publica.
+- Fixture staging: tres productos procesados, calidad 100 y sin duplicados.
+- Revision humana: aprobacion registrada e idempotente; decisiones auditables.
+- Publicacion privada: `PRIVATE_DRY_RUN` con tres filas, manifiesto y checksum;
+  `private_datasets` conserva la evidencia durable.
+- Storage: bucket privado y cero objetos en `published-price-datasets`.
+- Flags finales: fixture, publicaciones desactivadas y kill switch en `false`.
 
-Pendiente externo: aplicar 003 solo en `proyecto-super-staging`, desplegar el
-backend, ejecutar fixture manual, validar decisiones y confirmar que no existe
-ningun objeto publico antes de considerar el sprint apto para cierre.
+Rollback: conservar `v1.7.0` como referencia estable y volver a ese release en
+Render ante una regresion. Mantener los gates en `false`; no revertir la
+migracion 003 de forma destructiva.
 
 ## Release actual
 

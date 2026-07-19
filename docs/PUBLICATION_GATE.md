@@ -15,6 +15,14 @@ un enlace permanente, acceso anonimo ni publicacion al dashboard publico.
 Sprint 15 opera con `ENABLE_PUBLICATION=false`. Ningun workflow, aprobador o
 payload puede omitir este bloqueo global.
 
+## Validacion de cierre Sprint 16
+
+La prueba de aprobacion humana y posterior `PRIVATE_DRY_RUN` proceso tres filas
+con calidad 100. Se produjo manifiesto y checksum, conservados en
+`private_datasets`, sin escritura en Storage. `ENABLE_PUBLICATION=false`,
+`ENABLE_CLOUD_PUBLICATION=false` y `ENABLE_PRIVATE_PUBLICATION=false` se
+mantuvieron durante toda la validacion.
+
 ## Estados permitidos
 
 - `SCRAPED`: extraccion terminada.

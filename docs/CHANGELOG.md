@@ -1,8 +1,8 @@
 # Changelog
 
-## Unreleased - Sprint 16 - Revision, observabilidad y publicacion privada
+## v1.8.0 - Sprint 16 - Revision, observabilidad y publicacion privada
 
-Implementacion local pendiente de validacion staging y cierre Git:
+Sprint 16 cerrado con validacion controlada en staging aislado:
 
 - migracion `003` aditiva para cola de revision, decisiones auditables,
   aprobaciones de datasets y alertas operativas;
@@ -15,10 +15,18 @@ Implementacion local pendiente de validacion staging y cierre Git:
 - workflow n8n de notificacion de revision importable pero inactivo, sin
   aprobacion automatica ni publicacion;
 - GitHub Actions conserva kill switch y amplia solo los campos no sensibles de
-  su log estructurado.
+  su log estructurado;
+- migracion 003 aplicada exclusivamente en staging aislado, con RLS y sin
+  acceso directo para `anon` ni `authenticated`;
+- Render valido el checkpoint de Sprint 16 en `fixture`; los endpoints
+  protegidos rechazaron solicitudes sin API key;
+- n8n Test URL completo respuesta estructurada con tres filas, aprobacion
+  humana trazable e idempotencia confirmada;
+- `PRIVATE_DRY_RUN` valido tres filas, calidad 100, checksum y evidencia en
+  `private_datasets`, sin objetos en el bucket privado de publicacion.
 
-No se aplicaron migraciones, no se desplego este cambio, no se habilitaron
-schedules ni publicacion privada/publica durante la implementacion local.
+No se habilitaron schedules, publicacion privada/publica, modo live permanente
+ni objetos de storage publicados. Rollback operativo disponible en `v1.7.0`.
 
 ## v1.7.0 - Sprint 15 - Staging controlado
 

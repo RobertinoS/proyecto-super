@@ -19,6 +19,11 @@ FastAPI pipeline
 `ENABLE_PRIVATE_PUBLICATION=false` bloquea tambien escritura privada por
 defecto. La revision humana no se ejecuta desde n8n ni GitHub Actions.
 
+Validacion de cierre `v1.8.0`: la migracion 003 fue aplicada solo en el
+staging aislado; FastAPI en fixture, n8n Test URL, revision humana e
+idempotencia fueron validados con tres filas. La publicacion efectivo fue cero:
+el bucket de publicacion siguio privado y sin objetos.
+
 ## Endurecimiento staging Sprint 15
 
 - Supabase debe ser un proyecto separado: `proyecto-super-staging`.

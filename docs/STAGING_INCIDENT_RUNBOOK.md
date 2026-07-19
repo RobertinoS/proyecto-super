@@ -15,6 +15,11 @@ ventana manual, restaurar este valor a `false` al finalizar y conservar
 `SOURCE_MODE=fixture`, `ENABLE_PUBLICATION=false` y
 `ENABLE_CLOUD_PUBLICATION=false`.
 
+Estado posterior al cierre Sprint 16: `PRIVATE_DRY_RUN` fue validado sin
+objetos de storage. Mantener `ENABLE_PRIVATE_PUBLICATION=false`, el bucket
+privado y los workflows Sprint 16 inactivos. Ante regresion, hacer rollback del
+servicio al release `v1.7.0`; no revertir SQL 003 con operaciones destructivas.
+
 ## Revision o publicacion privada anomala
 
 - Bloquear inmediatamente `ENABLE_PRIVATE_PUBLICATION=false`; no habilitar la

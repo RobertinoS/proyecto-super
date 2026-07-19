@@ -44,6 +44,13 @@ El bucket permanece privado. El acceso se ofrece por una URL firmada de vida
 corta mediante `GET /datasets/{dataset_id}/download-url` o por un backend
 autenticado. No se crean datasets ni buckets publicos.
 
+## Validacion de cierre Sprint 16
+
+La prueba controlada produjo `PRIVATE_DRY_RUN` para tres filas con calidad 100,
+manifiesto y checksum. El indice `private_datasets` conserva esa evidencia,
+pero no se escribieron objetos en `published-price-datasets`, no se emitieron
+URLs publicas y `ENABLE_PRIVATE_PUBLICATION=false` se mantuvo sin cambios.
+
 ## Verificacion y rollback
 
 - Consultar `GET /datasets/latest-approved` y `GET /datasets/{dataset_id}`.
@@ -52,3 +59,5 @@ autenticado. No se crean datasets ni buckets publicos.
   `ENABLE_PUBLICATION=false`, revocar enlaces firmados activos y registrar una
   alerta/revision si corresponde.
 - La publicacion publica queda fuera de alcance de Sprint 16.
+- El rollback de servicio disponible es `v1.7.0`; no borrar registros de
+  auditoria ni revertir SQL de forma destructiva.

@@ -54,3 +54,11 @@ Una aprobacion de dataset es idempotente. Si un problema aparece despues,
 registrar una alerta, crear una nueva revision y cambiar el dataset a
 `REVOKED` mediante una operacion backend futura; nunca borrar observaciones ni
 eventos para ocultar la evidencia.
+
+## Validacion de cierre Sprint 16
+
+En staging aislado se valido una aprobacion humana con responsable y timestamp,
+seguida por el mismo reintento idempotente sin crear una segunda decision. La
+evidencia de revision, aprobacion y el posterior `PRIVATE_DRY_RUN` permanece
+en las tablas durables. No se aprobaron publicaciones efectivas ni se expuso
+una accion sensible desde el dashboard.
