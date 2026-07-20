@@ -2,6 +2,18 @@
 
 Actualizado: 2026-07-19.
 
+## Sprint 17 - Planificacion de arquitectura
+
+Estado: diseno documentado en la rama `sprint-17-architecture-planning`. No se
+modifico codigo funcional, migraciones, workflows, flags, Render, Supabase ni
+n8n. La propuesta conserva `v1.8.0` como rollback y mantiene fixture,
+publicacion bloqueada y kill switch en `false`.
+
+La arquitectura recomendada combina Supabase Auth/JWT/RLS para identidad con
+FastAPI como punto de decision y URLs firmadas temporales para datasets
+privados. La implementacion se dividira en 17A a 17D; no se habilita schedule
+ni escritura privada efectiva durante la planificacion.
+
 ## Sprint 16 - Cerrado como v1.8.0
 
 Estado: validado en `proyecto-super-staging` aislado y listo para release.
