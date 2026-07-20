@@ -10,6 +10,31 @@ la migracion 003, FastAPI, n8n Test URL, revision humana, idempotencia y
 `PRIVATE_DRY_RUN` con tres filas. No se escribieron objetos en storage ni se
 habilito publicacion privada/publica, modo live permanente o schedule.
 
+## Sprint 17A: identidad humana y RBAC en preparacion local
+
+Sprint 17A agrega contratos locales para usuarios humanos sin cambiar el
+circuito de n8n/GitHub Actions. Supabase Auth sera el emisor de JWT; FastAPI
+valida firma mediante JWKS, issuer, expiracion y audiencia configurada, y lee
+roles activos desde `app_user_roles`. Los endpoints humanos disponibles son
+`/auth/me` y `/auth/capabilities`; no descargan, activan, revocan ni publican
+datasets.
+
+Los servicios de n8n y GitHub Actions mantienen exclusivamente `X-API-Key`.
+La migracion aditiva `004_auth_roles_and_access_audit.sql` permanece local y
+no se aplica durante este sprint. Sigue todo bloqueado:
+
+```text
+SOURCE_MODE=fixture
+ENABLE_PUBLICATION=false
+ENABLE_CLOUD_PUBLICATION=false
+ENABLE_PRIVATE_PUBLICATION=false
+PROJECT_SUPER_AUTOMATION_ENABLED=false
+```
+
+Documentacion: `docs/SPRINT_17A_IMPLEMENTATION_PLAN.md`,
+`docs/AUTHENTICATION_ARCHITECTURE.md`, `docs/RBAC_MATRIX.md` y
+`docs/PRIVATE_API_CONTRACT.md`.
+
 ## Sprint 16: revision y publicacion privada
 
 Sprint 16 agrega una cola de revision humana trazable, aprobacion por dataset,

@@ -1,5 +1,21 @@
 # Checklist de seguridad cloud
 
+## Sprint 17A
+
+- [x] JWT humano y `X-API-Key` de maquina son dependencias separadas.
+- [x] JWT valida firma por JWKS, `kid`, algoritmo asimetrico, issuer,
+  expiracion y audiencia cuando se configura.
+- [x] JWKS usa cache acotado y refresh controlado ante rotacion de `kid`.
+- [x] Roles se leen desde `app_user_roles`; no se confia en claims de rol.
+- [x] `app_user_roles` y `dataset_access_logs` tienen RLS y revoke para
+  `anon`/`authenticated` en la migracion local 004.
+- [x] Logs de acceso no guardan JWT, API keys, headers, IP completa ni URL
+  firmada; `(user_id, request_id)` evita auditoria duplicada por reintento.
+- [x] `.env.example` contiene solo placeholders y los flags siguen bloqueados.
+- [ ] Aplicar 004 solo tras confirmar nuevamente `proyecto-super-staging`.
+- [ ] Configurar issuer, audience y JWKS reales exclusivamente en secretos de
+  Render; no ponerlos en Git, n8n, dashboard o documentacion publica.
+
 ## Sprint 15
 
 - [ ] Supabase separado `proyecto-super-staging`; no compartir base con n8n.

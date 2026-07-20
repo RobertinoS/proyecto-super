@@ -411,6 +411,49 @@ class SupabaseService:
             return None
         return signed_path if signed_path.startswith("http") else f"{self.settings.supabase_url}/storage/v1{signed_path}"
 
+    def list_active_user_roles(self, user_id: str) -> list[str]:
+        if not self.configured:
+            return []
+        response = self.session.get(
+            f"{self.settings.supabase_url}/rest/v1/app_user_roles?user_id=eq.{quote(user_id, safe='')}&active=is.true&select=role",
+            headers=self._headers(),
+            timeout=self.settings.request_timeout_seconds,
+        )
+        response.raise_for_status()
+        return [str(row["role"]) for row in response.json() if isinstance(row, dict) and row.get("role")]
+
+    def find_dataset_access_log(self, user_id: str, request_id: str) -> dict[str, Any] | None:
+        if not self.configured:
+            return None
+        response = self.session.get(
+            f"{self.settings.supabase_url}/rest/v1/dataset_access_logs?user_id=eq.{quote(user_id, safe='')}&request_id=eq.{quote(request_id, safe='')}&select=*&limit=1",
+            headers=self._headers(),
+            timeout=self.settings.request_timeout_seconds,
+        )
+        response.raise_for_status()
+        rows = response.json()
+        return rows[0] if rows else None
+
+    def save_dataset_access_log(self, record: dict[str, Any]) -> dict[str, Any]:
+        if not self.configured:
+            return record
+        allowed = {
+            "id", "dataset_id", "user_id", "action", "result", "request_id", "role_snapshot", "expires_at",
+            "denial_reason", "client_fingerprint_hash",
+        }
+        payload = {key: value for key, value in record.items() if key in allowed}
+        response = self.session.post(
+            f"{self.settings.supabase_url}/rest/v1/dataset_access_logs?on_conflict=user_id,request_id",
+            headers={**self._headers(), "Prefer": "resolution=ignore-duplicates,return=representation"},
+            json=payload,
+            timeout=self.settings.request_timeout_seconds,
+        )
+        response.raise_for_status()
+        rows = response.json()
+        if rows:
+            return rows[0]
+        return self.find_dataset_access_log(str(payload["user_id"]), str(payload["request_id"])) or payload
+
     def upload_json(self, bucket: str, path: str, payload: Any) -> None:
         if not self.configured:
             return

@@ -28,8 +28,9 @@ def test_supabase_migrations_are_safe_complete_and_keep_001_immutable():
         "001_cloud_scraping_foundation.sql",
         "002_staging_hardening.sql",
         "003_review_and_private_publication.sql",
+        "004_auth_roles_and_access_audit.sql",
     ]
-    assert len(report["tables"]) == 10
+    assert len(report["tables"]) == 12
     assert len(report["buckets"]) == 3
 
 

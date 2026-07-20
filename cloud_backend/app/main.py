@@ -15,6 +15,8 @@ from .dependencies import (
     get_run_service,
 )
 from .models import (
+    AuthCapabilitiesResponse,
+    AuthMeResponse,
     DatasetApprovalRequest,
     OperationalAlertRequest,
     PrivatePublicationRequest,
@@ -27,7 +29,8 @@ from .models import (
     ScrapeJobRequest,
     SourceInfo,
 )
-from .security import require_api_key
+from .security import get_current_user, require_api_key
+from .services.auth_service import CurrentUser, JwtValidator, RoleService
 from .services.pipeline_service import PipelineService
 from .services.private_publication_service import PrivatePublicationError, PrivatePublicationService
 from .services.publication_service import PublicationError, PublicationService
@@ -44,6 +47,8 @@ def create_app(settings: Settings | None = None, sources: dict | None = None) ->
     app.state.settings = config
     app.state.started_monotonic = time.monotonic()
     app.state.supabase_service = SupabaseService(config)
+    app.state.jwt_validator = JwtValidator(config)
+    app.state.role_service = RoleService(app.state.supabase_service)
     app.state.sources = sources or {"vea": VeaSource(config)}
     app.state.run_service = RunService(app.state.sources, app.state.supabase_service)
     app.state.pipeline_service = PipelineService(app.state.run_service)
@@ -87,6 +92,20 @@ def create_app(settings: Settings | None = None, sources: dict | None = None) ->
                 )
             )
         return result
+
+    @app.get("/auth/me", response_model=AuthMeResponse, tags=["human-auth"])
+    def authenticated_user(current_user: CurrentUser = Depends(get_current_user)) -> AuthMeResponse:
+        return AuthMeResponse(
+            user_id=current_user.user_id,
+            roles=list(current_user.roles),
+            capabilities=list(current_user.capabilities),
+            token_expires_at=current_user.token_expires_at,
+            authentication_type=current_user.authentication_type,
+        )
+
+    @app.get("/auth/capabilities", response_model=AuthCapabilitiesResponse, tags=["human-auth"])
+    def authenticated_capabilities(current_user: CurrentUser = Depends(get_current_user)) -> AuthCapabilitiesResponse:
+        return AuthCapabilitiesResponse(roles=list(current_user.roles), capabilities=list(current_user.capabilities))
 
     @app.post("/jobs/scrape", response_model=RunSummary, dependencies=[Depends(require_api_key)])
     def scrape_job(payload: ScrapeJobRequest, runs: RunService = Depends(get_run_service)) -> RunSummary:

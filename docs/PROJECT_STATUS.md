@@ -2,6 +2,20 @@
 
 Actualizado: 2026-07-19.
 
+## Sprint 17A - Auth contracts and RBAC
+
+Estado: implementacion local pendiente de checkpoint y sin despliegue. Se
+agrega la migracion aditiva `004` para `app_user_roles` y
+`dataset_access_logs`, validacion criptografica de JWT de Supabase Auth con
+JWKS, roles activos server-side, auditoria minima idempotente y los endpoints
+humanos `/auth/me` y `/auth/capabilities`.
+
+No se aplico la migracion, no se crearon usuarios, no se desplego FastAPI y no
+se tocaron workflows ni infraestructura. No existen URLs firmadas, descargas,
+activacion, revocacion, restauracion ni interfaz administrativa. n8n y GitHub
+Actions conservan `X-API-Key`; las personas usan Bearer JWT. Los flags siguen
+en fixture y `false`; rollback de codigo disponible en `v1.8.0`.
+
 ## Sprint 17 - Planificacion de arquitectura
 
 Estado: diseno documentado en la rama `sprint-17-architecture-planning`. No se

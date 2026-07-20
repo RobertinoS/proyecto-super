@@ -1,5 +1,25 @@
 # Plan de pruebas
 
+## Sprint 17A - Auth contracts and RBAC
+
+Pruebas locales sin Supabase ni red:
+
+- migracion 004 aditiva, roles limitados, FK a `auth.users`, RLS, revoke de
+  roles browser e idempotencia de auditoria por `(user_id, request_id)`;
+- JWT valido, ausente, malformado, expirado, con firma, issuer, audiencia o
+  algoritmo invalidos;
+- cache y rotacion de JWKS con claves RSA generadas durante pytest;
+- roles viewer, reviewer, dataset_admin, operator, multiples roles e
+  inactivos filtrados por contrato server-side;
+- `/auth/me`, `/auth/capabilities`, `require_any_role` y `require_all_roles`;
+- separacion Bearer JWT versus `X-API-Key`, sin regresion de `/jobs/scrape`;
+- auditoria sin token y con idempotencia por request ID;
+- modelos de consumo privado futuros sin rutas de descarga activas.
+
+No se ejecuta Supabase Auth real, no se consulta JWKS externo y no se aplica
+migracion 004 durante pytest. La validacion externa posterior debe mantenerse
+en fixture y con todas las publicaciones/schedules bloqueados.
+
 ## Sprint 16 - Revision, observabilidad y publicacion privada
 
 Pruebas automatizadas sin recursos externos:

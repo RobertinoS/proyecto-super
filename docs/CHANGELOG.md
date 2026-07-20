@@ -1,5 +1,22 @@
 # Changelog
 
+## Unreleased - Sprint 17A - Auth contracts and RBAC
+
+- migracion aditiva `004` para roles humanos activos y auditoria minima de
+  acceso, con RLS y revocacion de privilegios para navegador;
+- validacion FastAPI de JWT de Supabase Auth mediante JWKS cacheado, firma,
+  algoritmo permitido, issuer, expiracion y audiencia configurable;
+- separacion explicita entre Bearer JWT humano y `X-API-Key` para n8n/GitHub;
+- endpoints seguros `/auth/me` y `/auth/capabilities`, roles acumulables y
+  capacidades derivadas server-side;
+- contratos Pydantic/documentados de consumo privado futuro, sin descargar ni
+  emitir URLs firmadas;
+- pruebas locales de JWT, rotacion de JWKS, RBAC, logs idempotentes y ausencia
+  de regresion en endpoints de servicio.
+
+No se aplico SQL externo, no se desplego, no se cambio infraestructura y todos
+los gates de automatizacion/publicacion permanecen desactivados.
+
 ## v1.8.0 - Sprint 16 - Revision, observabilidad y publicacion privada
 
 Sprint 16 cerrado con validacion controlada en staging aislado:
