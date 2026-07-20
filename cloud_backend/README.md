@@ -10,4 +10,4 @@ uvicorn cloud_backend.app.main:app --reload --port 8014
 
 Documentacion: `http://127.0.0.1:8014/docs`.
 
-Para una prueba real controlada se debe definir `SOURCE_MODE=live`. La publicacion sigue bloqueada mientras `ENABLE_PUBLICATION=false`.
+Para una prueba real controlada se debe definir `SOURCE_MODE=live`. La publicacion publica sigue bloqueada mientras `ENABLE_PUBLICATION=false` y la publicacion privada requiere, ademas, `ENABLE_PRIVATE_PUBLICATION=true` despues de una aprobacion trazable.

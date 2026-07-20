@@ -25,7 +25,7 @@ def _bool_env(name: str, default: bool = False) -> bool:
 @dataclass(frozen=True)
 class Settings:
     app_env: str = "local"
-    app_version: str = "1.6.0"
+    app_version: str = "1.8.0"
     scraper_api_key: str = ""
     supabase_url: str = ""
     supabase_service_role_key: str = ""
@@ -39,6 +39,14 @@ class Settings:
     log_level: str = "INFO"
     source_mode: str = "fixture"
     enable_publication: bool = False
+    enable_cloud_publication: bool = False
+    enable_private_publication: bool = False
+    enable_internal_dataset_access: bool = False
+    supabase_auth_issuer: str = ""
+    supabase_auth_audience: str = ""
+    supabase_auth_jwks_url: str = ""
+    auth_jwks_cache_seconds: int = 3600
+    dataset_access_log_retention_days: int = 365
     build_sha: str = "local"
 
     @property
@@ -49,7 +57,7 @@ class Settings:
     def from_env(cls) -> "Settings":
         return cls(
             app_env=os.getenv("APP_ENV", "local"),
-            app_version=os.getenv("APP_VERSION", "1.6.0"),
+            app_version=os.getenv("APP_VERSION", "1.8.0"),
             scraper_api_key=os.getenv("SCRAPER_API_KEY", ""),
             supabase_url=os.getenv("SUPABASE_URL", "").rstrip("/"),
             supabase_service_role_key=os.getenv("SUPABASE_SERVICE_ROLE_KEY", ""),
@@ -63,5 +71,13 @@ class Settings:
             log_level=os.getenv("LOG_LEVEL", "INFO").upper(),
             source_mode=os.getenv("SOURCE_MODE", "fixture").lower(),
             enable_publication=_bool_env("ENABLE_PUBLICATION", False),
+            enable_cloud_publication=_bool_env("ENABLE_CLOUD_PUBLICATION", False),
+            enable_private_publication=_bool_env("ENABLE_PRIVATE_PUBLICATION", False),
+            enable_internal_dataset_access=_bool_env("ENABLE_INTERNAL_DATASET_ACCESS", False),
+            supabase_auth_issuer=os.getenv("SUPABASE_AUTH_ISSUER", "").rstrip("/"),
+            supabase_auth_audience=os.getenv("SUPABASE_AUTH_AUDIENCE", "").strip(),
+            supabase_auth_jwks_url=os.getenv("SUPABASE_AUTH_JWKS_URL", "").strip(),
+            auth_jwks_cache_seconds=max(60, _int_env("AUTH_JWKS_CACHE_SECONDS", 3600)),
+            dataset_access_log_retention_days=max(1, _int_env("DATASET_ACCESS_LOG_RETENTION_DAYS", 365)),
             build_sha=os.getenv("RENDER_GIT_COMMIT", os.getenv("BUILD_SHA", "local")),
         )

@@ -1,5 +1,43 @@
 # Arquitectura cloud Sprint 14
 
+## Extension Sprint 17A: identidad humana separada
+
+Supabase Auth emite JWT para personas y FastAPI es el unico punto que valida
+firma/JWKS y toma decisiones de RBAC. Los roles activos viven en
+`app_user_roles` dentro de `proyecto-super-staging`; RLS y revoke impiden que
+un navegador los consulte directamente. `dataset_access_logs` conserva un
+evento minimo e idempotente por solicitud, sin secretos.
+
+Esta extension no reemplaza el contrato de servicio existente: n8n y GitHub
+Actions siguen usando `X-API-Key` contra los endpoints de jobs/pipeline. No se
+registra JWT, no se emite una URL firmada nueva y no se habilita un consumidor
+de dataset. La migracion 004 se mantiene sin aplicar hasta una validacion
+staging separada.
+
+## Extension Sprint 16: revision y observabilidad
+
+La arquitectura conserva el rol de cada componente: GitHub Actions programa,
+n8n orquesta y FastAPI concentra reglas de revision/publicacion. Supabase
+staging conserva la auditoria durable; el dashboard no usa service role ni API
+key.
+
+```text
+FastAPI pipeline
+  -> review_queue / operational_alerts
+  -> dataset_approvals (decision humana)
+  -> private publication gate
+  -> bucket privado + manifiesto solo si se habilita explicitamente
+```
+
+`ENABLE_PUBLICATION=false` bloquea publicacion publica. El nuevo
+`ENABLE_PRIVATE_PUBLICATION=false` bloquea tambien escritura privada por
+defecto. La revision humana no se ejecuta desde n8n ni GitHub Actions.
+
+Validacion de cierre `v1.8.0`: la migracion 003 fue aplicada solo en el
+staging aislado; FastAPI en fixture, n8n Test URL, revision humana e
+idempotencia fueron validados con tres filas. La publicacion efectivo fue cero:
+el bucket de publicacion siguio privado y sin objetos.
+
 ## Endurecimiento staging Sprint 15
 
 - Supabase debe ser un proyecto separado: `proyecto-super-staging`.

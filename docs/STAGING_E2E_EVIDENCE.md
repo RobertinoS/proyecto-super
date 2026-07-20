@@ -1,11 +1,54 @@
 # Evidencia E2E staging - Sprint 15
 
-Estado: `VALIDACION_MANUAL_PARCIAL_CONFIRMADA`.
+## Cierre Sprint 17B - v1.9.0
+
+La evidencia se registra sin URLs temporales, claves, correos, referencias de
+proyecto ni identificadores operativos. La validacion ocurrio exclusivamente
+en `proyecto-super-staging`, aislado de la base de n8n.
+
+- Las migraciones 004 y 005 quedaron aplicadas en staging aislado.
+- El backend desplegado valido las rutas internas mediante API key de servicio;
+  solicitudes sin clave fueron rechazadas.
+- Un dataset fixture aprobado valido acceso temporal controlado, expiracion
+  aproximada de cinco minutos y auditoria durable sin URL completa.
+- La repeticion con el mismo actor de servicio y solicitud fue idempotente.
+- El bucket de datasets publicados permanece privado; no hay publicacion
+  publica ni exposicion de service role o API key al dashboard.
+- Automatizacion, publicaciones y acceso interno fueron restaurados a `false`;
+  la fuente queda en `fixture`.
+- La autenticacion humana Supabase Auth/JWT y recuperacion de contrasena siguen
+  pendientes de validacion externa y no son productivas.
+
+Rollback: regresar el servicio a `v1.8.0`, conservar los flags bloqueados y no
+ejecutar SQL destructivo sobre la auditoria.
+
+## Cierre Sprint 16 - v1.8.0
+
+La validacion se realizo exclusivamente en `proyecto-super-staging`, sin
+documentar secretos, URLs privadas ni identificadores operativos. La migracion
+003 creo las estructuras de revision y aprobacion con RLS y sin permisos
+directos para `anon` ni `authenticated`.
+
+- Render desplego el checkpoint Sprint 16 en `SOURCE_MODE=fixture`.
+- Los endpoints protegidos rechazaron solicitudes sin API key.
+- Los workflows Sprint 16 se importaron como copias nuevas e inactivas; n8n
+  Test URL completo Structured Success con `rows_processed=3`.
+- La aprobacion humana quedo auditada; el reintento fue idempotente.
+- `PRIVATE_DRY_RUN`: tres filas, calidad 100, manifiesto y checksum registrados
+  en `private_datasets`.
+- El bucket `published-price-datasets` permanece privado y su inventario de
+  objetos fue cero. La publicacion privada y publica efectivas fueron cero.
+- `PROJECT_SUPER_AUTOMATION_ENABLED=false`, `ENABLE_PUBLICATION=false`,
+  `ENABLE_CLOUD_PUBLICATION=false` y `ENABLE_PRIVATE_PUBLICATION=false`.
+
+Rollback: regresar el servicio al release `v1.7.0` y conservar todos los gates
+en `false`; no ejecutar un rollback SQL destructivo.
+
+Estado: `COMPLETADO_V1.7.0`.
 
 La validacion manual de staging se completo sin registrar secretos, URLs de
 webhook, identificadores privados ni enlaces de consola. El E2E iniciado por
-GitHub Actions continua pendiente y es la condicion externa restante para el
-cierre funcional de Sprint 15.
+GitHub Actions se completo con fixture, persistencia aislada e idempotencia.
 
 ## Validacion manual externa
 
@@ -18,8 +61,22 @@ cierre funcional de Sprint 15.
 - Idempotencia: repeticion controlada confirmada sin registros duplicados.
 - Publicacion: bloqueada; `ENABLE_PUBLICATION=false` y
   `ENABLE_CLOUD_PUBLICATION=false`.
-- GitHub Actions: el E2E mediante `workflow_dispatch` sigue pendiente; el
-  kill switch `PROJECT_SUPER_AUTOMATION_ENABLED=false` debe conservarse.
+- GitHub Actions: el E2E mediante `workflow_dispatch` fue exitoso; el kill
+  switch `PROJECT_SUPER_AUTOMATION_ENABLED=false` debe conservarse.
+
+## E2E de cierre
+
+- GitHub Actions ejecuto manualmente el workflow diario y recibio una respuesta
+  HTTP 2xx de n8n; no se documentan identificadores de corrida.
+- n8n completo `Structured Success`; FastAPI proceso el fixture y devolvio
+  `rows_processed=3` con publicacion bloqueada.
+- Supabase staging aislado registro la ejecucion, observaciones y eventos. La
+  prueba de idempotencia no creo duplicados.
+- La publicacion efectiva fue cero. `ENABLE_PUBLICATION=false` y
+  `ENABLE_CLOUD_PUBLICATION=false` continuan activos.
+- La prueba Vea ONLINE limitada se completo con `dry_run=true`; se conserva el
+  canal `ONLINE` y no se representa como precio fisico de sucursal.
+- El entorno se restauro a `SOURCE_MODE=fixture` y el kill switch a `false`.
 
 ## Auditoria del export n8n
 
@@ -39,8 +96,7 @@ cierre funcional de Sprint 15.
 
 - Fecha: 2026-07-13.
 - Modo: fixture local, sin Supabase real.
-- `execution_id`: `sprint15-fixture-idempotency`.
-- `run_id`: `6b3cffd4-42c7-5e99-981a-d2e619447f0a`.
+- `execution_id` y `run_id`: deterministas y omitidos de esta evidencia.
 - Productos: 3.
 - Calidad: `READY_FOR_APPROVAL`.
 - Repeticion: mismo `run_id`, `duplicate_execution=true`.
@@ -54,7 +110,7 @@ Validacion HTTP local adicional:
 
 - `/health=ok`, `/docs=200`, una fuente fixture.
 - Sin API key: 401; API key incorrecta: 403.
-- `run_id`: `a8e63bcd-3b6c-518f-83cf-e9ba6c453621`.
+- `run_id`: presente y omitido de esta evidencia.
 - 3 productos, `SCRAPED`, proceso `READY_FOR_APPROVAL`.
 - Publicacion sin aprobacion: 409; con aprobacion: `DRY_RUN`.
 
@@ -65,25 +121,25 @@ Infraestructura externa observada:
 - Health publico de n8n: `/healthz` respondio HTTP 200 y `status=ok`.
 - UptimeRobot no se modifico; debe monitorear exclusivamente el health de n8n,
   nunca el webhook de scraping ni FastAPI.
-- El repo tiene remote `origin`; la rama de staging puede publicarse para que
-  GitHub Actions ejecute la prueba manual posterior.
+- El repo tiene remote `origin`; `main` es la rama predeterminada y GitHub
+  Actions quedo registrado para ejecucion manual controlada.
 - Suite completa: 87 pruebas aprobadas; una advertencia externa de deprecacion
   FastAPI TestClient/httpx.
 
-## Evidencia externa a completar
+## Evidencia externa completada
 
 | Paso | Estado | Evidencia no sensible |
 |---|---|---|
-| GitHub `workflow_dispatch` | PENDIENTE | run ID y conclusion |
-| Webhook n8n | VALIDADO MANUALMENTE | Test y Production URL correctas |
-| Warm-up FastAPI | VALIDADO MANUALMENTE | FastAPI fixture disponible para el flujo |
-| Scrape fixture | VALIDADO MANUALMENTE | `rows_processed=3` |
-| Process/calidad | VALIDADO MANUALMENTE | respuesta estructurada satisfactoria |
-| `scrape_runs` | VALIDADO MANUALMENTE | repeticion sin duplicados |
-| `price_observations` | VALIDADO MANUALMENTE | cero duplicados en prueba idempotente |
-| `source_health` | PENDIENTE DE EVIDENCIA DETALLADA | registrar solo estado no sensible |
-| `execution_events` | PENDIENTE DE EVIDENCIA DETALLADA | registrar etapas no sensibles |
-| Storage privado | PENDIENTE DE EVIDENCIA DETALLADA | paths sin URL firmada |
+| GitHub `workflow_dispatch` | VALIDADO | 2xx y workflow exitoso |
+| Webhook n8n | VALIDADO | Test y Production URL correctas |
+| Warm-up FastAPI | VALIDADO | fixture disponible para el flujo |
+| Scrape fixture | VALIDADO | `rows_processed=3` |
+| Process/calidad | VALIDADO | `Structured Success` |
+| `scrape_runs` | VALIDADO | idempotencia sin duplicados |
+| `price_observations` | VALIDADO | observaciones persistidas sin duplicados |
+| `source_health` | VALIDADO | estado actualizado por pipeline |
+| `execution_events` | VALIDADO | trazabilidad de etapas persistida |
+| Storage privado | VALIDADO | sin dataset publico |
 | Publicacion | BLOQUEADA | sin dataset publico |
 
 No registrar URL completa del webhook, tokens, service role, IDs de proyecto

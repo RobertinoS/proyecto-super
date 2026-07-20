@@ -61,9 +61,106 @@ class PublishResponse(BaseModel):
     dry_run: bool = True
 
 
+class ReviewDecisionRequest(BaseModel):
+    actor: str = Field(min_length=2, max_length=120)
+    notes: str | None = Field(default=None, max_length=2000)
+    corrected_value: dict[str, Any] | None = None
+    idempotency_key: str | None = Field(default=None, max_length=160)
+
+
+class DatasetApprovalRequest(BaseModel):
+    actor: str = Field(min_length=2, max_length=120)
+    reason: str | None = Field(default=None, max_length=2000)
+    idempotency_key: str | None = Field(default=None, max_length=160)
+
+
+class PrivatePublicationRequest(BaseModel):
+    actor: str = Field(min_length=2, max_length=120)
+    dry_run: bool = True
+    idempotency_key: str | None = Field(default=None, max_length=160)
+
+
+class OperationalAlertRequest(BaseModel):
+    source: str | None = Field(default=None, max_length=80)
+    run_id: str | None = Field(default=None, max_length=80)
+    alert_type: str = Field(min_length=3, max_length=120)
+    severity: Literal["LOW", "MEDIUM", "HIGH", "CRITICAL"] = "HIGH"
+    message: str = Field(min_length=3, max_length=1000)
+    idempotency_key: str | None = Field(default=None, max_length=160)
+
+
 class SourceInfo(BaseModel):
     name: str
     version: str
     status: str
     mode: str
     last_run: dict[str, Any] | None = None
+
+
+class AuthMeResponse(BaseModel):
+    user_id: str
+    roles: list[Literal["viewer", "reviewer", "dataset_admin", "operator"]]
+    capabilities: list[str]
+    token_expires_at: datetime
+    authentication_type: Literal["supabase_jwt"]
+
+
+class AuthCapabilitiesResponse(BaseModel):
+    roles: list[Literal["viewer", "reviewer", "dataset_admin", "operator"]]
+    capabilities: list[str]
+
+
+# Contracts reserved for Sprint 17B. They are documented but are not routes or
+# download implementations in Sprint 17A.
+class FuturePrivateDatasetMetadata(BaseModel):
+    dataset_id: str
+    status: Literal["APPROVED", "PUBLISHED_PRIVATE", "REVOKED", "SUPERSEDED", "ARCHIVED"]
+    run_id: str
+    row_count: int = Field(ge=0)
+    quality_score: float | None = Field(default=None, ge=0, le=100)
+    created_at: datetime
+
+
+class FutureDatasetAccessRequest(BaseModel):
+    request_id: str = Field(min_length=8, max_length=160)
+
+
+class FutureDatasetAccessResponse(BaseModel):
+    dataset_id: str
+    status: Literal["PENDING", "GRANTED", "DENIED"]
+    expires_at: datetime | None = None
+
+
+class InternalPrivateDatasetMetadata(BaseModel):
+    dataset_id: str
+    status: Literal["PUBLISHED_PRIVATE", "ACTIVE"]
+    approval_id: str
+    row_count: int = Field(ge=0)
+    quality_score: float | None = Field(default=None, ge=0, le=100)
+    created_at: datetime | None = None
+    checksum_present: bool
+
+
+class InternalDatasetAccessRequest(BaseModel):
+    request_id: str = Field(min_length=8, max_length=160, pattern=r"^[A-Za-z0-9_.-]+$")
+
+
+class InternalDatasetAccessResponse(BaseModel):
+    dataset_id: str
+    request_id: str
+    access_url: str
+    expires_at: datetime
+    expires_in_seconds: Literal[300]
+    duplicate_request: bool = False
+
+
+class InternalDatasetAuditEntry(BaseModel):
+    id: str | None = None
+    dataset_id: str | None = None
+    actor_type: Literal["service", "human", "system"] | None = None
+    action: str | None = None
+    result: str | None = None
+    request_id: str | None = None
+    expires_at: datetime | None = None
+    denial_reason: str | None = None
+    created_at: datetime | None = None

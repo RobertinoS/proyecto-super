@@ -1,9 +1,89 @@
 # Changelog
 
-## Sin release - Sprint 15 - Staging controlado
+## v1.9.0 - Sprint 17A y Sprint 17B - acceso privado interno controlado
 
-Preparacion local y validacion manual staging completadas. No implica cierre
-funcional del sprint, tag ni activacion automatica:
+### Cierre y validacion staging
+
+- Integra la arquitectura experimental JWT/RBAC de Sprint 17A y el piloto
+  interno backend-only de Sprint 17B.
+- Registra las migraciones 004 y 005 aplicadas exclusivamente en staging
+  aislado, sin afectar la base operativa de n8n.
+- Documenta endpoints internos protegidos, auditoria idempotente por actor de
+  servicio y solicitud, bucket privado y acceso temporal con expiracion
+  aproximada de cinco minutos.
+- Confirma que no se conserva una URL temporal completa, no se expone API key
+  ni service role al frontend y no existe publicacion publica.
+- Conserva todos los flags operativos bloqueados y documenta rollback a
+  `v1.8.0`.
+- Declara login y recuperacion de contrasena de Supabase Auth/JWT como
+  pendientes de validacion externa; la autenticacion humana no es productiva.
+
+### Sprint 17B - internal private dataset access
+
+- piloto backend-only bajo rutas `/internal/private-datasets`, autenticado con
+  `X-API-Key` de operador y sin API key en frontend;
+- metadata segura, dataset vigente, auditoria saneada y acceso temporal de
+  cinco minutos controlado por feature flag interno;
+- bloqueo de dataset revocado/no aprobado, bucket no privado y Storage no
+  disponible; idempotencia durable por actor de servicio y request ID;
+- migracion 005 aditiva para `actor_type=service` y estados
+  `PUBLISHED_PRIVATE`/`ACTIVE`, conservando estados historicos;
+- pruebas aisladas de todos los estados de acceso y sin regresion JWT/n8n.
+
+La migracion 005 se aplico exclusivamente en staging. El feature flag fue
+restaurado a `false` luego de la validacion controlada. Supabase Auth externa
+sigue pendiente de validacion.
+
+### Sprint 17A - Auth contracts and RBAC
+
+- migracion aditiva `004` para roles humanos activos y auditoria minima de
+  acceso, con RLS y revocacion de privilegios para navegador;
+- validacion FastAPI de JWT de Supabase Auth mediante JWKS cacheado, firma,
+  algoritmo permitido, issuer, expiracion y audiencia configurable;
+- separacion explicita entre Bearer JWT humano y `X-API-Key` para n8n/GitHub;
+- endpoints seguros `/auth/me` y `/auth/capabilities`, roles acumulables y
+  capacidades derivadas server-side;
+- contratos Pydantic/documentados de consumo privado futuro, sin descargar ni
+  emitir URLs firmadas;
+- pruebas locales de JWT, rotacion de JWKS, RBAC, logs idempotentes y ausencia
+  de regresion en endpoints de servicio.
+
+La migracion 004 se aplico exclusivamente en staging. Login humano y
+recuperacion de contrasena quedan pendientes de validacion externa; todos los
+gates de automatizacion/publicacion permanecen desactivados.
+
+## v1.8.0 - Sprint 16 - Revision, observabilidad y publicacion privada
+
+Sprint 16 cerrado con validacion controlada en staging aislado:
+
+- migracion `003` aditiva para cola de revision, decisiones auditables,
+  aprobaciones de datasets y alertas operativas;
+- endpoints FastAPI protegidos para revision, aprobacion/rechazo, resumen
+  operativo, fuentes, alertas y datasets privados;
+- gate independiente `ENABLE_PRIVATE_PUBLICATION=false`, con manifiesto y
+  checksum en `PRIVATE_DRY_RUN` sin objetos publicos;
+- dashboard con Operacion cloud y Bandeja de revision sin claves ni llamadas
+  directas a FastAPI; admite JSON saneado y exporta decisiones locales;
+- workflow n8n de notificacion de revision importable pero inactivo, sin
+  aprobacion automatica ni publicacion;
+- GitHub Actions conserva kill switch y amplia solo los campos no sensibles de
+  su log estructurado;
+- migracion 003 aplicada exclusivamente en staging aislado, con RLS y sin
+  acceso directo para `anon` ni `authenticated`;
+- Render valido el checkpoint de Sprint 16 en `fixture`; los endpoints
+  protegidos rechazaron solicitudes sin API key;
+- n8n Test URL completo respuesta estructurada con tres filas, aprobacion
+  humana trazable e idempotencia confirmada;
+- `PRIVATE_DRY_RUN` valido tres filas, calidad 100, checksum y evidencia en
+  `private_datasets`, sin objetos en el bucket privado de publicacion.
+
+No se habilitaron schedules, publicacion privada/publica, modo live permanente
+ni objetos de storage publicados. Rollback operativo disponible en `v1.7.0`.
+
+## v1.7.0 - Sprint 15 - Staging controlado
+
+Sprint 15 cerrado con staging aislado y validacion E2E controlada. No habilita
+publicacion real, modo live permanente ni automatizacion operativa:
 
 - plan de despliegue, aislamiento Supabase, storage, variables, FastAPI,
   evidencia E2E, gate de publicacion y runbook de incidentes;
@@ -27,9 +107,21 @@ Validacion manual externa no sensible:
   contrato `/jobs/scrape` y salidas HTTP de scrape/proceso separadas hacia
   `Structured Error`.
 
-Pendiente: E2E de GitHub Actions mediante `workflow_dispatch` y evidencia no
-sensible de esa corrida. Publicacion sigue bloqueada; no se habilita schedule
-de GitHub y `PROJECT_SUPER_AUTOMATION_ENABLED` permanece en `false`.
+Evidencia E2E de cierre, sin valores sensibles:
+
+- GitHub `workflow_dispatch` llamo al webhook productivo de n8n y recibio 2xx;
+- n8n completo warm-up, fixture, proceso y `Structured Success`;
+- Supabase staging registro ejecucion, observaciones y eventos sin duplicados;
+- la publicacion efectiva fue cero; los gates `ENABLE_PUBLICATION=false` y
+  `ENABLE_CLOUD_PUBLICATION=false` siguen activos;
+- Vea ONLINE se valido en live limitado, con `dry_run=true`, limites bajos y
+  sin representar precios fisicos de sucursal;
+- `SOURCE_MODE` fue restaurado a `fixture` y
+  `PROJECT_SUPER_AUTOMATION_ENABLED` permanece en `false`.
+
+GitHub Actions ahora registra de manera segura el 2xx y los campos no sensibles
+`status`, `execution_id`, `run_id`, `rows_processed`, `publication` y
+`duplicate_execution`, sin imprimir headers ni secretos.
 
 Validacion local:
 
@@ -39,7 +131,7 @@ Validacion local:
 - FastAPI HTTP: health/docs, 401, 403, scrape, job, process y gates OK;
 - n8n existente: `/healthz` HTTP 200, sin crear servicios nuevos;
 - `python -m pytest`: 87 passed, 1 warning externo;
-- live y E2E externo no ejecutados por la regla de corte.
+- fixture E2E y live limitado externos: validados sin publicacion.
 
 ## 2026-07-13 - Sprint 14 - Piloto cloud de scraping oficial
 

@@ -20,7 +20,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const headers = $json.headers || {};\nconst expected = $env.N8N_WEBHOOK_TOKEN || '';\nconst supplied =\n  headers['x-webhook-token'] ||\n  headers['X-Webhook-Token'] ||\n  '';\n\nif (!expected || supplied !== expected) {\n  throw new Error('Unauthorized webhook');\n}\n\nconst body = $json.body || {};\n\nconst allowedTriggerTypes = new Set([\n  'manual',\n  'manual_staging',\n  'github_actions',\n  'n8n',\n  'smoke_test',\n]);\n\nconst requestedTriggerType = String(body.trigger_type || 'n8n');\nconst triggerType = allowedTriggerTypes.has(requestedTriggerType)\n  ? requestedTriggerType\n  : 'n8n';\n\nreturn [\n  {\n    json: {\n      source: body.source || 'vea',\n      dry_run: true,\n      max_products: Math.min(\n        Math.max(Number(body.max_products || 3), 1),\n        5\n      ),\n      max_pages: 1,\n      execution_id: body.execution_id || `n8n-${Date.now()}`,\n      trigger_type: triggerType,\n      approved: body.approved === true,\n    },\n  },\n];"
+        "jsCode": "const headers = $json.headers || {};\nconst expected = $env.N8N_WEBHOOK_TOKEN || '';\nconst supplied =\n  headers['x-webhook-token'] ||\n  headers['X-Webhook-Token'] ||\n  '';\n\nif (!expected || supplied !== expected) {\n  throw new Error('Unauthorized webhook');\n}\n\nconst body = $json.body || {};\n\nconst allowedTriggerTypes = new Set([\n  'manual',\n  'manual_staging',\n  'github_actions',\n  'n8n',\n  'smoke_test',\n]);\n\nconst requestedTriggerType = String(body.trigger_type || 'n8n');\nconst triggerType = allowedTriggerTypes.has(requestedTriggerType)\n  ? requestedTriggerType\n  : 'n8n';\n\nreturn [\n  {\n    json: {\n      source: body.source || 'vea',\n      dry_run: true,\n      max_products: Math.min(\n        Math.max(Number(body.max_products || 3), 1),\n        5\n      ),\n      max_pages: 1,\n      execution_id: body.execution_id || `n8n-${Date.now()}`,\n      trigger_type: triggerType,\n    },\n  },\n];"
       },
       "id": "9b995ced-bfa4-4315-894f-738ed11f857b",
       "name": "Validate Token and Payload",
@@ -310,53 +310,8 @@
     },
     {
       "parameters": {
-        "jsCode": "const input = $json; const approved = $('Validate Token and Payload').first().json.approved === true; const enabled = ($env.ENABLE_CLOUD_PUBLICATION || 'false').toLowerCase() === 'true'; return [{json:{...input, should_publish: approved && enabled}}];"
-      },
-      "id": "dc501613-79df-4274-be3d-d3415cb20e9d",
-      "name": "Build Publication Gate",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        704,
-        96
-      ]
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 1
-          },
-          "conditions": [
-            {
-              "leftValue": "={{ $json.should_publish }}",
-              "rightValue": true,
-              "operator": {
-                "type": "boolean",
-                "operation": "true"
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "id": "d7e15bd5-cc83-49da-9520-0a50daeddd6d",
-      "name": "Publication Approved?",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.2,
-      "position": [
-        928,
-        96
-      ]
-    },
-    {
-      "parameters": {
         "method": "POST",
-        "url": "={{ $env.FASTAPI_BASE_URL + '/pipeline/publish' }}",
+        "url": "={{ $env.FASTAPI_BASE_URL + '/runs/' + $json.run_id + '/request-approval' }}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -369,33 +324,64 @@
         "sendBody": true,
         "contentType": "raw",
         "rawContentType": "application/json",
-        "body": "={{ JSON.stringify({run_id: $json.run_id, approved: true, approved_by: 'n8n-reviewed', dry_run: true}) }}",
+        "body": "={{ JSON.stringify({actor: 'n8n-orchestrator', idempotency_key: 'approval-' + $('Validate Token and Payload').first().json.execution_id}) }}",
         "options": {
           "timeout": 120000
         }
       },
-      "id": "f0e3ff9f-8880-4ae9-a950-0f3ae7754fcb",
-      "name": "Publish Dry Run Only",
+      "id": "d48b7f1d-0c50-4370-9272-688631126f14",
+      "name": "Request Dataset Approval",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1152,
-        0
+        704,
+        96
       ],
-      "onError": "continueRegularOutput"
+      "onError": "continueErrorOutput"
     },
     {
       "parameters": {
-        "jsCode": "return [{json:{status:'COMPLETED_PENDING_APPROVAL', publication:'BLOCKED', reason:'Sprint 15 staging gate', run_id:$json.run_id, rows_processed:$json.rows_processed || 0}}];"
+        "jsCode": "const approval = $json;\nconst process = $('Process and Validate').first().json;\nconst cloudPublicationEnabled = ($env.ENABLE_CLOUD_PUBLICATION || 'false').toLowerCase() === 'true';\nreturn [{json:{\n  status:'COMPLETED_PENDING_APPROVAL',\n  run_id: approval.scrape_run_id,\n  rows_processed: Number(process.rows_processed || 0),\n  quality_score: process.quality_score ?? null,\n  pending_reviews: Number(approval.pending_items || 0),\n  approval_status: approval.status || 'PENDING_REVIEW',\n  publication:'BLOCKED',\n  publication_gate: cloudPublicationEnabled ? 'NO_AUTOMATIC_PUBLICATION' : 'DISABLED',\n  duplicate_execution:false\n}}];"
       },
-      "id": "da493ea6-0024-4ed9-8271-90783a9eaed0",
-      "name": "Skip Publication",
+      "id": "5f40e520-9678-45d0-9127-1e7a03ecc011",
+      "name": "Build Review Response",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1152,
-        192
+        928,
+        96
       ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.FASTAPI_BASE_URL + '/operations/alerts' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-API-Key",
+              "value": "={{ $env.SCRAPER_API_KEY }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({source: $('Validate Token and Payload').first().json.source, run_id: $json.run_id || null, alert_type: 'PIPELINE_FAILURE', severity: 'HIGH', message: 'n8n stopped before human approval; inspect protected execution logs.', idempotency_key: 'n8n-alert-' + $('Validate Token and Payload').first().json.execution_id}) }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "5dfd0048-73de-44e7-8b74-0ca7a7546523",
+      "name": "Register Workflow Alert",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        928,
+        432
+      ],
+      "onError": "continueErrorOutput"
     },
     {
       "parameters": {
@@ -417,7 +403,7 @@
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={{ {status:'FAILED', stage:'health_or_quality', publication:'BLOCKED', details:$json} }}",
+        "responseBody": "={{ {status:'FAILED', stage:'health_or_quality', publication:'BLOCKED', message:'Workflow stopped before approval. Inspect protected logs.'} }}",
         "options": {
           "responseCode": 503
         }
@@ -558,7 +544,7 @@
         ],
         [
           {
-            "node": "Structured Error",
+            "node": "Register Workflow Alert",
             "type": "main",
             "index": 0
           }
@@ -576,7 +562,7 @@
         ],
         [
           {
-            "node": "Structured Error",
+            "node": "Register Workflow Alert",
             "type": "main",
             "index": 0
           }
@@ -594,7 +580,7 @@
         ],
         [
           {
-            "node": "Structured Error",
+            "node": "Register Workflow Alert",
             "type": "main",
             "index": 0
           }
@@ -605,7 +591,54 @@
       "main": [
         [
           {
-            "node": "Build Publication Gate",
+            "node": "Request Dataset Approval",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Register Workflow Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Request Dataset Approval": {
+      "main": [
+        [
+          {
+            "node": "Build Review Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Register Workflow Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Review Response": {
+      "main": [
+        [
+          {
+            "node": "Structured Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Register Workflow Alert": {
+      "main": [
+        [
+          {
+            "node": "Structured Error",
             "type": "main",
             "index": 0
           }
@@ -613,57 +646,6 @@
         [
           {
             "node": "Structured Error",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Build Publication Gate": {
-      "main": [
-        [
-          {
-            "node": "Publication Approved?",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Publication Approved?": {
-      "main": [
-        [
-          {
-            "node": "Publish Dry Run Only",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Skip Publication",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Publish Dry Run Only": {
-      "main": [
-        [
-          {
-            "node": "Structured Success",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Skip Publication": {
-      "main": [
-        [
-          {
-            "node": "Structured Success",
             "type": "main",
             "index": 0
           }

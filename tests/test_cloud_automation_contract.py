@@ -20,11 +20,27 @@ def test_n8n_workflow_is_importable_and_has_safe_gates():
         "Run Vea Scrape",
         "Process and Validate",
         "Quality Gate",
-        "Publication Approved?",
+        "Request Dataset Approval",
+        "Build Review Response",
+        "Register Workflow Alert",
         "Structured Error",
     } <= names
     assert workflow["active"] is False
     assert "ENABLE_CLOUD_PUBLICATION" in path.read_text(encoding="utf-8")
+    assert "/pipeline/publish" not in path.read_text(encoding="utf-8")
+    assert "details:$json" not in path.read_text(encoding="utf-8")
+
+
+def test_review_notification_workflow_is_inactive_and_cannot_publish():
+    path = ROOT / "automation" / "n8n" / "proyecto_super_review_notification.json"
+    workflow = json.loads(path.read_text(encoding="utf-8"))
+    names = {node["name"] for node in workflow["nodes"]}
+    assert workflow["active"] is False
+    assert {"Webhook Trigger", "Validate Review Notification", "Structured Review Pending", "Structured Error"} <= names
+    text = path.read_text(encoding="utf-8").lower()
+    assert "publish" in text
+    assert "does not approve" in text
+    assert "credential" not in text
 
 
 def test_github_action_is_single_daily_trigger_not_keepalive():

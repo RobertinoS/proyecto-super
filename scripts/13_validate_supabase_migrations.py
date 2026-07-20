@@ -17,6 +17,28 @@ EXPECTED_TABLES = {
     "publication_runs": {"id", "scrape_run_id", "status", "dataset_path"},
     "source_health": {"source", "extractor_version", "updated_at"},
     "execution_events": {"id", "execution_id", "run_id", "event_type", "status", "created_at"},
+    "review_queue": {
+        "id", "scrape_run_id", "observation_id", "source", "review_type", "severity", "status",
+        "reason", "detected_value", "decision_notes", "idempotency_key", "created_at", "updated_at",
+    },
+    "review_decisions": {"id", "review_id", "action", "actor", "previous_value", "idempotency_key", "created_at"},
+    "dataset_approvals": {
+        "id", "scrape_run_id", "status", "quality_score", "pending_items", "approved_items",
+        "rejected_items", "idempotency_key", "created_at", "updated_at",
+    },
+    "operational_alerts": {"id", "source", "run_id", "alert_type", "severity", "status", "message", "idempotency_key"},
+    "private_datasets": {
+        "id", "scrape_run_id", "approval_id", "status", "dataset_path", "manifest_path", "row_count",
+        "checksum_sha256", "approved_by", "created_at",
+    },
+    "app_user_roles": {
+        "id", "user_id", "role", "active", "assigned_by", "assigned_at", "revoked_by", "revoked_at",
+        "created_at", "updated_at",
+    },
+    "dataset_access_logs": {
+        "id", "dataset_id", "user_id", "action", "result", "request_id", "role_snapshot", "expires_at",
+        "denial_reason", "client_fingerprint_hash", "actor_type", "created_at",
+    },
 }
 EXPECTED_BUCKETS = {
     "raw-price-snapshots",
@@ -91,6 +113,20 @@ def validate_migrations(directory: Path = DEFAULT_MIGRATIONS) -> dict:
         "private_buckets": r"insert\s+into\s+storage\.buckets",
         "browser_role_revoke": r"revoke\s+all\s+on\s+table\s+public\.scrape_runs\s+from\s+anon\s*,\s*authenticated",
         "event_idempotency": r"unique\s+index[^;]+execution_events\s*\(\s*execution_id\s*,\s*event_type\s*,\s*status\s*\)",
+        "review_idempotency": r"review_queue[\s\S]+idempotency_key\s+text\s+not\s+null\s+unique",
+        "dataset_run_idempotency": r"dataset_approvals[\s\S]+scrape_run_id\s+uuid\s+not\s+null\s+unique",
+        "review_state_contract": r"'PENDING'\s*,\s*'IN_REVIEW'\s*,\s*'APPROVED'\s*,\s*'REJECTED'\s*,\s*'CORRECTED'\s*,\s*'DISMISSED'",
+        "private_dataset_idempotency": r"unique\s*\(\s*scrape_run_id\s*,\s*checksum_sha256\s*\)",
+        "active_role_unique": r"app_user_roles[\s\S]+unique\s*\(\s*user_id\s*,\s*role\s*\)",
+        "allowed_roles": r"role\s+in\s*\(\s*'viewer'\s*,\s*'reviewer'\s*,\s*'dataset_admin'\s*,\s*'operator'\s*\)",
+        "auth_user_foreign_key": r"user_id\s+uuid\s+not\s+null\s+references\s+auth\.users\s*\(\s*id\s*\)",
+        "access_log_idempotency": r"dataset_access_logs[\s\S]+unique\s*\(\s*user_id\s*,\s*request_id\s*\)",
+        "access_log_actions": r"'AUTHENTICATED'\s*,\s*'METADATA_VIEWED'\s*,\s*'ACCESS_REQUESTED'\s*,\s*'ACCESS_GRANTED'\s*,\s*'ACCESS_DENIED'\s*,\s*'URL_ISSUED'\s*,\s*'URL_EXPIRED'",
+        "browser_role_revoke_auth": r"revoke\s+all\s+on\s+table\s+public\.app_user_roles\s+from\s+anon\s*,\s*authenticated",
+        "browser_role_revoke_access_logs": r"revoke\s+all\s+on\s+table\s+public\.dataset_access_logs\s+from\s+anon\s*,\s*authenticated",
+        "service_actor_idempotency": r"unique\s+index\s+if\s+not\s+exists\s+uq_dataset_access_logs_actor_request[\s\S]+actor_type\s*,\s*request_id",
+        "allowed_access_actor_types": r"actor_type\s+in\s*\(\s*'service'\s*,\s*'human'\s*,\s*'system'\s*\)",
+        "internal_access_statuses": r"'PUBLISHED_PRIVATE'\s*,\s*'ACTIVE'",
     }
     for name, pattern in required_contracts.items():
         if not re.search(pattern, sql, re.IGNORECASE | re.DOTALL):

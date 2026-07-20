@@ -1,5 +1,75 @@
 # Plan de pruebas
 
+## Sprint 17B - acceso interno a datasets privados
+
+Pruebas locales sin red, Supabase ni Storage real:
+
+- API key ausente/invalida para todas las rutas `/internal`;
+- dataset inexistente, no aprobado, revocado, elegible y sin checksum;
+- feature flag interno en `false`, bucket no privado y objeto no disponible;
+- URL firmada simulada, maximo de 300 segundos y ausencia de URL en auditoria;
+- idempotencia por `request_id`, sin segundo log ni segunda emision durante la
+  ventana en memoria;
+- metadata y auditoria saneadas, sin rutas de objeto, keys o headers;
+- endpoints JWT y endpoints n8n con `X-API-Key` sin regresion;
+- migracion 005, actor service/human/system y estado de acceso interno.
+
+Pytest no aplica 005, no enciende `ENABLE_INTERNAL_DATASET_ACCESS`, no se
+despliega ni solicita una URL real. La validacion manual controlada en staging
+confirmo migracion 005, proteccion de API key, denegacion segura con el flag en
+`false`, auditoria idempotente, bucket privado y expiracion temporal. El flag
+fue restaurado a `false` y no existe publicacion publica.
+
+## Sprint 17A - Auth contracts and RBAC
+
+Pruebas locales sin Supabase ni red:
+
+- migracion 004 aditiva, roles limitados, FK a `auth.users`, RLS, revoke de
+  roles browser e idempotencia de auditoria por `(user_id, request_id)`;
+- JWT valido, ausente, malformado, expirado, con firma, issuer, audiencia o
+  algoritmo invalidos;
+- cache y rotacion de JWKS con claves RSA generadas durante pytest;
+- roles viewer, reviewer, dataset_admin, operator, multiples roles e
+  inactivos filtrados por contrato server-side;
+- `/auth/me`, `/auth/capabilities`, `require_any_role` y `require_all_roles`;
+- separacion Bearer JWT versus `X-API-Key`, sin regresion de `/jobs/scrape`;
+- auditoria sin token y con idempotencia por request ID;
+- modelos de consumo privado futuros sin rutas de descarga activas.
+
+No se ejecuta Supabase Auth real ni se consulta JWKS externo durante pytest.
+La migracion 004 fue aplicada solo en staging; la validacion externa de login
+humano y recuperacion de contrasena permanece pendiente. Toda operacion sigue
+en fixture y con publicaciones/schedules bloqueados.
+
+## Sprint 16 - Revision, observabilidad y publicacion privada
+
+Pruebas automatizadas sin recursos externos:
+
+- estructura aditiva de migracion `003`, RLS, claves foraneas, constraints e
+  idempotencia, sin tablas n8n ni SQL destructivo;
+- endpoints protegidos de reviews, decisiones, solicitudes y aprobaciones de
+  dataset;
+- correccion con valor anterior/nuevo, rechazo con motivo e idempotencia de
+  decisiones y aprobaciones;
+- bloqueo de aprobacion ante una revision critica o pendiente;
+- publicacion privada en `PRIVATE_DRY_RUN`, checksum, manifiesto y ausencia de
+  URL firmada cuando `ENABLE_PRIVATE_PUBLICATION=false`;
+- resumen operativo, estado de fuentes, alertas y acknowledgement;
+- dashboard: componentes cloud/revision, carga JSON saneada y rechazo de
+  campos sensibles;
+- workflow n8n de notificacion inactivo y sin credenciales/publicacion;
+- GitHub Actions: kill switch, sin scraping directo y log no sensible.
+
+Validacion staging manual completada para v1.8.0:
+
+1. La migracion 003 se aplico solo en `proyecto-super-staging`, con RLS.
+2. Render uso fixture y todos los gates de publicacion en `false`.
+3. n8n Test URL proceso tres filas; revision y aprobacion humanas quedaron
+   auditadas e idempotentes.
+4. `PRIVATE_DRY_RUN` valido tres filas, calidad 100, manifiesto y checksum sin
+   objetos de storage, URLs publicas ni publicacion efectiva.
+5. Se mantienen bloqueados el schedule, workflow de notificacion y kill switch.
+
 ## Sprint 15 - Staging controlado
 
 Pruebas automatizadas, sin red externa:

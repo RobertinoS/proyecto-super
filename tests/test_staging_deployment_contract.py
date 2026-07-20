@@ -24,8 +24,14 @@ def test_supabase_migrations_are_safe_complete_and_keep_001_immutable():
     report = load_migration_validator().validate_migrations()
     assert report["ok"], report["errors"]
     assert report["migration_001_unchanged"] is True
-    assert report["files"] == ["001_cloud_scraping_foundation.sql", "002_staging_hardening.sql"]
-    assert len(report["tables"]) == 5
+    assert report["files"] == [
+        "001_cloud_scraping_foundation.sql",
+        "002_staging_hardening.sql",
+        "003_review_and_private_publication.sql",
+        "004_auth_roles_and_access_audit.sql",
+        "005_internal_dataset_access_audit.sql",
+    ]
+    assert len(report["tables"]) == 12
     assert len(report["buckets"]) == 3
 
 
@@ -43,6 +49,8 @@ def test_staging_env_and_render_blueprint_have_safe_limits():
     assert env["APP_ENV"] == "staging"
     assert env["SOURCE_MODE"] == "fixture"
     assert env["ENABLE_PUBLICATION"] == "false"
+    assert env["ENABLE_PRIVATE_PUBLICATION"] == "false"
+    assert env["ENABLE_INTERNAL_DATASET_ACCESS"] == "false"
     assert env["MAX_PRODUCTS_PER_RUN"] == "5"
     assert env["MAX_PAGES_PER_RUN"] == "1"
     assert env["SCRAPER_API_KEY"] == "replace_me"
@@ -56,6 +64,7 @@ def test_staging_env_and_render_blueprint_have_safe_limits():
     assert values["APP_ENV"]["value"] == "staging"
     assert values["SOURCE_MODE"]["value"] == "fixture"
     assert values["ENABLE_PUBLICATION"]["value"] == "false"
+    assert values["ENABLE_PRIVATE_PUBLICATION"]["value"] == "false"
     assert values["MAX_PRODUCTS_PER_RUN"]["value"] == "5"
     assert values["MAX_PAGES_PER_RUN"]["value"] == "1"
     for secret in ["SCRAPER_API_KEY", "SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"]:
@@ -78,11 +87,19 @@ def test_github_action_has_kill_switch_manual_trigger_and_no_direct_scraping():
     assert "vea.com.ar" not in text
     assert "cloud_backend" not in text
     assert "curl" in text and "--max-time" in text and "--retry 2" in text
+    assert "webhook_http_status=" in text
+    for field in (
+        "status", "execution_id", "run_id", "rows_processed", "quality_score", "pending_reviews",
+        "approval_status", "publication", "duplicate_execution",
+    ):
+        assert f'"{field}"' in text
+    assert "X-Webhook-Token: $WEBHOOK_TOKEN" in text
 
 
 def test_n8n_workflow_is_staging_inactive_and_has_safe_payload_error_routes():
     path = ROOT / "automation" / "n8n" / "proyecto_super_daily_scrape.json"
     workflow = json.loads(path.read_text(encoding="utf-8"))
+    text = path.read_text(encoding="utf-8")
     nodes = {node["name"]: node for node in workflow["nodes"]}
     names = set(nodes)
     assert workflow["active"] is False
@@ -105,13 +122,30 @@ def test_n8n_workflow_is_staging_inactive_and_has_safe_payload_error_routes():
     assert "approved:" not in scrape_body
 
     connections = workflow["connections"]
-    for node_name, success_target in (("Run Vea Scrape", "Process and Validate"), ("Process and Validate", "Quality Gate")):
+    for node_name, success_target in (
+        ("Run Vea Scrape", "Process and Validate"),
+        ("Process and Validate", "Quality Gate"),
+        ("Request Dataset Approval", "Build Review Response"),
+    ):
         assert nodes[node_name]["onError"] == "continueErrorOutput"
         outputs = connections[node_name]["main"]
         assert outputs[0][0]["node"] == success_target
-        assert outputs[1][0]["node"] == "Structured Error"
+        assert outputs[1][0]["node"] == "Register Workflow Alert"
 
-    text = path.read_text(encoding="utf-8")
+    assert connections["Quality Gate"]["main"][0][0]["node"] == "Request Dataset Approval"
+    approval_body = nodes["Request Dataset Approval"]["parameters"]["body"]
+    assert "actor" in approval_body and "idempotency_key" in approval_body
+    review_response = nodes["Build Review Response"]["parameters"]["jsCode"]
+    for field in ("quality_score", "pending_reviews", "approval_status", "publication:'BLOCKED'"):
+        assert field in review_response
+    assert "/pipeline/publish" not in text
+    alert = nodes["Register Workflow Alert"]
+    assert alert["onError"] == "continueErrorOutput"
+    alert_body = alert["parameters"]["body"]
+    assert "PIPELINE_FAILURE" in alert_body and "idempotency_key" in alert_body
+    assert all(target[0]["node"] == "Structured Error" for target in connections["Register Workflow Alert"]["main"])
+    assert "details:$json" not in text
+
     assert "ENABLE_CLOUD_PUBLICATION" in text
     assert not re.search(r"(?:api[_-]?key|token)\s*[:=]\s*['\"][A-Za-z0-9_-]{20,}", text, re.IGNORECASE)
 

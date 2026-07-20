@@ -53,5 +53,22 @@ jobs:
             --header "Content-Type: application/json" \
             --header "X-Webhook-Token: $WEBHOOK_TOKEN" \
             --data "{\"source\":\"vea\",\"dry_run\":true,\"max_products\":3,\"max_pages\":1,\"execution_id\":\"${execution_id}\",\"trigger_type\":\"github_actions\"}")
-          python -c "import json; data=json.load(open('response.json')); print(json.dumps({k:data.get(k) for k in ('status','execution_id','run_id','duplicate_execution')}, ensure_ascii=True))"
           test "$http_code" -ge 200 -a "$http_code" -lt 300 || { echo "n8n returned HTTP $http_code"; exit 1; }
+          printf 'webhook_http_status=%s\n' "$http_code"
+          python - <<'PY'
+          import json
+
+          data = json.load(open("response.json", encoding="utf-8"))
+          fields = (
+              "status",
+              "execution_id",
+              "run_id",
+              "rows_processed",
+              "quality_score",
+              "pending_reviews",
+              "approval_status",
+              "publication",
+              "duplicate_execution",
+          )
+          print(json.dumps({field: data.get(field) for field in fields}, ensure_ascii=True))
+          PY

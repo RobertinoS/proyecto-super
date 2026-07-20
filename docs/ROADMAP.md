@@ -90,3 +90,23 @@ Entregables:
 - Responsive audit.
 - Limpieza legacy aprobada.
 - Guia de uso final.
+
+## Sprint 17 - Consumo privado y operacion supervisada
+
+Objetivo: preparar el paso desde datasets aprobados en staging hacia consumo
+privado autenticado, revocacion trazable y piloto live gradual, sin publicar
+datos al publico.
+
+La implementacion se divide para no mezclar capas criticas:
+
+- **17A**: integrado en v1.9.0 como contratos JWT/RBAC experimentales y
+  migracion staging. Login humano y recuperacion de contrasena siguen
+  pendientes de validacion externa.
+- **17B**: integrado en v1.9.0 como piloto backend-only de acceso temporal y
+  auditoria idempotente. El bucket es privado y el acceso interno permanece
+  deshabilitado por defecto.
+- **17C**: activacion, revocacion, restore e interfaz administrativa protegida.
+- **17D**: piloto Vea live manual y activacion gradual de `workflow_dispatch`.
+
+No habilitar schedule, publicacion efectiva ni modo live persistente hasta que
+cada bloque tenga evidencia staging y rollback probado.

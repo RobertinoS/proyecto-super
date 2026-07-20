@@ -2,11 +2,11 @@
 
 ## Decision Sprint 15
 
-Usar exclusivamente un proyecto separado `proyecto-super-staging`; no aplicar
-SQL sobre la base operativa de n8n. Ver
-`docs/SUPABASE_ISOLATION_DECISION.md`. Ejecutar `001` y luego `002` solo despues
-de verificar el proyecto. `002` crea/refuerza buckets privados, revoca roles de
-navegador y agrega contratos de staging sin borrar datos.
+Se uso exclusivamente un proyecto separado `proyecto-super-staging`; no se
+aplico SQL sobre la base operativa de n8n. Ver
+`docs/SUPABASE_ISOLATION_DECISION.md`. Las migraciones revisadas se aplicaron
+manualmente solo en staging. `002` crea/refuerza buckets privados, revoca roles
+de navegador y agrega contratos de staging sin borrar datos.
 
 Validacion previa obligatoria:
 
@@ -14,7 +14,25 @@ Validacion previa obligatoria:
 python scripts/13_validate_supabase_migrations.py
 ```
 
-No ejecutar migraciones automaticamente. Revisar `supabase/migrations/001_cloud_scraping_foundation.sql` en un proyecto de prueba y aplicar manualmente.
+No ejecutar migraciones automaticamente. La ejecucion manual en staging ya fue
+validada; futuras modificaciones deben revisarse en un proyecto de prueba antes
+de aplicarse.
+
+## Extension Sprint 16 pendiente de aplicar
+
+`003_review_and_private_publication.sql` es aditiva y no modifica 001/002.
+Solo se puede aplicar tras revisar el validador estatico y confirmar que la
+conexion apunta a `proyecto-super-staging`. Agrega:
+
+- `review_queue` y `review_decisions` para decisiones trazables;
+- `dataset_approvals` con una aprobacion por corrida;
+- `operational_alerts` para salud operativa.
+- `private_datasets` como indice durable de manifiestos/checksums privados.
+
+Las cuatro tablas mantienen RLS y revocan acceso de `anon` y
+`authenticated`. No ejecutar en el proyecto Supabase de n8n ni usarlo como
+fallback. La aplicacion manual y evidencia externa de 003 permanecen pendientes
+durante la implementacion local.
 
 ## Tablas propuestas
 
@@ -36,6 +54,10 @@ Todas tienen RLS habilitado y ninguna politica anonima de escritura. El service 
 
 Los buckets privados requieren JWT o URL firmada; Supabase documenta que los buckets son privados por defecto y que las signed URLs deben tener vencimiento: [Storage Buckets](https://supabase.com/docs/guides/storage/buckets/fundamentals).
 
+Para Sprint 16 la ruta privada prevista cambia a
+`published/YYYY/MM/DD/run_id/precios_aprobados.csv` junto con
+`manifiesto.json`. No se escribe mientras `ENABLE_PRIVATE_PUBLICATION=false`.
+
 ## Creacion manual
 
 1. Crear los tres buckets privados en Storage.
@@ -45,6 +67,13 @@ Los buckets privados requieren JWT o URL firmada; Supabase documenta que los buc
 5. Ejecutar API en `SOURCE_MODE=fixture`, `ENABLE_PUBLICATION=false`.
 6. Verificar inserts de prueba y eliminarlos.
 7. Crear una funcion/endpoint backend para URL firmada si el dashboard cloud la necesita; no exponer service role.
+
+## Evidencia de cierre Sprint 15
+
+El E2E con fixture registro una ejecucion, observaciones y eventos en el
+proyecto staging aislado, sin duplicados ante idempotencia. La publicacion
+efectiva fue cero y los buckets permanecen privados. No se documentan IDs,
+URLs firmadas ni credenciales.
 
 ## Retencion y backup
 

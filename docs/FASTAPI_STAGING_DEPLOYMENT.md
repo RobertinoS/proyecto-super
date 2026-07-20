@@ -1,7 +1,25 @@
 # Despliegue FastAPI staging en Render
 
-Estado: repo preparado; despliegue externo pendiente de candidato versionado y
-acceso autenticado. No crear otro n8n ni monitor UptimeRobot para FastAPI.
+Estado: FastAPI staging desplegada y validada en el E2E de Sprint 15. No crear
+otro n8n ni monitor UptimeRobot para FastAPI.
+
+## Extension Sprint 16 pendiente de despliegue
+
+Antes de desplegar la rama Sprint 16, aplicar manualmente y revisar la
+migracion `003_review_and_private_publication.sql` solo en el proyecto staging
+aislado. Mantener:
+
+```text
+SOURCE_MODE=fixture
+ENABLE_PUBLICATION=false
+ENABLE_PRIVATE_PUBLICATION=false
+```
+
+Validar autenticacion y endpoints de reviews, operaciones y aprobacion usando
+una clave configurada exclusivamente en Render. Probar
+`POST /runs/{run_id}/private-publish` solo con `dry_run=true`; debe devolver
+`PRIVATE_DRY_RUN` sin escribir objetos. No habilitar schedule ni workflow de
+notificacion durante esta validacion.
 
 ## Servicio
 
@@ -25,9 +43,10 @@ Usar `docs/EXTERNAL_CONFIGURATION_CHECKLIST.md`. Valores no secretos obligatorio
 
 ```text
 APP_ENV=staging
-APP_VERSION=1.6.0
+APP_VERSION=1.7.0
 SOURCE_MODE=fixture
 ENABLE_PUBLICATION=false
+ENABLE_PRIVATE_PUBLICATION=false
 REQUEST_TIMEOUT_SECONDS=120
 REQUEST_DELAY_SECONDS=2
 MAX_PRODUCTS_PER_RUN=5
@@ -38,7 +57,7 @@ LOG_LEVEL=INFO
 Las tres variables sensibles se cargan como secretos: `SCRAPER_API_KEY`,
 `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`.
 
-## Validacion
+## Validacion completada
 
 1. Revisar build de Python 3.11 y dependencias, sin valores de entorno en logs.
 2. Confirmar que Uvicorn escucha en `$PORT`.
@@ -51,6 +70,11 @@ Las tres variables sensibles se cargan como secretos: `SCRAPER_API_KEY`,
 7. Consultar `/jobs/{run_id}` y confirmar persistencia tras redeploy/reinicio.
 8. Procesar y comprobar `READY_FOR_APPROVAL`.
 9. Probar publicacion sin aprobacion (409) y con aprobacion (DRY_RUN).
+
+La validacion externa confirmo fixture procesado, `Structured Success`,
+idempotencia sin duplicados y persistencia en Supabase staging. La prueba Vea
+ONLINE limitada se realizo en `dry_run=true`; el entorno quedo restaurado a
+`SOURCE_MODE=fixture` con `ENABLE_PUBLICATION=false`.
 
 ## Arranque en frio
 

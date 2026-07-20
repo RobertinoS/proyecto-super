@@ -1,20 +1,116 @@
 # Estado del proyecto
 
-Actualizado: 2026-07-14.
+Actualizado: 2026-07-20.
 
-## Sprint actual
+## Release v1.9.0 - Sprint 17A y 17B integrados
 
-Sprint 15 - Despliegue staging controlado.
+Estado: cerrado en Git como acceso privado interno controlado. Sprint 17A
+aporta la arquitectura JWT/RBAC; Sprint 17B valida un piloto backend-only con
+`X-API-Key`. No existe autenticacion humana multiusuario productiva ni acceso
+administrativo desde el frontend.
 
-Estado: preparacion local y validacion manual de staging completadas. FastAPI
-staging, Supabase staging aislado y n8n con fixture fueron validados de forma
-manual. Falta probar el circuito E2E disparado por GitHub Actions. Sprint 15 no
-esta cerrado funcionalmente y la publicacion real permanece desactivada.
+Evidencia externa registrada sin valores sensibles:
 
-Rama:
+- Las migraciones 004 y 005 se aplicaron exclusivamente en
+  `proyecto-super-staging`, aislado de n8n.
+- El despliegue staging valido endpoints internos protegidos, auditoria durable
+  e idempotencia por actor de servicio y `request_id`.
+- Un dataset fixture aprobado se valido con entrega temporal controlada y
+  expiracion aproximada de cinco minutos. El bucket continua privado y la
+  auditoria no conserva la URL completa.
+- No hay publicacion publica ni acceso desde el dashboard; API key y service
+  role no se exponen.
+- Automatizacion, publicaciones y acceso interno fueron restaurados a `false`;
+  `SOURCE_MODE` permanece en `fixture`.
+
+Pendiente antes de operar acceso humano: validar externamente login y
+recuperacion de contrasena de Supabase Auth/JWT. El rollback funcional
+documentado es `v1.8.0`.
+
+## Sprint 17B - piloto interno de acceso privado
+
+Estado: integrado en v1.9.0 y validado externamente solo en staging aislado.
+Se agregan endpoints
+`/internal/private-datasets` protegidos por `X-API-Key`, metadata saneada,
+auditoria durable de actor `service`, idempotencia por request ID y contrato de
+URL firmada de cinco minutos. El flag nuevo
+`ENABLE_INTERNAL_DATASET_ACCESS=false` bloquea la emision por defecto.
+
+La migracion 005 se creo porque los logs de 004 no pueden representar un actor
+de servicio y el modelo anterior no admite `PUBLISHED_PRIVATE`/`ACTIVE`.
+La migracion 005 se aplico exclusivamente en staging y el despliegue valido
+denegacion segura cuando el flag esta apagado, acceso temporal controlado,
+expiracion y auditoria idempotente. El flag fue restaurado a `false`, no existe
+publicacion publica y la validacion externa de login Supabase Auth/JWT sigue
+pendiente; este piloto no declara autenticacion humana productiva.
+
+## Sprint 17A - Auth contracts and RBAC
+
+Estado: integrado en v1.9.0. Se
+agrega la migracion aditiva `004` para `app_user_roles` y
+`dataset_access_logs`, validacion criptografica de JWT de Supabase Auth con
+JWKS, roles activos server-side, auditoria minima idempotente y los endpoints
+humanos `/auth/me` y `/auth/capabilities`.
+
+La migracion 004 se aplico exclusivamente en staging. No existen login humano
+validado, descargas humanas, activacion, revocacion, restauracion ni interfaz
+administrativa. n8n y GitHub Actions conservan `X-API-Key`; Bearer JWT sigue
+siendo una arquitectura experimental para personas. Los flags siguen en
+fixture y `false`; rollback de codigo disponible en `v1.8.0`.
+
+## Sprint 17 - Planificacion de arquitectura
+
+Estado: diseno documentado en la rama `sprint-17-architecture-planning`. No se
+modifico codigo funcional, migraciones, workflows, flags, Render, Supabase ni
+n8n. La propuesta conserva `v1.8.0` como rollback y mantiene fixture,
+publicacion bloqueada y kill switch en `false`.
+
+La arquitectura recomendada combina Supabase Auth/JWT/RLS para identidad con
+FastAPI como punto de decision y URLs firmadas temporales para datasets
+privados. La implementacion se dividira en 17A a 17D; no se habilita schedule
+ni escritura privada efectiva durante la planificacion.
+
+## Sprint 16 - Cerrado como v1.8.0
+
+Estado: validado en `proyecto-super-staging` aislado y listo para release.
+La migracion `003` se aplico solo en staging, Render ejecuto el checkpoint
+Sprint 16 y los dos workflows n8n se importaron como copias nuevas e inactivas.
+
+- Se agregan `review_queue`, `review_decisions`, `dataset_approvals` y
+  `operational_alerts` mediante una migracion aditiva con RLS.
+- FastAPI suma endpoints protegidos de revision, aprobacion, observabilidad,
+  datasets privados y URL firmada temporal.
+- La publicacion publica permanece bloqueada por `ENABLE_PUBLICATION=false`.
+- La publicacion privada tambien permanece bloqueada por
+  `ENABLE_PRIVATE_PUBLICATION=false`; solo se prueba en `PRIVATE_DRY_RUN`.
+- El dashboard incorpora Operacion cloud y Bandeja de revision sin incluir
+  endpoint, API key, service role ni llamadas directas a FastAPI.
+- n8n conserva el workflow diario inactivo y se agrega un workflow de aviso de
+  revision inactivo que no aprueba ni publica.
+- Fixture staging: tres productos procesados, calidad 100 y sin duplicados.
+- Revision humana: aprobacion registrada e idempotente; decisiones auditables.
+- Publicacion privada: `PRIVATE_DRY_RUN` con tres filas, manifiesto y checksum;
+  `private_datasets` conserva la evidencia durable.
+- Storage: bucket privado y cero objetos en `published-price-datasets`.
+- Flags finales: fixture, publicaciones desactivadas y kill switch en `false`.
+
+Rollback: conservar `v1.7.0` como referencia estable y volver a ese release en
+Render ante una regresion. Mantener los gates en `false`; no revertir la
+migracion 003 de forma destructiva.
+
+## Release actual
+
+Proyecto Super v1.7.0 - Despliegue staging controlado.
+
+Estado: Sprint 15 cerrado. GitHub Actions, n8n, FastAPI y Supabase staging
+completaron el E2E manual con fixture, trazabilidad e idempotencia. La
+publicacion real sigue desactivada y la automatizacion permanece bloqueada por
+defecto.
+
+Rama de release:
 
 ```text
-sprint-15-controlled-staging-deployment
+main
 ```
 
 Objetivo: validar en staging aislado el circuito GitHub Actions -> n8n ->
@@ -42,13 +138,19 @@ FastAPI -> Supabase, primero con fixture y siempre con publicacion bloqueada.
 - Export n8n auditado: normaliza `trigger_type`, limita `/jobs/scrape` a los
   campos FastAPI reconocidos y deriva los errores HTTP de scrape/proceso a la
   respuesta estructurada de error, sin alcanzar Quality Gate.
-- GitHub Actions E2E sigue pendiente. El schedule no debe habilitarse y la
-  variable `PROJECT_SUPER_AUTOMATION_ENABLED` debe conservar el valor `false`
-  hasta completar esa prueba manual.
-- Render fue auditado en modo lectura: existe un unico n8n y `/healthz` responde
-  200. La integracion manual no creo otro n8n ni un monitor adicional. El remote
-  `origin` contiene la rama candidata; este estado se mergea solo para permitir
-  la prueba manual de GitHub Actions, no para cerrar Sprint 15.
+- GitHub Actions E2E manual fue exitoso: webhook productivo, warm-up, fixture,
+  proceso, eventos y persistencia Supabase staging se verificaron sin
+  duplicados. La respuesta estructurada quedo pendiente de aprobacion y la
+  publicacion efectiva fue cero.
+- Vea ONLINE se probo en modo live limitado, con trazabilidad de canal
+  `ONLINE`, limites bajos y sin publicacion. Luego `SOURCE_MODE` se restauro a
+  `fixture`.
+- El schedule sigue gobernado por `PROJECT_SUPER_AUTOMATION_ENABLED=false`.
+  Puede registrar una corrida de control, pero no llama a n8n mientras el gate
+  permanezca en `false`.
+- Render mantiene un unico n8n y `/healthz` responde 200. La integracion no
+  creo otro n8n ni un monitor adicional. `main` contiene el cierre tecnico y
+  el release se versiona con tag `v1.7.0`.
 - Regresion local completa: demo, consolidacion, smoke fixture, migraciones e
   idempotencia OK; `python -m pytest`: 87 passed, 1 warning externo.
 - Docker CLI no esta instalado, por lo que la imagen se validara en Render solo
@@ -99,7 +201,8 @@ Sprint 1 a Sprint 13 se mantienen compatibles y la rama parte de `main` con tag 
 
 - Release objetivo: `v1.6.0`.
 - Base cloud reproducible y auditada localmente.
-- Despliegue externo pendiente para Sprint 15.
+- Despliegue externo completado en Sprint 15 con staging aislado y gates de
+  publicacion activos.
 - Migracion Supabase propuesta y no ejecutada.
 - Workflow n8n importable e inactivo.
 - GitHub Actions versionado, todavia sin secretos externos configurados.

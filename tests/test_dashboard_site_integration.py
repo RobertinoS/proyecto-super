@@ -36,6 +36,9 @@ def test_official_dashboard_preserves_contract_and_adds_site_ui():
         "routeRows", "splitRouteRows", "recalculateAllButton", "clearSessionButton",
         "processingBar", "execBestCommerce", "execBestCost", "execSavings", "execCoverage",
         "execQualityIssues", "execRouteRecommendation",
+        "cloudSummaryInput", "cloudSourcesInput", "cloudAlertsInput", "cloudReviewsInput",
+        "cloudSourcesRows", "cloudAlertsRows", "reviewRows", "reviewerInput",
+        "exportReviewDecisionsButton",
     }
 
     assert protected_ids.issubset(dashboard_ids)
@@ -48,6 +51,9 @@ def test_official_dashboard_preserves_contract_and_adds_site_ui():
     assert "setProcessing" in html
     assert "updateActionStates" in html
     assert "typeof confirm" in html
+    assert "parseCloudJson" in html
+    assert "local_export_pending_authenticated_api" in html
+    assert "fetch(" not in html
 
     for text in [
         "Precios cargados",
@@ -58,6 +64,8 @@ def test_official_dashboard_preserves_contract_and_adds_site_ui():
         "Calidad de datos",
         "Ranking por conveniencia",
         "Ruta dividida sugerida",
+        "Operacion cloud",
+        "Bandeja de revision",
     ]:
         assert text in html
 
@@ -147,6 +155,10 @@ const branches = api.parseBranches(branchCsv);
 const origin = api.parseUserLocation(originCsv);
 const routes = api.buildRouteRecommendations(comparison, branches, origin, 180);
 const quality = api.parseQualitySummary(qualityCsv);
+const cloudSummary = api.parseCloudJson(JSON.stringify({ executions_last_24h: 1, pending_reviews: 2 }), "operacion", false);
+const cloudSources = api.parseCloudJson(JSON.stringify([{ source: "vea", operational_status: "HEALTHY" }]), "fuentes", true);
+let sensitiveCloudMessage = "";
+try { api.parseCloudJson(JSON.stringify({ api_key: "not-allowed" }), "operacion", false); } catch (error) { sensitiveCloudMessage = error.message; }
 api.persistList(list);
 const restored = api.readStoredList();
 const exported = api.serializeListToCsv(restored);
@@ -162,6 +174,10 @@ console.log(JSON.stringify({
   split: split.length,
   routes: routes.length,
   quality: quality.length,
+  cloudExecutions: cloudSummary.executions_last_24h,
+  cloudSources: cloudSources.length,
+  cloudBadge: api.cloudBadgeClass(cloudSources[0].operational_status),
+  sensitiveCloudMessage,
   promotion: api.hasPromotions(rows),
   effectivePrice: api.rowBasePrice(rows[0]),
   restored: restored.length,
@@ -188,6 +204,10 @@ console.log(JSON.stringify({
     assert data["split"] == 2
     assert data["routes"] == 2
     assert data["quality"] == 2
+    assert data["cloudExecutions"] == 1
+    assert data["cloudSources"] == 1
+    assert "cloud-healthy" in data["cloudBadge"]
+    assert "campos sensibles" in data["sensitiveCloudMessage"]
     assert data["promotion"] is True
     assert data["effectivePrice"] == 1000
     assert data["restored"] == 2

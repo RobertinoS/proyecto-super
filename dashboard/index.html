@@ -149,6 +149,13 @@
     .quality-review { color: #b45309; background: rgba(245, 158, 11, 0.14); }
     .quality-invalid { color: var(--bad); background: rgba(185, 28, 28, 0.12); }
     .quality-stale { color: #4338ca; background: rgba(79, 70, 229, 0.12); }
+    .cloud-badge { display: inline-flex; align-items: center; border-radius: 999px; padding: 4px 8px; font-size: 11px; font-weight: 900; white-space: nowrap; }
+    .cloud-healthy { color: var(--good); background: rgba(35, 124, 75, 0.12); }
+    .cloud-degraded { color: var(--warn); background: rgba(180, 107, 18, 0.14); }
+    .cloud-failed { color: var(--bad); background: rgba(179, 59, 66, 0.12); }
+    .cloud-stale, .cloud-disabled { color: #4338ca; background: rgba(79, 70, 229, 0.12); }
+    .review-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+    .review-actions button { min-height: 31px; padding: 0 8px; font-size: 12px; }
 
     @media (max-width: 1180px) {
       .app-shell { grid-template-columns: 1fr; }
@@ -350,8 +357,10 @@
         <a class="nav-link" href="#comparacion">Comparacion <span>04</span></a>
         <a class="nav-link" href="#calidad">Calidad <span>05</span></a>
         <a class="nav-link" href="#ruta">Ruta <span>06</span></a>
+        <a class="nav-link" href="#operacion-cloud">Operacion cloud <span>07</span></a>
+        <a class="nav-link" href="#revision">Revision <span>08</span></a>
       </nav>
-      <div class="sidebar-foot">Operacion local activa<small>Sin backend ni servicios externos</small></div>
+      <div class="sidebar-foot">Sesion local protegida<small>La revision real requiere FastAPI autenticada.</small></div>
     </aside>
 
     <main class="main-view">
@@ -760,6 +769,104 @@
       </div>
     </section>
 
+    <section class="grid cards section-gap section-anchor" id="operacion-cloud" aria-label="Operacion cloud">
+      <div class="card"><span>Ultima ejecucion</span><strong id="cloudLastRun">-</strong></div>
+      <div class="card"><span>Estado de fuentes</span><strong id="cloudSourceStatus">-</strong></div>
+      <div class="card"><span>Revisiones pendientes</span><strong id="cloudPendingReviews">0</strong></div>
+      <div class="card"><span>Alertas abiertas</span><strong id="cloudAlertCount">0</strong></div>
+      <div class="card"><span>Dataset aprobado</span><strong id="cloudApprovedDataset">-</strong></div>
+      <div class="card"><span>Antiguedad</span><strong id="cloudDataAge">-</strong></div>
+    </section>
+
+    <section class="grid two section-gap">
+      <div class="panel">
+        <div class="topbar" style="margin-bottom: 12px;">
+          <div>
+            <p class="section-kicker">Staging protegido</p>
+            <h2>Operacion cloud</h2>
+            <p class="muted" id="cloudOperationNote">Carga exportaciones JSON saneadas de FastAPI para consultar operacion sin exponer claves en el navegador.</p>
+          </div>
+          <div class="button-row">
+            <span class="pill" id="cloudOperationPill">Sin datos</span>
+            <button id="reloadCloudButton" type="button">Recargar vista</button>
+          </div>
+        </div>
+        <div class="uploader-grid">
+          <div class="upload">
+            <div class="upload-head"><strong>Resumen operativo</strong><span class="file-state" id="cloudSummaryFileState">Pendiente</span></div>
+            <p class="muted">Respuesta saneada de `GET /operations/summary`.</p>
+            <input id="cloudSummaryInput" type="file" accept=".json,application/json" aria-label="Cargar resumen de operacion cloud">
+            <p id="cloudSummaryError" class="error" aria-live="polite"></p>
+          </div>
+          <div class="upload">
+            <div class="upload-head"><strong>Estado de fuentes</strong><span class="file-state" id="cloudSourcesFileState">Pendiente</span></div>
+            <p class="muted">Respuesta saneada de `GET /operations/sources`.</p>
+            <input id="cloudSourcesInput" type="file" accept=".json,application/json" aria-label="Cargar estado de fuentes cloud">
+            <p id="cloudSourcesError" class="error" aria-live="polite"></p>
+          </div>
+          <div class="upload">
+            <div class="upload-head"><strong>Alertas</strong><span class="file-state" id="cloudAlertsFileState">Pendiente</span></div>
+            <p class="muted">Respuesta saneada de `GET /operations/alerts`.</p>
+            <input id="cloudAlertsInput" type="file" accept=".json,application/json" aria-label="Cargar alertas cloud">
+            <p id="cloudAlertsError" class="error" aria-live="polite"></p>
+          </div>
+          <div class="upload">
+            <div class="upload-head"><strong>Bandeja de revision</strong><span class="file-state" id="cloudReviewsFileState">Pendiente</span></div>
+            <p class="muted">Respuesta saneada de `GET /reviews` para revisarla y exportar decisiones.</p>
+            <input id="cloudReviewsInput" type="file" accept=".json,application/json" aria-label="Cargar bandeja de revision cloud">
+            <p id="cloudReviewsError" class="error" aria-live="polite"></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="topbar" style="margin-bottom: 12px;">
+          <div>
+            <h2>Fuentes y alertas</h2>
+            <p class="muted" id="cloudSourcesNote">Sin respuesta operativa cargada.</p>
+          </div>
+          <span class="pill" id="cloudSourcesPill">0 fuentes</span>
+        </div>
+        <div class="table-wrap">
+          <table class="compact-table">
+            <thead><tr><th>Estado</th><th>Fuente</th><th>Ultimo exito</th><th>Fallos</th><th>Productos validos</th><th>Calidad</th></tr></thead>
+            <tbody id="cloudSourcesRows"><tr><td colspan="6"><div class="empty">Carga el estado de fuentes para ver observabilidad.</div></td></tr></tbody>
+          </table>
+        </div>
+        <div class="section-gap table-wrap">
+          <table class="compact-table">
+            <thead><tr><th>Severidad</th><th>Tipo</th><th>Fuente</th><th>Mensaje</th><th>Estado</th></tr></thead>
+            <tbody id="cloudAlertsRows"><tr><td colspan="5"><div class="empty">No hay alertas cargadas.</div></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel section-gap section-anchor" id="revision">
+      <div class="topbar" style="margin-bottom: 12px;">
+        <div>
+          <p class="section-kicker">Decision humana</p>
+          <h2>Bandeja de revision</h2>
+          <p class="muted" id="reviewNote">Las decisiones se preparan localmente y se exportan; la aplicacion durable se realiza por FastAPI autenticada.</p>
+        </div>
+        <div class="button-row"><span class="pill" id="reviewCountPill">0 incidencias</span><button id="exportReviewDecisionsButton" type="button">Exportar decisiones</button></div>
+      </div>
+      <div class="route-controls">
+        <input id="reviewerInput" type="text" placeholder="Responsable de revision" aria-label="Responsable de revision">
+        <select id="reviewStatusFilter" aria-label="Filtrar revisiones por estado"><option value="">Todos los estados</option><option>PENDING</option><option>IN_REVIEW</option><option>APPROVED</option><option>REJECTED</option><option>CORRECTED</option><option>DISMISSED</option></select>
+        <select id="reviewSeverityFilter" aria-label="Filtrar revisiones por severidad"><option value="">Todas las severidades</option><option>LOW</option><option>MEDIUM</option><option>HIGH</option><option>CRITICAL</option></select>
+        <input id="reviewCorrectionInput" type="text" placeholder="Correccion JSON opcional" aria-label="Correccion JSON opcional">
+      </div>
+      <div class="section-gap"><input id="reviewDecisionNoteInput" type="text" placeholder="Observacion para la decision" aria-label="Observacion para la decision"></div>
+      <p id="reviewActionMessage" class="feedback" role="status" aria-live="polite"></p>
+      <div class="table-wrap section-gap">
+        <table class="compact-table">
+          <thead><tr><th>Estado</th><th>Severidad</th><th>Tipo</th><th>Fuente</th><th>Motivo</th><th>Detectado</th><th>Responsable</th><th>Acciones locales</th></tr></thead>
+          <tbody id="reviewRows"><tr><td colspan="8"><div class="empty">Carga la respuesta saneada de `GET /reviews`.</div></td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
     <section class="panel section-gap">
       <div class="topbar" style="margin-bottom: 12px;">
         <div>
@@ -828,13 +935,22 @@
       userLocation: null,
       qualityReport: [],
       qualitySummary: [],
+      cloudSummary: null,
+      cloudSources: [],
+      cloudAlerts: [],
+      cloudReviews: [],
+      reviewDecisions: [],
       files: {
         prices: "",
         list: "",
         branches: "",
         location: "",
         qualityReport: "",
-        qualitySummary: ""
+        qualitySummary: "",
+        cloudSummary: "",
+        cloudSources: "",
+        cloudAlerts: "",
+        cloudReviews: ""
       },
       routeRecommendations: [],
       splitRoute: []
@@ -972,6 +1088,35 @@
         score_num: parseNumber(row.score_calidad),
         estado_operativo: normalizeQualityState(row.estado_operativo)
       }));
+    }
+
+    function parseCloudJson(text, label, expectArray = false) {
+      let value;
+      try {
+        value = JSON.parse(text);
+      } catch {
+        throw new Error(`El archivo de ${label} debe ser JSON valido y no puede incluir credenciales.`);
+      }
+      if (expectArray && !Array.isArray(value)) throw new Error(`El archivo de ${label} debe contener una lista JSON.`);
+      if (!expectArray && (!value || Array.isArray(value) || typeof value !== "object")) {
+        throw new Error(`El archivo de ${label} debe contener un objeto JSON.`);
+      }
+      const sensitive = /(?:api[_-]?key|authorization|service[_-]?role|token|secret|password)/i;
+      const inspect = item => {
+        if (!item || typeof item !== "object") return false;
+        return Object.entries(item).some(([key, nested]) => sensitive.test(key) || inspect(nested));
+      };
+      if (inspect(value)) throw new Error(`El archivo de ${label} contiene campos sensibles y no se carga en el navegador.`);
+      return value;
+    }
+
+    function cloudBadgeClass(value) {
+      const normalized = String(value || "").trim().toUpperCase();
+      if (normalized === "HEALTHY" || normalized === "OK" || normalized === "APPROVED") return "cloud-badge cloud-healthy";
+      if (normalized === "DEGRADED" || normalized === "PENDING" || normalized === "IN_REVIEW") return "cloud-badge cloud-degraded";
+      if (normalized === "FAILED" || normalized === "REJECTED" || normalized === "CRITICAL") return "cloud-badge cloud-failed";
+      if (normalized === "STALE" || normalized === "DISABLED" || normalized === "PENDING_REVIEW") return "cloud-badge cloud-stale";
+      return "cloud-badge cloud-disabled";
     }
 
     function parseNumber(value) {
@@ -1512,7 +1657,8 @@
       $("saveListButton").disabled = !hasList;
       $("exportListButton").disabled = !hasList;
       $("clearListButton").disabled = !hasList;
-      $("clearSessionButton").disabled = !hasRows && !hasList && !hasBranches && !state.qualityReport.length && !state.qualitySummary.length;
+      $("exportReviewDecisionsButton").disabled = !state.reviewDecisions.length;
+      $("clearSessionButton").disabled = !hasRows && !hasList && !hasBranches && !state.qualityReport.length && !state.qualitySummary.length && !state.cloudSummary && !state.cloudSources.length && !state.cloudAlerts.length && !state.cloudReviews.length;
     }
 
     function setFileState(id, message, mode = "pending") {
@@ -1529,6 +1675,10 @@
       setFileState("locationFileState", "Pendiente");
       setFileState("qualitySummaryFileState", "Pendiente");
       setFileState("qualityReportFileState", "Pendiente");
+      setFileState("cloudSummaryFileState", "Pendiente");
+      setFileState("cloudSourcesFileState", "Pendiente");
+      setFileState("cloudAlertsFileState", "Pendiente");
+      setFileState("cloudReviewsFileState", "Pendiente");
     }
 
     function setList(list, message = "") {
@@ -1598,15 +1748,23 @@
       state.userLocation = null;
       state.qualityReport = [];
       state.qualitySummary = [];
+      state.cloudSummary = null;
+      state.cloudSources = [];
+      state.cloudAlerts = [];
+      state.cloudReviews = [];
+      state.reviewDecisions = [];
       state.routeRecommendations = [];
       state.splitRoute = [];
-      state.files = { prices: "", list: "", branches: "", location: "", qualityReport: "", qualitySummary: "" };
-      ["fileInput", "listInput", "branchInput", "userLocationInput", "qualitySummaryInput", "qualityReportInput", "searchInput", "builderSearchInput", "manualLatInput", "manualLonInput"].forEach(id => {
+      state.files = { prices: "", list: "", branches: "", location: "", qualityReport: "", qualitySummary: "", cloudSummary: "", cloudSources: "", cloudAlerts: "", cloudReviews: "" };
+      ["fileInput", "listInput", "branchInput", "userLocationInput", "qualitySummaryInput", "qualityReportInput", "cloudSummaryInput", "cloudSourcesInput", "cloudAlertsInput", "cloudReviewsInput", "searchInput", "builderSearchInput", "manualLatInput", "manualLonInput", "reviewerInput", "reviewCorrectionInput", "reviewDecisionNoteInput"].forEach(id => {
         if ($(id)) $(id).value = "";
       });
       $("commerceFilter").innerHTML = `<option value="">Todos los comercios</option>`;
       $("costKmInput").value = "180";
-      ["fileError", "listError", "branchError", "userLocationError", "qualitySummaryError", "qualityReportError"].forEach(id => $(id).textContent = "");
+      ["fileError", "listError", "branchError", "userLocationError", "qualitySummaryError", "qualityReportError", "cloudSummaryError", "cloudSourcesError", "cloudAlertsError", "cloudReviewsError"].forEach(id => $(id).textContent = "");
+      $("reviewStatusFilter").value = "";
+      $("reviewSeverityFilter").value = "";
+      $("reviewActionMessage").textContent = "";
       $("freshnessPill").textContent = "CSV local";
       $("routeInputNote").textContent = "Distancia aproximada por Haversine; no reemplaza navegacion real.";
       clearStoredList();
@@ -1939,6 +2097,149 @@
       }).join("") || `<tr><td colspan="7"><div class="empty">Carga resumen_calidad_fuente.csv y reporte_calidad_datos.csv.</div></td></tr>`;
     }
 
+    function cloudValue(value, fallback = "-") {
+      return value === null || value === undefined || value === "" ? fallback : String(value);
+    }
+
+    function renderCloudOperations() {
+      const summary = state.cloudSummary || {};
+      const sources = state.cloudSources;
+      const alerts = state.cloudAlerts;
+      const healthy = sources.filter(row => String(row.operational_status || "").toUpperCase() === "HEALTHY").length;
+      const newest = summary.last_update || summary.last_execution || summary.updated_at || null;
+      $("cloudLastRun").textContent = newest ? new Date(newest).toLocaleString("es-AR") : "-";
+      $("cloudSourceStatus").textContent = sources.length ? `${healthy}/${sources.length} OK` : "-";
+      $("cloudPendingReviews").textContent = number.format(Number(summary.pending_reviews || state.cloudReviews.filter(row => ["PENDING", "IN_REVIEW"].includes(String(row.status || "").toUpperCase())).length || 0));
+      $("cloudAlertCount").textContent = number.format(alerts.filter(row => !["ACKNOWLEDGED", "RESOLVED"].includes(String(row.status || "").toUpperCase())).length);
+      $("cloudApprovedDataset").textContent = Number(summary.approved_datasets || 0) ? "Aprobado" : "Pendiente";
+      const age = Number(summary.data_age_seconds);
+      $("cloudDataAge").textContent = Number.isFinite(age) ? `${Math.round(age / 3600)} h` : "-";
+      $("cloudOperationPill").textContent = state.cloudSummary ? `${cloudValue(summary.executions_last_24h, "0")} ejec. / 24 h` : "Sin datos";
+      $("cloudOperationNote").textContent = state.cloudSummary
+        ? "Datos cloud cargados localmente. La API y sus claves no se exponen en el navegador."
+        : "Carga exportaciones JSON saneadas de FastAPI para consultar operacion sin exponer claves en el navegador.";
+      $("cloudSourcesPill").textContent = `${sources.length} fuentes`;
+      $("cloudSourcesNote").textContent = sources.length
+        ? `${healthy} fuente(s) HEALTHY. Las alertas abiertas requieren revision operativa.`
+        : "Sin respuesta operativa cargada.";
+      $("cloudSourcesRows").innerHTML = sources.map(row => {
+        const status = String(row.operational_status || "DISABLED").toUpperCase();
+        return `<tr>
+          <td><span class="${cloudBadgeClass(status)}">${safe(status)}</span></td>
+          <td class="group">${safe(row.source)}</td>
+          <td>${safe(cloudValue(row.last_success))}</td>
+          <td>${safe(cloudValue(row.consecutive_failures, "0"))}</td>
+          <td>${safe(cloudValue(row.last_products_valid, "0"))}</td>
+          <td>${safe(cloudValue(row.last_quality_score))}</td>
+        </tr>`;
+      }).join("") || `<tr><td colspan="6"><div class="empty">Carga el estado de fuentes para ver observabilidad.</div></td></tr>`;
+      $("cloudAlertsRows").innerHTML = alerts.map(row => {
+        const severity = String(row.severity || "LOW").toUpperCase();
+        return `<tr>
+          <td><span class="${cloudBadgeClass(severity)}">${safe(severity)}</span></td>
+          <td>${safe(row.alert_type)}</td><td>${safe(row.source)}</td><td>${safe(row.message)}</td>
+          <td><span class="${cloudBadgeClass(row.status)}">${safe(row.status || "OPEN")}</span></td>
+        </tr>`;
+      }).join("") || `<tr><td colspan="5"><div class="empty">No hay alertas cargadas.</div></td></tr>`;
+    }
+
+    function reviewMessage(message, isError = false) {
+      $("reviewActionMessage").textContent = message;
+      $("reviewActionMessage").className = `feedback ${isError ? "error" : "success"}`;
+    }
+
+    function filteredCloudReviews() {
+      const status = $("reviewStatusFilter").value;
+      const severity = $("reviewSeverityFilter").value;
+      return state.cloudReviews.filter(row => (!status || row.status === status) && (!severity || row.severity === severity));
+    }
+
+    function renderReviewQueue() {
+      const rows = filteredCloudReviews();
+      const pending = state.cloudReviews.filter(row => ["PENDING", "IN_REVIEW"].includes(String(row.status || "").toUpperCase())).length;
+      $("reviewCountPill").textContent = `${state.cloudReviews.length} incidencias / ${pending} pendientes`;
+      $("reviewRows").innerHTML = rows.map(row => `
+        <tr>
+          <td><span class="${cloudBadgeClass(row.status)}">${safe(row.status || "PENDING")}</span></td>
+          <td><span class="${cloudBadgeClass(row.severity)}">${safe(row.severity || "LOW")}</span></td>
+          <td>${safe(row.review_type)}</td><td>${safe(row.source)}</td><td>${safe(row.reason)}</td>
+          <td>${safe(JSON.stringify(row.detected_value || {}))}</td>
+          <td>${safe(row.reviewed_by || row.assigned_to || "-")}</td>
+          <td><div class="review-actions">
+            <button type="button" data-review-action="approve" data-review-id="${safe(row.id)}">Aprobar</button>
+            <button type="button" data-review-action="reject" data-review-id="${safe(row.id)}">Rechazar</button>
+            <button type="button" data-review-action="correct" data-review-id="${safe(row.id)}">Corregir</button>
+            <button type="button" data-review-action="dismiss" data-review-id="${safe(row.id)}">Descartar</button>
+          </div></td>
+        </tr>
+      `).join("") || `<tr><td colspan="8"><div class="empty">Carga la respuesta saneada de GET /reviews o ajusta los filtros.</div></td></tr>`;
+      $("exportReviewDecisionsButton").disabled = !state.reviewDecisions.length;
+    }
+
+    function parseCorrectionInput() {
+      const raw = $("reviewCorrectionInput").value.trim();
+      if (!raw) return {};
+      try {
+        const parsed = JSON.parse(raw);
+        if (!parsed || Array.isArray(parsed) || typeof parsed !== "object") throw new Error();
+        return parsed;
+      } catch {
+        throw new Error("La correccion debe ser un objeto JSON, por ejemplo {\"precio_efectivo\":2500}.");
+      }
+    }
+
+    function applyLocalReviewDecision(reviewId, action) {
+      const actor = $("reviewerInput").value.trim();
+      if (!actor) {
+        reviewMessage("Indica el responsable antes de preparar una decision.", true);
+        return;
+      }
+      const review = state.cloudReviews.find(row => String(row.id) === String(reviewId));
+      if (!review) {
+        reviewMessage("No se encontro la revision seleccionada.", true);
+        return;
+      }
+      try {
+        const correctedValue = action === "correct" ? parseCorrectionInput() : null;
+        if (action === "correct" && !Object.keys(correctedValue).length) throw new Error("La correccion requiere un valor JSON.");
+        const status = { approve: "APPROVED", reject: "REJECTED", correct: "CORRECTED", dismiss: "DISMISSED" }[action];
+        const decision = {
+          review_id: review.id,
+          action: action.toUpperCase(),
+          actor,
+          notes: $("reviewDecisionNoteInput").value.trim(),
+          corrected_value: correctedValue,
+          prepared_at: new Date().toISOString(),
+          mode: "local_export_pending_authenticated_api"
+        };
+        review.status = status;
+        review.reviewed_by = actor;
+        review.reviewed_at = decision.prepared_at;
+        review.decision = decision.action;
+        review.decision_notes = { notes: decision.notes, corrected_value: correctedValue || {} };
+        state.reviewDecisions.push(decision);
+        reviewMessage(`Decision ${status} preparada localmente. Exportala o aplicala mediante FastAPI autenticada.`);
+        render();
+      } catch (error) {
+        reviewMessage(error.message, true);
+      }
+    }
+
+    function exportReviewDecisions() {
+      if (!state.reviewDecisions.length) {
+        reviewMessage("No hay decisiones locales para exportar.", true);
+        return;
+      }
+      const blob = new Blob([JSON.stringify({ decisions: state.reviewDecisions }, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "decisiones_revision_pendientes.json";
+      link.click();
+      URL.revokeObjectURL(url);
+      reviewMessage("Decisiones exportadas. La aplicacion durable exige FastAPI autenticada.");
+    }
+
     function renderTable() {
       const rows = state.filtered.slice(0, 250);
       $("tableNote").textContent = `${number.format(rows.length)} visibles de ${number.format(state.filtered.length)} resultados filtrados. Modo: ${priceModeLabel(state.filtered)}.`;
@@ -1981,6 +2282,8 @@
       renderMissing();
       renderRouteTables();
       renderQualityTables();
+      renderCloudOperations();
+      renderReviewQueue();
       renderTable();
       updateActionStates();
     }
@@ -2176,6 +2479,33 @@
       reader.readAsText(file, "utf-8");
     }
 
+    function loadCloudFile(file, stateKey, fileKey, stateElementId, errorElementId, label, expectArray) {
+      $(errorElementId).textContent = "";
+      setProcessing(true, `Procesando ${file.name}...`);
+      const reader = new FileReader();
+      reader.onload = event => {
+        try {
+          state[stateKey] = parseCloudJson(event.target.result, label, expectArray);
+          state.files[fileKey] = file.name;
+          setFileState(stateElementId, file.name, "loaded");
+          render();
+        } catch (error) {
+          state[stateKey] = expectArray ? [] : null;
+          state.files[fileKey] = "";
+          setFileState(stateElementId, "Error", "error");
+          $(errorElementId).textContent = error.message;
+          render();
+        }
+        setProcessing(false);
+      };
+      reader.onerror = () => {
+        setProcessing(false);
+        setFileState(stateElementId, "Error", "error");
+        $(errorElementId).textContent = "No se pudo leer el archivo seleccionado.";
+      };
+      reader.readAsText(file, "utf-8");
+    }
+
     function bootStoredList() {
       try {
         const stored = readStoredList();
@@ -2213,6 +2543,22 @@
     $("qualityReportInput").addEventListener("change", event => {
       const file = event.target.files && event.target.files[0];
       if (file) loadQualityReportFile(file);
+    });
+    $("cloudSummaryInput").addEventListener("change", event => {
+      const file = event.target.files && event.target.files[0];
+      if (file) loadCloudFile(file, "cloudSummary", "cloudSummary", "cloudSummaryFileState", "cloudSummaryError", "resumen operativo", false);
+    });
+    $("cloudSourcesInput").addEventListener("change", event => {
+      const file = event.target.files && event.target.files[0];
+      if (file) loadCloudFile(file, "cloudSources", "cloudSources", "cloudSourcesFileState", "cloudSourcesError", "estado de fuentes", true);
+    });
+    $("cloudAlertsInput").addEventListener("change", event => {
+      const file = event.target.files && event.target.files[0];
+      if (file) loadCloudFile(file, "cloudAlerts", "cloudAlerts", "cloudAlertsFileState", "cloudAlertsError", "alertas", true);
+    });
+    $("cloudReviewsInput").addEventListener("change", event => {
+      const file = event.target.files && event.target.files[0];
+      if (file) loadCloudFile(file, "cloudReviews", "cloudReviews", "cloudReviewsFileState", "cloudReviewsError", "bandeja de revision", true);
     });
     $("searchInput").addEventListener("input", applyFilters);
     $("commerceFilter").addEventListener("change", applyFilters);
@@ -2274,6 +2620,18 @@
       setListMessage(state.routeRecommendations.length ? "Cercania recalculada." : routeMissingMessage(), !state.routeRecommendations.length);
       render();
     });
+    $("reloadCloudButton").addEventListener("click", () => {
+      renderCloudOperations();
+      renderReviewQueue();
+      reviewMessage("Vista cloud actualizada con los archivos JSON cargados.");
+    });
+    $("reviewStatusFilter").addEventListener("change", renderReviewQueue);
+    $("reviewSeverityFilter").addEventListener("change", renderReviewQueue);
+    $("reviewRows").addEventListener("click", event => {
+      const button = event.target.closest("[data-review-action]");
+      if (button) applyLocalReviewDecision(button.getAttribute("data-review-id"), button.getAttribute("data-review-action"));
+    });
+    $("exportReviewDecisionsButton").addEventListener("click", exportReviewDecisions);
 
     globalThis.__proyectoSuperDashboard = {
       parseCsv,
@@ -2283,6 +2641,8 @@
       parseUserLocation,
       parseQualityReport,
       parseQualitySummary,
+      parseCloudJson,
+      cloudBadgeClass,
       qualityBadgeClass,
       buildCatalog,
       createShoppingItemFromCatalog,
