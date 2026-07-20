@@ -68,6 +68,8 @@ DATASET_ACCESS_LOG_RETENTION_DAYS=365
 ```
 
 Real values belong exclusively in Render environment secrets after a separate
-staging approval. Migration `004` is not applied by Sprint 17A. Roll back code
-to `v1.8.0` if auth regressions appear; do not undo an eventual migration with
-destructive SQL.
+staging approval. Migration `004` was applied only in isolated staging. The
+external validation of human login and password recovery remains pending, so
+the JWT/RBAC path is architecture-ready but not a production human
+authentication service. Roll back code to `v1.8.0` if auth regressions appear;
+do not undo the migration with destructive SQL.

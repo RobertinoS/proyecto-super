@@ -12,7 +12,8 @@
 - [x] Logs de acceso no guardan JWT, API keys, headers, IP completa ni URL
   firmada; `(user_id, request_id)` evita auditoria duplicada por reintento.
 - [x] `.env.example` contiene solo placeholders y los flags siguen bloqueados.
-- [ ] Aplicar 004 solo tras confirmar nuevamente `proyecto-super-staging`.
+- [x] Migracion 004 aplicada exclusivamente en `proyecto-super-staging`, sin
+  tocar la base operativa de n8n.
 - [ ] Configurar issuer, audience y JWKS reales exclusivamente en secretos de
   Render; no ponerlos en Git, n8n, dashboard o documentacion publica.
 
@@ -30,7 +31,9 @@
 - [x] `ENABLE_INTERNAL_DATASET_ACCESS=false` se mantiene por defecto junto con
   todos los gates de publicacion/automatizacion.
 - [ ] Validar Supabase Auth/JWT externo antes de habilitar consumo humano.
-- [ ] Aplicar migracion 005 solo en `proyecto-super-staging` tras aprobacion.
+- [x] Migracion 005 aplicada exclusivamente en `proyecto-super-staging`; el
+  bucket permanece privado, la auditoria no guarda la URL temporal completa y
+  el flag interno fue restaurado a `false`.
 
 ## Sprint 15
 

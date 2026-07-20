@@ -2,15 +2,33 @@
 
 Comparador local de precios para supermercados, autoservicios y mayoristas de San Juan.
 
-Version: `v1.8.0` - revision humana, observabilidad y publicacion privada en
-modo de prueba, con toda publicacion efectiva desactivada.
+Version: `v1.9.0` - acceso privado interno controlado, con autenticacion
+humana Supabase Auth/JWT aun experimental y toda publicacion publica
+desactivada.
 
 Sprint 16 quedo cerrado como `v1.8.0`. La validacion en staging aislado cubrio
 la migracion 003, FastAPI, n8n Test URL, revision humana, idempotencia y
 `PRIVATE_DRY_RUN` con tres filas. No se escribieron objetos en storage ni se
 habilito publicacion privada/publica, modo live permanente o schedule.
 
-## Sprint 17A: identidad humana y RBAC en preparacion local
+## Release v1.9.0 - acceso privado interno controlado
+
+Sprint 17A y Sprint 17B se integran en esta version. La arquitectura JWT/RBAC
+permanece disponible para un futuro uso humano, mientras que el acceso
+operativo validado es un piloto interno backend-only protegido por
+`X-API-Key`. En staging aislado se validaron auditoria idempotente por actor de
+servicio y solicitud, dataset fixture aprobado, bucket privado y una entrega
+temporal que expira aproximadamente a los cinco minutos. La auditoria no
+conserva la URL temporal completa.
+
+El acceso interno queda deshabilitado por defecto. El dashboard no recibe API
+keys, service roles ni URLs temporales. La validacion externa de login humano
+Supabase Auth/JWT y recuperacion de contrasena sigue pendiente, por lo que no
+se declara autenticacion humana multiusuario productiva. Automatizacion,
+publicacion general, publicacion cloud, publicacion privada y acceso interno
+permanecen bloqueados; el rollback documentado es `v1.8.0`.
+
+## Sprint 17A: identidad humana y RBAC integrado, no productivo para humanos
 
 Sprint 17A agrega contratos locales para usuarios humanos sin cambiar el
 circuito de n8n/GitHub Actions. Supabase Auth sera el emisor de JWT; FastAPI
@@ -20,8 +38,10 @@ roles activos desde `app_user_roles`. Los endpoints humanos disponibles son
 datasets.
 
 Los servicios de n8n y GitHub Actions mantienen exclusivamente `X-API-Key`.
-La migracion aditiva `004_auth_roles_and_access_audit.sql` permanece local y
-no se aplica durante este sprint. Sigue todo bloqueado:
+La migracion aditiva `004_auth_roles_and_access_audit.sql` se aplico
+manualmente solo en `proyecto-super-staging`; no se ejecuta desde el
+repositorio ni durante las pruebas. El login humano real sigue pendiente de
+validacion externa. Sigue todo bloqueado:
 
 ```text
 SOURCE_MODE=fixture
@@ -48,7 +68,9 @@ bloquea la emision de URL. Para un acceso controlado se requiere un dataset
 objeto existente. Auth humana/JWT sigue preparada pero pendiente de validacion
 externa; no es un requisito de este bloque.
 
-No se aplico la migracion 005, no se desplego y no se activo publicacion,
+La migracion 005 se aplico exclusivamente en staging aislado y el piloto se
+valido sin exponer la API key ni la URL temporal completa. Al finalizar, el
+acceso interno se restauro a `false`; no se activo publicacion publica,
 schedule ni modo live. Ver `docs/INTERNAL_PRIVATE_DATASET_ACCESS.md`.
 
 ## Sprint 16: revision y publicacion privada

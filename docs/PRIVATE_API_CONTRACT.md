@@ -18,6 +18,15 @@ with a maximum 300-second lifetime. The full URL is not persisted. This pilot
 does not make Supabase Auth operational, add a public endpoint, activate a
 dataset, or publish data.
 
+## v1.9.0 staging boundary
+
+The internal pilot was validated in isolated staging with a private bucket, an
+approved fixture dataset, idempotent service audit and a temporary delivery
+window capped at five minutes. The complete temporary URL is neither stored nor
+documented. The internal flag was restored to `false` after validation. These
+routes are not a public API and do not make the future human `/private/*`
+contract operational.
+
 ## Authentication
 
 All future `/private/*` routes require a verified Supabase Auth Bearer JWT.

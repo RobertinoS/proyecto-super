@@ -11,6 +11,20 @@ Supabase Auth/JWT and RBAC from Sprint 17A remain in the codebase, but their
 external login validation is still pending. They are not an operational
 requirement for this pilot.
 
+## v1.9.0 staging validation
+
+The pilot was validated only in isolated staging. Migration 005 supports the
+`service` actor type, protected internal routes reject requests without the
+service key, and a repeated `request_id` does not duplicate the durable audit
+event. A fixture dataset with an approved private state was used to validate a
+temporary delivery window of approximately five minutes. The bucket remains
+private, the full temporary URL is not stored, and no public publication was
+created.
+
+After validation, `ENABLE_INTERNAL_DATASET_ACCESS` was restored to `false`.
+This evidence does not make human Supabase Auth/JWT login operational or allow
+the dashboard to call these routes.
+
 ## Internal routes
 
 All routes require `X-API-Key` and are deliberately namespaced under
@@ -63,11 +77,10 @@ nullable for service rows, adds `actor_type` and service idempotency, and
 extends the status check without deleting history. The old
 `PRIVATE_PUBLISHED` state remains ineligible by design.
 
-Do not apply 005 outside `proyecto-super-staging`, and do not apply it during
-this sprint without explicit approval. Roll back the backend to the Sprint 17A
-checkpoint or `v1.8.0` and leave all access/publication flags `false` if a
-regression appears. Do not delete audit evidence or reverse the migration with
-destructive SQL.
+Migration 005 was applied only in `proyecto-super-staging`. Do not apply it to
+the n8n operational database or reverse it with destructive SQL. Roll back the
+backend to `v1.8.0` and leave all access/publication flags `false` if a
+regression appears. Do not delete audit evidence.
 
 ## Migration to human JWT later
 

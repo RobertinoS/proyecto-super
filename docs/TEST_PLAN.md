@@ -14,8 +14,11 @@ Pruebas locales sin red, Supabase ni Storage real:
 - endpoints JWT y endpoints n8n con `X-API-Key` sin regresion;
 - migracion 005, actor service/human/system y estado de acceso interno.
 
-No se aplica 005, no se enciende `ENABLE_INTERNAL_DATASET_ACCESS`, no se
-despliega ni se prueba una URL real durante pytest.
+Pytest no aplica 005, no enciende `ENABLE_INTERNAL_DATASET_ACCESS`, no se
+despliega ni solicita una URL real. La validacion manual controlada en staging
+confirmo migracion 005, proteccion de API key, denegacion segura con el flag en
+`false`, auditoria idempotente, bucket privado y expiracion temporal. El flag
+fue restaurado a `false` y no existe publicacion publica.
 
 ## Sprint 17A - Auth contracts and RBAC
 
@@ -33,9 +36,10 @@ Pruebas locales sin Supabase ni red:
 - auditoria sin token y con idempotencia por request ID;
 - modelos de consumo privado futuros sin rutas de descarga activas.
 
-No se ejecuta Supabase Auth real, no se consulta JWKS externo y no se aplica
-migracion 004 durante pytest. La validacion externa posterior debe mantenerse
-en fixture y con todas las publicaciones/schedules bloqueados.
+No se ejecuta Supabase Auth real ni se consulta JWKS externo durante pytest.
+La migracion 004 fue aplicada solo en staging; la validacion externa de login
+humano y recuperacion de contrasena permanece pendiente. Toda operacion sigue
+en fixture y con publicaciones/schedules bloqueados.
 
 ## Sprint 16 - Revision, observabilidad y publicacion privada
 

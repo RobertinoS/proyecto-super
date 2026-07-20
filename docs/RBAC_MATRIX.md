@@ -20,3 +20,11 @@ union of their capabilities. Inactive assignments grant nothing.
   machine automation remains unchanged.
 - Two-person restore: contract only; it will require two distinct human users
   in Sprint 17C.
+
+## v1.9.0 operating boundary
+
+The role model and Bearer JWT dependencies are integrated as an experimental
+human-authentication foundation. External human login and password recovery
+are not yet validated, so no role grants browser access to private datasets in
+operation. Sprint 17B uses a separate backend-only service API key pilot; it
+does not grant, replace, or weaken human RBAC.
