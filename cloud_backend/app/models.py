@@ -129,3 +129,38 @@ class FutureDatasetAccessResponse(BaseModel):
     dataset_id: str
     status: Literal["PENDING", "GRANTED", "DENIED"]
     expires_at: datetime | None = None
+
+
+class InternalPrivateDatasetMetadata(BaseModel):
+    dataset_id: str
+    status: Literal["PUBLISHED_PRIVATE", "ACTIVE"]
+    approval_id: str
+    row_count: int = Field(ge=0)
+    quality_score: float | None = Field(default=None, ge=0, le=100)
+    created_at: datetime | None = None
+    checksum_present: bool
+
+
+class InternalDatasetAccessRequest(BaseModel):
+    request_id: str = Field(min_length=8, max_length=160, pattern=r"^[A-Za-z0-9_.-]+$")
+
+
+class InternalDatasetAccessResponse(BaseModel):
+    dataset_id: str
+    request_id: str
+    access_url: str
+    expires_at: datetime
+    expires_in_seconds: Literal[300]
+    duplicate_request: bool = False
+
+
+class InternalDatasetAuditEntry(BaseModel):
+    id: str | None = None
+    dataset_id: str | None = None
+    actor_type: Literal["service", "human", "system"] | None = None
+    action: str | None = None
+    result: str | None = None
+    request_id: str | None = None
+    expires_at: datetime | None = None
+    denial_reason: str | None = None
+    created_at: datetime | None = None

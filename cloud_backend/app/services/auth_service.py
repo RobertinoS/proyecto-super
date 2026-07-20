@@ -205,6 +205,7 @@ class RoleService:
             "id": str(uuid.uuid4()),
             "dataset_id": dataset_id,
             "user_id": user_id,
+            "actor_type": "human",
             "action": action,
             "result": result,
             "request_id": request_id,

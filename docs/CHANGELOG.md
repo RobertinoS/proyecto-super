@@ -1,5 +1,20 @@
 # Changelog
 
+## Unreleased - Sprint 17B - internal private dataset access
+
+- piloto backend-only bajo rutas `/internal/private-datasets`, autenticado con
+  `X-API-Key` de operador y sin API key en frontend;
+- metadata segura, dataset vigente, auditoria saneada y acceso temporal de
+  cinco minutos controlado por feature flag interno;
+- bloqueo de dataset revocado/no aprobado, bucket no privado y Storage no
+  disponible; idempotencia durable por actor de servicio y request ID;
+- propuesta de migracion 005 minima para `actor_type=service` y estados
+  `PUBLISHED_PRIVATE`/`ACTIVE`, conservando estados historicos;
+- pruebas aisladas de todos los estados de acceso y sin regresion JWT/n8n.
+
+No se aplico la migracion, no se desplego, no se habilito el feature flag ni se
+emitieron URLs reales. Supabase Auth externa sigue pendiente de validacion.
+
 ## Unreleased - Sprint 17A - Auth contracts and RBAC
 
 - migracion aditiva `004` para roles humanos activos y auditoria minima de

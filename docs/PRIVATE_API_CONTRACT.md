@@ -4,6 +4,20 @@ Sprint 17A defines the schema and error contract for a later authenticated
 dataset consumer. It does not implement these routes, issue signed URLs, read
 storage, activate a dataset, or alter dataset state.
 
+## Sprint 17B internal pilot
+
+The following implemented routes are distinct from the future human contract:
+`/internal/private-datasets`, `/current`, `/{dataset_id}`, `/{dataset_id}/access`,
+and `/{dataset_id}/audit`. They require `X-API-Key` through
+`require_service_api_key`; they are for Swagger/PowerShell operators only and
+must never be called by the dashboard/frontend.
+
+`POST /internal/private-datasets/{dataset_id}/access` accepts only
+`request_id`, requires the internal access feature flag, and emits a signed URL
+with a maximum 300-second lifetime. The full URL is not persisted. This pilot
+does not make Supabase Auth operational, add a public endpoint, activate a
+dataset, or publish data.
+
 ## Authentication
 
 All future `/private/*` routes require a verified Supabase Auth Bearer JWT.

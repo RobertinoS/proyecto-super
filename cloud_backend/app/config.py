@@ -41,6 +41,7 @@ class Settings:
     enable_publication: bool = False
     enable_cloud_publication: bool = False
     enable_private_publication: bool = False
+    enable_internal_dataset_access: bool = False
     supabase_auth_issuer: str = ""
     supabase_auth_audience: str = ""
     supabase_auth_jwks_url: str = ""
@@ -72,6 +73,7 @@ class Settings:
             enable_publication=_bool_env("ENABLE_PUBLICATION", False),
             enable_cloud_publication=_bool_env("ENABLE_CLOUD_PUBLICATION", False),
             enable_private_publication=_bool_env("ENABLE_PRIVATE_PUBLICATION", False),
+            enable_internal_dataset_access=_bool_env("ENABLE_INTERNAL_DATASET_ACCESS", False),
             supabase_auth_issuer=os.getenv("SUPABASE_AUTH_ISSUER", "").rstrip("/"),
             supabase_auth_audience=os.getenv("SUPABASE_AUTH_AUDIENCE", "").strip(),
             supabase_auth_jwks_url=os.getenv("SUPABASE_AUTH_JWKS_URL", "").strip(),

@@ -25,3 +25,7 @@ def get_private_publication_service(request: Request):
 
 def get_role_service(request: Request):
     return request.app.state.role_service
+
+
+def get_internal_dataset_access_service(request: Request):
+    return request.app.state.internal_dataset_access_service

@@ -1,5 +1,22 @@
 # Plan de pruebas
 
+## Sprint 17B - acceso interno a datasets privados
+
+Pruebas locales sin red, Supabase ni Storage real:
+
+- API key ausente/invalida para todas las rutas `/internal`;
+- dataset inexistente, no aprobado, revocado, elegible y sin checksum;
+- feature flag interno en `false`, bucket no privado y objeto no disponible;
+- URL firmada simulada, maximo de 300 segundos y ausencia de URL en auditoria;
+- idempotencia por `request_id`, sin segundo log ni segunda emision durante la
+  ventana en memoria;
+- metadata y auditoria saneadas, sin rutas de objeto, keys o headers;
+- endpoints JWT y endpoints n8n con `X-API-Key` sin regresion;
+- migracion 005, actor service/human/system y estado de acceso interno.
+
+No se aplica 005, no se enciende `ENABLE_INTERNAL_DATASET_ACCESS`, no se
+despliega ni se prueba una URL real durante pytest.
+
 ## Sprint 17A - Auth contracts and RBAC
 
 Pruebas locales sin Supabase ni red:

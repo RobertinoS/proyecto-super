@@ -37,7 +37,7 @@ EXPECTED_TABLES = {
     },
     "dataset_access_logs": {
         "id", "dataset_id", "user_id", "action", "result", "request_id", "role_snapshot", "expires_at",
-        "denial_reason", "client_fingerprint_hash", "created_at",
+        "denial_reason", "client_fingerprint_hash", "actor_type", "created_at",
     },
 }
 EXPECTED_BUCKETS = {
@@ -124,6 +124,9 @@ def validate_migrations(directory: Path = DEFAULT_MIGRATIONS) -> dict:
         "access_log_actions": r"'AUTHENTICATED'\s*,\s*'METADATA_VIEWED'\s*,\s*'ACCESS_REQUESTED'\s*,\s*'ACCESS_GRANTED'\s*,\s*'ACCESS_DENIED'\s*,\s*'URL_ISSUED'\s*,\s*'URL_EXPIRED'",
         "browser_role_revoke_auth": r"revoke\s+all\s+on\s+table\s+public\.app_user_roles\s+from\s+anon\s*,\s*authenticated",
         "browser_role_revoke_access_logs": r"revoke\s+all\s+on\s+table\s+public\.dataset_access_logs\s+from\s+anon\s*,\s*authenticated",
+        "service_actor_idempotency": r"unique\s+index\s+if\s+not\s+exists\s+uq_dataset_access_logs_actor_request[\s\S]+actor_type\s*,\s*request_id",
+        "allowed_access_actor_types": r"actor_type\s+in\s*\(\s*'service'\s*,\s*'human'\s*,\s*'system'\s*\)",
+        "internal_access_statuses": r"'PUBLISHED_PRIVATE'\s*,\s*'ACTIVE'",
     }
     for name, pattern in required_contracts.items():
         if not re.search(pattern, sql, re.IGNORECASE | re.DOTALL):

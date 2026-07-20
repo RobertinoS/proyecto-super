@@ -8,6 +8,7 @@ from fastapi import Depends, FastAPI, HTTPException, Query
 
 from .config import Settings
 from .dependencies import (
+    get_internal_dataset_access_service,
     get_pipeline_service,
     get_private_publication_service,
     get_publication_service,
@@ -18,6 +19,10 @@ from .models import (
     AuthCapabilitiesResponse,
     AuthMeResponse,
     DatasetApprovalRequest,
+    InternalDatasetAccessRequest,
+    InternalDatasetAccessResponse,
+    InternalDatasetAuditEntry,
+    InternalPrivateDatasetMetadata,
     OperationalAlertRequest,
     PrivatePublicationRequest,
     ProcessRequest,
@@ -29,8 +34,9 @@ from .models import (
     ScrapeJobRequest,
     SourceInfo,
 )
-from .security import get_current_user, require_api_key
+from .security import get_current_user, require_api_key, require_service_api_key
 from .services.auth_service import CurrentUser, JwtValidator, RoleService
+from .services.internal_dataset_access_service import InternalDatasetAccessError, InternalDatasetAccessService
 from .services.pipeline_service import PipelineService
 from .services.private_publication_service import PrivatePublicationError, PrivatePublicationService
 from .services.publication_service import PublicationError, PublicationService
@@ -49,6 +55,7 @@ def create_app(settings: Settings | None = None, sources: dict | None = None) ->
     app.state.supabase_service = SupabaseService(config)
     app.state.jwt_validator = JwtValidator(config)
     app.state.role_service = RoleService(app.state.supabase_service)
+    app.state.internal_dataset_access_service = InternalDatasetAccessService(config, app.state.supabase_service)
     app.state.sources = sources or {"vea": VeaSource(config)}
     app.state.run_service = RunService(app.state.sources, app.state.supabase_service)
     app.state.pipeline_service = PipelineService(app.state.run_service)
@@ -106,6 +113,80 @@ def create_app(settings: Settings | None = None, sources: dict | None = None) ->
     @app.get("/auth/capabilities", response_model=AuthCapabilitiesResponse, tags=["human-auth"])
     def authenticated_capabilities(current_user: CurrentUser = Depends(get_current_user)) -> AuthCapabilitiesResponse:
         return AuthCapabilitiesResponse(roles=list(current_user.roles), capabilities=list(current_user.capabilities))
+
+    def _internal_dataset_error(exc: InternalDatasetAccessError) -> None:
+        raise HTTPException(status_code=exc.status_code, detail=str(exc)) from exc
+
+    @app.get(
+        "/internal/private-datasets",
+        response_model=list[InternalPrivateDatasetMetadata],
+        dependencies=[Depends(require_service_api_key)],
+        tags=["internal-private-datasets"],
+    )
+    def list_internal_private_datasets(
+        access: InternalDatasetAccessService = Depends(get_internal_dataset_access_service),
+    ) -> list[dict]:
+        return access.list_datasets()
+
+    @app.get(
+        "/internal/private-datasets/current",
+        response_model=InternalPrivateDatasetMetadata,
+        dependencies=[Depends(require_service_api_key)],
+        tags=["internal-private-datasets"],
+    )
+    def current_internal_private_dataset(
+        access: InternalDatasetAccessService = Depends(get_internal_dataset_access_service),
+    ) -> dict:
+        try:
+            return access.current_dataset()
+        except InternalDatasetAccessError as exc:
+            _internal_dataset_error(exc)
+
+    @app.get(
+        "/internal/private-datasets/{dataset_id}",
+        response_model=InternalPrivateDatasetMetadata,
+        dependencies=[Depends(require_service_api_key)],
+        tags=["internal-private-datasets"],
+    )
+    def get_internal_private_dataset(
+        dataset_id: str,
+        access: InternalDatasetAccessService = Depends(get_internal_dataset_access_service),
+    ) -> dict:
+        try:
+            return access.get_dataset(dataset_id)
+        except InternalDatasetAccessError as exc:
+            _internal_dataset_error(exc)
+
+    @app.post(
+        "/internal/private-datasets/{dataset_id}/access",
+        response_model=InternalDatasetAccessResponse,
+        dependencies=[Depends(require_service_api_key)],
+        tags=["internal-private-datasets"],
+    )
+    def request_internal_private_dataset_access(
+        dataset_id: str,
+        payload: InternalDatasetAccessRequest,
+        access: InternalDatasetAccessService = Depends(get_internal_dataset_access_service),
+    ) -> dict:
+        try:
+            return access.access_dataset(dataset_id, payload.request_id)
+        except InternalDatasetAccessError as exc:
+            _internal_dataset_error(exc)
+
+    @app.get(
+        "/internal/private-datasets/{dataset_id}/audit",
+        response_model=list[InternalDatasetAuditEntry],
+        dependencies=[Depends(require_service_api_key)],
+        tags=["internal-private-datasets"],
+    )
+    def internal_private_dataset_audit(
+        dataset_id: str,
+        access: InternalDatasetAccessService = Depends(get_internal_dataset_access_service),
+    ) -> list[dict]:
+        try:
+            return access.audit_for_dataset(dataset_id)
+        except InternalDatasetAccessError as exc:
+            _internal_dataset_error(exc)
 
     @app.post("/jobs/scrape", response_model=RunSummary, dependencies=[Depends(require_api_key)])
     def scrape_job(payload: ScrapeJobRequest, runs: RunService = Depends(get_run_service)) -> RunSummary:

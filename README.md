@@ -35,6 +35,22 @@ Documentacion: `docs/SPRINT_17A_IMPLEMENTATION_PLAN.md`,
 `docs/AUTHENTICATION_ARCHITECTURE.md`, `docs/RBAC_MATRIX.md` y
 `docs/PRIVATE_API_CONTRACT.md`.
 
+## Sprint 17B: piloto interno de consumo privado
+
+Sprint 17B incorpora rutas internas bajo `/internal/private-datasets` para
+listar metadata, identificar el dataset vigente, consultar auditoria y pedir
+una URL firmada temporal. El piloto usa el `X-API-Key` existente solo desde
+Swagger o PowerShell: nunca desde el dashboard ni otro frontend.
+
+`ENABLE_INTERNAL_DATASET_ACCESS=false` por defecto permite metadata pero
+bloquea la emision de URL. Para un acceso controlado se requiere un dataset
+`PUBLISHED_PRIVATE` o `ACTIVE`, aprobacion vigente, checksum, bucket privado y
+objeto existente. Auth humana/JWT sigue preparada pero pendiente de validacion
+externa; no es un requisito de este bloque.
+
+No se aplico la migracion 005, no se desplego y no se activo publicacion,
+schedule ni modo live. Ver `docs/INTERNAL_PRIVATE_DATASET_ACCESS.md`.
+
 ## Sprint 16: revision y publicacion privada
 
 Sprint 16 agrega una cola de revision humana trazable, aprobacion por dataset,

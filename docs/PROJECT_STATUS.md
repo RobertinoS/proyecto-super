@@ -2,6 +2,21 @@
 
 Actualizado: 2026-07-19.
 
+## Sprint 17B - piloto interno de acceso privado
+
+Estado: implementacion local pendiente de checkpoint. Se agregan endpoints
+`/internal/private-datasets` protegidos por `X-API-Key`, metadata saneada,
+auditoria durable de actor `service`, idempotencia por request ID y contrato de
+URL firmada de cinco minutos. El flag nuevo
+`ENABLE_INTERNAL_DATASET_ACCESS=false` bloquea la emision por defecto.
+
+La migracion 005 se propone porque los logs de 004 no pueden representar un
+actor de servicio y el modelo anterior no admite `PUBLISHED_PRIVATE`/`ACTIVE`.
+No se aplico SQL, no se desplego, no se activo el flag, no se publico ningun
+dataset y no se modificaron n8n, GitHub Actions, dashboard ni infraestructura.
+La validacion externa de login Supabase Auth/JWT sigue pendiente; este piloto
+no declara autenticacion humana productiva.
+
 ## Sprint 17A - Auth contracts and RBAC
 
 Estado: implementacion local pendiente de checkpoint y sin despliegue. Se

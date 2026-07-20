@@ -131,6 +131,7 @@ def test_active_roles_and_access_audit_use_server_side_idempotent_contracts():
         {
             "id": "audit",
             "user_id": "11111111-1111-4111-8111-111111111111",
+            "actor_type": "human",
             "action": "AUTHENTICATED",
             "result": "ALLOWED",
             "request_id": "request-audit-001",
@@ -140,8 +141,9 @@ def test_active_roles_and_access_audit_use_server_side_idempotent_contracts():
     )
     urls = [call[1] for call in session.calls]
     assert any("app_user_roles?user_id=eq.11111111-1111-4111-8111-111111111111&active=is.true&select=role" in url for url in urls)
-    assert any("dataset_access_logs?on_conflict=user_id,request_id" in url for url in urls)
+    assert any("dataset_access_logs?on_conflict=actor_type,request_id" in url for url in urls)
     post = next(call for call in session.calls if call[0] == "POST")
     assert post[2]["headers"]["Prefer"] == "resolution=ignore-duplicates,return=representation"
     assert "unexpected" not in post[2]["json"]
+    assert post[2]["json"]["actor_type"] == "human"
     assert record["request_id"] == "request-audit-001"
