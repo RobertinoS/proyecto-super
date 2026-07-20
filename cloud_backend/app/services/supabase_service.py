@@ -411,6 +411,120 @@ class SupabaseService:
             return None
         return signed_path if signed_path.startswith("http") else f"{self.settings.supabase_url}/storage/v1{signed_path}"
 
+    def is_bucket_private(self, bucket: str) -> bool:
+        if not self.configured:
+            return False
+        response = self.session.get(
+            f"{self.settings.supabase_url}/storage/v1/bucket/{quote(bucket, safe='')}",
+            headers=self._headers(),
+            timeout=self.settings.request_timeout_seconds,
+        )
+        response.raise_for_status()
+        payload = response.json()
+        return isinstance(payload, dict) and payload.get("public") is False
+
+    def storage_object_exists(self, bucket: str, path: str) -> bool:
+        if not self.configured:
+            return False
+        response = self.session.post(
+            f"{self.settings.supabase_url}/storage/v1/object/list/{quote(bucket, safe='')}",
+            headers=self._headers(),
+            json={"prefix": path, "limit": 1},
+            timeout=self.settings.request_timeout_seconds,
+        )
+        response.raise_for_status()
+        rows = response.json()
+        return any(isinstance(row, dict) and row.get("name") == path for row in rows)
+
+    def list_active_user_roles(self, user_id: str) -> list[str]:
+        if not self.configured:
+            return []
+        response = self.session.get(
+            f"{self.settings.supabase_url}/rest/v1/app_user_roles?user_id=eq.{quote(user_id, safe='')}&active=is.true&select=role",
+            headers=self._headers(),
+            timeout=self.settings.request_timeout_seconds,
+        )
+        response.raise_for_status()
+        return [str(row["role"]) for row in response.json() if isinstance(row, dict) and row.get("role")]
+
+    def find_dataset_access_log(self, user_id: str, request_id: str) -> dict[str, Any] | None:
+        if not self.configured:
+            return None
+        response = self.session.get(
+            f"{self.settings.supabase_url}/rest/v1/dataset_access_logs?user_id=eq.{quote(user_id, safe='')}&request_id=eq.{quote(request_id, safe='')}&select=*&limit=1",
+            headers=self._headers(),
+            timeout=self.settings.request_timeout_seconds,
+        )
+        response.raise_for_status()
+        rows = response.json()
+        return rows[0] if rows else None
+
+    def find_dataset_access_log_by_actor(self, actor_type: str, request_id: str) -> dict[str, Any] | None:
+        if not self.configured:
+            return None
+        response = self.session.get(
+            f"{self.settings.supabase_url}/rest/v1/dataset_access_logs?actor_type=eq.{quote(actor_type, safe='')}&request_id=eq.{quote(request_id, safe='')}&select=*&limit=1",
+            headers=self._headers(),
+            timeout=self.settings.request_timeout_seconds,
+        )
+        response.raise_for_status()
+        rows = response.json()
+        return rows[0] if rows else None
+
+    def list_dataset_access_logs(self, dataset_id: str) -> list[dict[str, Any]]:
+        if not self.configured:
+            return []
+        response = self.session.get(
+            f"{self.settings.supabase_url}/rest/v1/dataset_access_logs?dataset_id=eq.{quote(dataset_id, safe='')}&select=*&order=created_at.desc",
+            headers=self._headers(),
+            timeout=self.settings.request_timeout_seconds,
+        )
+        response.raise_for_status()
+        return response.json()
+
+    def list_private_datasets(self) -> list[dict[str, Any]]:
+        if not self.configured:
+            return []
+        response = self.session.get(
+            f"{self.settings.supabase_url}/rest/v1/private_datasets?select=*&order=created_at.desc",
+            headers=self._headers(),
+            timeout=self.settings.request_timeout_seconds,
+        )
+        response.raise_for_status()
+        return response.json()
+
+    def get_dataset_approval_by_id(self, approval_id: str) -> dict[str, Any] | None:
+        if not self.configured:
+            return None
+        response = self.session.get(
+            f"{self.settings.supabase_url}/rest/v1/dataset_approvals?id=eq.{quote(approval_id, safe='')}&select=*&limit=1",
+            headers=self._headers(),
+            timeout=self.settings.request_timeout_seconds,
+        )
+        response.raise_for_status()
+        rows = response.json()
+        return rows[0] if rows else None
+
+    def save_dataset_access_log(self, record: dict[str, Any]) -> dict[str, Any]:
+        if not self.configured:
+            return record
+        allowed = {
+            "id", "dataset_id", "user_id", "action", "result", "request_id", "role_snapshot", "expires_at",
+            "denial_reason", "client_fingerprint_hash", "actor_type",
+        }
+        payload = {key: value for key, value in record.items() if key in allowed}
+        response = self.session.post(
+            f"{self.settings.supabase_url}/rest/v1/dataset_access_logs?on_conflict=actor_type,request_id",
+            headers={**self._headers(), "Prefer": "resolution=ignore-duplicates,return=representation"},
+            json=payload,
+            timeout=self.settings.request_timeout_seconds,
+        )
+        response.raise_for_status()
+        rows = response.json()
+        if rows:
+            return rows[0]
+        return self.find_dataset_access_log_by_actor(str(payload.get("actor_type", "human")), str(payload["request_id"])) or payload
+
     def upload_json(self, bucket: str, path: str, payload: Any) -> None:
         if not self.configured:
             return

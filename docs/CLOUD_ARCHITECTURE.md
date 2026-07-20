@@ -1,5 +1,19 @@
 # Arquitectura cloud Sprint 14
 
+## Extension Sprint 17A: identidad humana separada
+
+Supabase Auth emite JWT para personas y FastAPI es el unico punto que valida
+firma/JWKS y toma decisiones de RBAC. Los roles activos viven en
+`app_user_roles` dentro de `proyecto-super-staging`; RLS y revoke impiden que
+un navegador los consulte directamente. `dataset_access_logs` conserva un
+evento minimo e idempotente por solicitud, sin secretos.
+
+Esta extension no reemplaza el contrato de servicio existente: n8n y GitHub
+Actions siguen usando `X-API-Key` contra los endpoints de jobs/pipeline. No se
+registra JWT, no se emite una URL firmada nueva y no se habilita un consumidor
+de dataset. La migracion 004 se mantiene sin aplicar hasta una validacion
+staging separada.
+
 ## Extension Sprint 16: revision y observabilidad
 
 La arquitectura conserva el rol de cada componente: GitHub Actions programa,

@@ -1,5 +1,40 @@
 # Checklist de seguridad cloud
 
+## Sprint 17A
+
+- [x] JWT humano y `X-API-Key` de maquina son dependencias separadas.
+- [x] JWT valida firma por JWKS, `kid`, algoritmo asimetrico, issuer,
+  expiracion y audiencia cuando se configura.
+- [x] JWKS usa cache acotado y refresh controlado ante rotacion de `kid`.
+- [x] Roles se leen desde `app_user_roles`; no se confia en claims de rol.
+- [x] `app_user_roles` y `dataset_access_logs` tienen RLS y revoke para
+  `anon`/`authenticated` en la migracion local 004.
+- [x] Logs de acceso no guardan JWT, API keys, headers, IP completa ni URL
+  firmada; `(user_id, request_id)` evita auditoria duplicada por reintento.
+- [x] `.env.example` contiene solo placeholders y los flags siguen bloqueados.
+- [x] Migracion 004 aplicada exclusivamente en `proyecto-super-staging`, sin
+  tocar la base operativa de n8n.
+- [ ] Configurar issuer, audience y JWKS reales exclusivamente en secretos de
+  Render; no ponerlos en Git, n8n, dashboard o documentacion publica.
+
+## Sprint 17B
+
+- [x] Rutas de consumo interno estan bajo `/internal` y requieren solamente
+  `require_service_api_key`.
+- [x] La API key no se incorpora al frontend, dashboard, exportaciones ni
+  respuestas FastAPI.
+- [x] URL firmada se limita a 300 segundos y no se persiste en auditoria.
+- [x] Dataset revocado/no aprobado, bucket publico u objeto inexistente no
+  obtiene URL.
+- [x] `actor_type=service` y `request_id` dan trazabilidad sin JWT, API key,
+  header ni URL completa.
+- [x] `ENABLE_INTERNAL_DATASET_ACCESS=false` se mantiene por defecto junto con
+  todos los gates de publicacion/automatizacion.
+- [ ] Validar Supabase Auth/JWT externo antes de habilitar consumo humano.
+- [x] Migracion 005 aplicada exclusivamente en `proyecto-super-staging`; el
+  bucket permanece privado, la auditoria no guarda la URL temporal completa y
+  el flag interno fue restaurado a `false`.
+
 ## Sprint 15
 
 - [ ] Supabase separado `proyecto-super-staging`; no compartir base con n8n.

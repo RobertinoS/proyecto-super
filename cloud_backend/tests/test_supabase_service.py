@@ -117,3 +117,33 @@ def test_review_approval_alert_and_signed_url_use_server_side_contracts_only():
     assert any("/storage/v1/object/sign/published-price-datasets/published/file.csv" in item for item in urls)
     assert url and url.startswith("https://project.supabase.co/storage/v1/object/sign/")
     assert "test-secret" not in "\n".join(urls)
+
+
+def test_active_roles_and_access_audit_use_server_side_idempotent_contracts():
+    session = Session()
+    settings = Settings(supabase_url="https://project.supabase.co", supabase_service_role_key="test-secret")
+    service = SupabaseService(settings, session)
+    session.response_payload = [{"role": "viewer"}, {"role": "reviewer"}]
+    assert service.list_active_user_roles("11111111-1111-4111-8111-111111111111") == ["viewer", "reviewer"]
+
+    session.response_payload = []
+    record = service.save_dataset_access_log(
+        {
+            "id": "audit",
+            "user_id": "11111111-1111-4111-8111-111111111111",
+            "actor_type": "human",
+            "action": "AUTHENTICATED",
+            "result": "ALLOWED",
+            "request_id": "request-audit-001",
+            "role_snapshot": ["viewer"],
+            "unexpected": "ignored",
+        }
+    )
+    urls = [call[1] for call in session.calls]
+    assert any("app_user_roles?user_id=eq.11111111-1111-4111-8111-111111111111&active=is.true&select=role" in url for url in urls)
+    assert any("dataset_access_logs?on_conflict=actor_type,request_id" in url for url in urls)
+    post = next(call for call in session.calls if call[0] == "POST")
+    assert post[2]["headers"]["Prefer"] == "resolution=ignore-duplicates,return=representation"
+    assert "unexpected" not in post[2]["json"]
+    assert post[2]["json"]["actor_type"] == "human"
+    assert record["request_id"] == "request-audit-001"

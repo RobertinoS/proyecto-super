@@ -1,5 +1,14 @@
 # Criterios verificables para v2.0.0
 
+## Estado posterior a v1.9.0
+
+v1.9.0 valido en staging aislado un piloto interno con bucket privado,
+auditoria idempotente y entrega temporal controlada para un dataset fixture
+aprobado. No satisface aun el consumo humano autenticado requerido para v2.0:
+la validacion externa de login Supabase Auth/JWT y recuperacion de contrasena
+sigue pendiente. El acceso interno, las publicaciones y la automatizacion
+permanecen deshabilitados por defecto.
+
 ## Obligatorio
 
 - Consumidor interno autenticado con identidad individual y RBAC.

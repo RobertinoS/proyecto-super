@@ -28,8 +28,10 @@ def test_supabase_migrations_are_safe_complete_and_keep_001_immutable():
         "001_cloud_scraping_foundation.sql",
         "002_staging_hardening.sql",
         "003_review_and_private_publication.sql",
+        "004_auth_roles_and_access_audit.sql",
+        "005_internal_dataset_access_audit.sql",
     ]
-    assert len(report["tables"]) == 10
+    assert len(report["tables"]) == 12
     assert len(report["buckets"]) == 3
 
 
@@ -48,6 +50,7 @@ def test_staging_env_and_render_blueprint_have_safe_limits():
     assert env["SOURCE_MODE"] == "fixture"
     assert env["ENABLE_PUBLICATION"] == "false"
     assert env["ENABLE_PRIVATE_PUBLICATION"] == "false"
+    assert env["ENABLE_INTERNAL_DATASET_ACCESS"] == "false"
     assert env["MAX_PRODUCTS_PER_RUN"] == "5"
     assert env["MAX_PAGES_PER_RUN"] == "1"
     assert env["SCRAPER_API_KEY"] == "replace_me"

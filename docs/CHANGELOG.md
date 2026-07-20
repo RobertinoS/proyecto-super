@@ -1,5 +1,57 @@
 # Changelog
 
+## v1.9.0 - Sprint 17A y Sprint 17B - acceso privado interno controlado
+
+### Cierre y validacion staging
+
+- Integra la arquitectura experimental JWT/RBAC de Sprint 17A y el piloto
+  interno backend-only de Sprint 17B.
+- Registra las migraciones 004 y 005 aplicadas exclusivamente en staging
+  aislado, sin afectar la base operativa de n8n.
+- Documenta endpoints internos protegidos, auditoria idempotente por actor de
+  servicio y solicitud, bucket privado y acceso temporal con expiracion
+  aproximada de cinco minutos.
+- Confirma que no se conserva una URL temporal completa, no se expone API key
+  ni service role al frontend y no existe publicacion publica.
+- Conserva todos los flags operativos bloqueados y documenta rollback a
+  `v1.8.0`.
+- Declara login y recuperacion de contrasena de Supabase Auth/JWT como
+  pendientes de validacion externa; la autenticacion humana no es productiva.
+
+### Sprint 17B - internal private dataset access
+
+- piloto backend-only bajo rutas `/internal/private-datasets`, autenticado con
+  `X-API-Key` de operador y sin API key en frontend;
+- metadata segura, dataset vigente, auditoria saneada y acceso temporal de
+  cinco minutos controlado por feature flag interno;
+- bloqueo de dataset revocado/no aprobado, bucket no privado y Storage no
+  disponible; idempotencia durable por actor de servicio y request ID;
+- migracion 005 aditiva para `actor_type=service` y estados
+  `PUBLISHED_PRIVATE`/`ACTIVE`, conservando estados historicos;
+- pruebas aisladas de todos los estados de acceso y sin regresion JWT/n8n.
+
+La migracion 005 se aplico exclusivamente en staging. El feature flag fue
+restaurado a `false` luego de la validacion controlada. Supabase Auth externa
+sigue pendiente de validacion.
+
+### Sprint 17A - Auth contracts and RBAC
+
+- migracion aditiva `004` para roles humanos activos y auditoria minima de
+  acceso, con RLS y revocacion de privilegios para navegador;
+- validacion FastAPI de JWT de Supabase Auth mediante JWKS cacheado, firma,
+  algoritmo permitido, issuer, expiracion y audiencia configurable;
+- separacion explicita entre Bearer JWT humano y `X-API-Key` para n8n/GitHub;
+- endpoints seguros `/auth/me` y `/auth/capabilities`, roles acumulables y
+  capacidades derivadas server-side;
+- contratos Pydantic/documentados de consumo privado futuro, sin descargar ni
+  emitir URLs firmadas;
+- pruebas locales de JWT, rotacion de JWKS, RBAC, logs idempotentes y ausencia
+  de regresion en endpoints de servicio.
+
+La migracion 004 se aplico exclusivamente en staging. Login humano y
+recuperacion de contrasena quedan pendientes de validacion externa; todos los
+gates de automatizacion/publicacion permanecen desactivados.
+
 ## v1.8.0 - Sprint 16 - Revision, observabilidad y publicacion privada
 
 Sprint 16 cerrado con validacion controlada en staging aislado:

@@ -99,9 +99,12 @@ datos al publico.
 
 La implementacion se divide para no mezclar capas criticas:
 
-- **17A**: contratos, modelo de identidad, estados, migracion propuesta y
-  pruebas de arquitectura.
-- **17B**: autenticacion de consumidor, acceso temporal y auditoria de acceso.
+- **17A**: integrado en v1.9.0 como contratos JWT/RBAC experimentales y
+  migracion staging. Login humano y recuperacion de contrasena siguen
+  pendientes de validacion externa.
+- **17B**: integrado en v1.9.0 como piloto backend-only de acceso temporal y
+  auditoria idempotente. El bucket es privado y el acceso interno permanece
+  deshabilitado por defecto.
 - **17C**: activacion, revocacion, restore e interfaz administrativa protegida.
 - **17D**: piloto Vea live manual y activacion gradual de `workflow_dispatch`.
 

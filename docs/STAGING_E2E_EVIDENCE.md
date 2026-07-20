@@ -1,5 +1,27 @@
 # Evidencia E2E staging - Sprint 15
 
+## Cierre Sprint 17B - v1.9.0
+
+La evidencia se registra sin URLs temporales, claves, correos, referencias de
+proyecto ni identificadores operativos. La validacion ocurrio exclusivamente
+en `proyecto-super-staging`, aislado de la base de n8n.
+
+- Las migraciones 004 y 005 quedaron aplicadas en staging aislado.
+- El backend desplegado valido las rutas internas mediante API key de servicio;
+  solicitudes sin clave fueron rechazadas.
+- Un dataset fixture aprobado valido acceso temporal controlado, expiracion
+  aproximada de cinco minutos y auditoria durable sin URL completa.
+- La repeticion con el mismo actor de servicio y solicitud fue idempotente.
+- El bucket de datasets publicados permanece privado; no hay publicacion
+  publica ni exposicion de service role o API key al dashboard.
+- Automatizacion, publicaciones y acceso interno fueron restaurados a `false`;
+  la fuente queda en `fixture`.
+- La autenticacion humana Supabase Auth/JWT y recuperacion de contrasena siguen
+  pendientes de validacion externa y no son productivas.
+
+Rollback: regresar el servicio a `v1.8.0`, conservar los flags bloqueados y no
+ejecutar SQL destructivo sobre la auditoria.
+
 ## Cierre Sprint 16 - v1.8.0
 
 La validacion se realizo exclusivamente en `proyecto-super-staging`, sin

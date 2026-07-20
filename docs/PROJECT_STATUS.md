@@ -1,6 +1,62 @@
 # Estado del proyecto
 
-Actualizado: 2026-07-19.
+Actualizado: 2026-07-20.
+
+## Release v1.9.0 - Sprint 17A y 17B integrados
+
+Estado: cerrado en Git como acceso privado interno controlado. Sprint 17A
+aporta la arquitectura JWT/RBAC; Sprint 17B valida un piloto backend-only con
+`X-API-Key`. No existe autenticacion humana multiusuario productiva ni acceso
+administrativo desde el frontend.
+
+Evidencia externa registrada sin valores sensibles:
+
+- Las migraciones 004 y 005 se aplicaron exclusivamente en
+  `proyecto-super-staging`, aislado de n8n.
+- El despliegue staging valido endpoints internos protegidos, auditoria durable
+  e idempotencia por actor de servicio y `request_id`.
+- Un dataset fixture aprobado se valido con entrega temporal controlada y
+  expiracion aproximada de cinco minutos. El bucket continua privado y la
+  auditoria no conserva la URL completa.
+- No hay publicacion publica ni acceso desde el dashboard; API key y service
+  role no se exponen.
+- Automatizacion, publicaciones y acceso interno fueron restaurados a `false`;
+  `SOURCE_MODE` permanece en `fixture`.
+
+Pendiente antes de operar acceso humano: validar externamente login y
+recuperacion de contrasena de Supabase Auth/JWT. El rollback funcional
+documentado es `v1.8.0`.
+
+## Sprint 17B - piloto interno de acceso privado
+
+Estado: integrado en v1.9.0 y validado externamente solo en staging aislado.
+Se agregan endpoints
+`/internal/private-datasets` protegidos por `X-API-Key`, metadata saneada,
+auditoria durable de actor `service`, idempotencia por request ID y contrato de
+URL firmada de cinco minutos. El flag nuevo
+`ENABLE_INTERNAL_DATASET_ACCESS=false` bloquea la emision por defecto.
+
+La migracion 005 se creo porque los logs de 004 no pueden representar un actor
+de servicio y el modelo anterior no admite `PUBLISHED_PRIVATE`/`ACTIVE`.
+La migracion 005 se aplico exclusivamente en staging y el despliegue valido
+denegacion segura cuando el flag esta apagado, acceso temporal controlado,
+expiracion y auditoria idempotente. El flag fue restaurado a `false`, no existe
+publicacion publica y la validacion externa de login Supabase Auth/JWT sigue
+pendiente; este piloto no declara autenticacion humana productiva.
+
+## Sprint 17A - Auth contracts and RBAC
+
+Estado: integrado en v1.9.0. Se
+agrega la migracion aditiva `004` para `app_user_roles` y
+`dataset_access_logs`, validacion criptografica de JWT de Supabase Auth con
+JWKS, roles activos server-side, auditoria minima idempotente y los endpoints
+humanos `/auth/me` y `/auth/capabilities`.
+
+La migracion 004 se aplico exclusivamente en staging. No existen login humano
+validado, descargas humanas, activacion, revocacion, restauracion ni interfaz
+administrativa. n8n y GitHub Actions conservan `X-API-Key`; Bearer JWT sigue
+siendo una arquitectura experimental para personas. Los flags siguen en
+fixture y `false`; rollback de codigo disponible en `v1.8.0`.
 
 ## Sprint 17 - Planificacion de arquitectura
 
