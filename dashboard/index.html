@@ -1010,6 +1010,9 @@
     function toObjects(text) {
       const sourceRows = rowsToObjects(text, requiredColumns, "precios");
       const enrichedRows = sourceRows.map(row => {
+        // Private datasets from the cloud pipeline are comparable by exact
+        // product when an optional matching group is not present yet.
+        row.grupo_comparacion = String(row.grupo_comparacion || row.producto || "").trim();
         row.precio_num = parseNumber(row.precio);
         const original = parseNumber(row.precio_original);
         row.precio_original_num = Number.isFinite(original) ? original : row.precio_num;

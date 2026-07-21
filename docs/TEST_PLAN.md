@@ -1,5 +1,24 @@
 # Plan de pruebas
 
+## Cierre v2.0.0 - piloto interno
+
+1. Ejecutar compilacion, validadores de migracion e idempotencia, demo y la
+   suite completa. Criterio: sin regresiones ni secretos.
+2. Generar fixture limitado, procesar, revisar, aprobar, publicar en bucket
+   privado y solicitar acceso temporal. Criterio: CSV y manifiesto con
+   checksum, sin objeto publico.
+3. Repetir una corrida Vea live limitada a una pagina y tres productos, con
+   `dry_run=true` y revision humana. Detener ante CAPTCHA, 403, 429, 5xx o
+   estructura inesperada; restaurar fixture.
+4. Cargar el CSV aprobado directamente en el dashboard, crear una lista y
+   calcular ranking, ahorro y faltantes. Si falta unidad comparable, elegir
+   `un`. Criterio: no hay error JavaScript y la comparacion es entendible.
+5. Probar 401 sin API key, dataset inexistente/no aprobado, feature flag
+   apagado, URL expirada, request/execution repetidos, archivo invalido y lista
+   vacia. Criterio: error comprensible y recuperacion documentada.
+6. Un operador interno sigue `docs/PILOT_USER_GUIDE.md` desde cero y registra
+   pasos confusos. Solo los impedimentos de flujo son bloqueantes.
+
 ## Sprint 17B - acceso interno a datasets privados
 
 Pruebas locales sin red, Supabase ni Storage real:

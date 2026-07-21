@@ -40,9 +40,11 @@ headers, tokens ni URLs permanentes.
 lo que los endpoints de consulta no dependen de la memoria de FastAPI despues
 de un reinicio.
 
-El bucket permanece privado. El acceso se ofrece por una URL firmada de vida
-corta mediante `GET /datasets/{dataset_id}/download-url` o por un backend
-autenticado. No se crean datasets ni buckets publicos.
+Una publicacion privada efectiva se registra como `PUBLISHED_PRIVATE`, estado
+elegible para el acceso interno protegido. El bucket permanece privado. El
+acceso del piloto se solicita solo desde el backend mediante
+`POST /internal/private-datasets/{dataset_id}/access`; no se crean datasets ni
+buckets publicos y no se entrega la URL temporal al frontend.
 
 ## Validacion de cierre Sprint 16
 

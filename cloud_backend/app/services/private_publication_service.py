@@ -83,7 +83,9 @@ class PrivatePublicationService:
             "visibility": "private",
         }
         actual_publication = self.settings.enable_private_publication and not dry_run
-        status = "PRIVATE_PUBLISHED" if actual_publication else "PRIVATE_DRY_RUN"
+        # Effective private datasets must use the status accepted by the
+        # backend-only access gate. PRIVATE_PUBLISHED remains historical only.
+        status = "PUBLISHED_PRIVATE" if actual_publication else "PRIVATE_DRY_RUN"
         dataset = {
             "id": dataset_id,
             "run_id": run_id,
@@ -149,7 +151,7 @@ class PrivatePublicationService:
     def latest(self) -> dict[str, Any] | None:
         with self._lock:
             datasets = list(self._datasets.values())
-        approved = [item for item in datasets if item["status"] == "PRIVATE_PUBLISHED"]
+        approved = [item for item in datasets if item["status"] in {"PUBLISHED_PRIVATE", "ACTIVE"}]
         candidates = approved or datasets
         if candidates:
             return dict(max(candidates, key=lambda item: item["created_at"]))
@@ -166,7 +168,7 @@ class PrivatePublicationService:
         dataset = self.get(dataset_id)
         if not dataset:
             raise KeyError(dataset_id)
-        if dataset["status"] != "PRIVATE_PUBLISHED" or not self.settings.enable_private_publication:
+        if dataset["status"] not in {"PUBLISHED_PRIVATE", "ACTIVE"} or not self.settings.enable_private_publication:
             raise PrivatePublicationError("El dataset privado no esta disponible para descarga")
         url = self.supabase.create_signed_download_url(self.settings.published_bucket, dataset["dataset_path"])
         if not url:

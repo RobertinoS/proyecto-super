@@ -164,6 +164,15 @@ const restored = api.readStoredList();
 const exported = api.serializeListToCsv(restored);
 let invalidMessage = "";
 try { api.toObjects("comercio,producto\nVea,Yerba"); } catch (error) { invalidMessage = error.message; }
+const privateDatasetCsv = [
+  "comercio,sucursal,localidad,producto,marca,categoria,presentacion,precio,fecha_relevamiento,fuente,precio_efectivo",
+  "Vea,Online nacional,San Juan,Yerba Mate Playadito 1 Kg,Playadito,Almacen,1 Kg,4250,2026-07-21,oficial:vea,4250",
+  "Vea,Online nacional,San Juan,Aceite Girasol Natura 900 Ml,Natura,Almacen,900 Ml,2390,2026-07-21,oficial:vea,2390"
+].join("\n");
+const privateRows = api.toObjects(privateDatasetCsv);
+const privateCatalog = api.buildCatalog(privateRows);
+const privateList = [api.createShoppingItemFromCatalog(privateCatalog[0], 1, "un", "media")];
+const privateComparison = api.buildShoppingComparison(privateRows, privateList);
 
 console.log(JSON.stringify({
   rows: rows.length,
@@ -183,6 +192,9 @@ console.log(JSON.stringify({
   restored: restored.length,
   exportHeader: exported.split("\n")[0],
   invalidMessage,
+  privateCatalog: privateCatalog.length,
+  privateGroups: privateCatalog.map(entry => entry.grupo_comparacion).sort(),
+  privateComparison: privateComparison.length,
 }));
 """
 
@@ -213,3 +225,6 @@ console.log(JSON.stringify({
     assert data["restored"] == 2
     assert data["exportHeader"] == "item_lista,grupo_comparacion,cantidad,unidad,prioridad"
     assert "Faltan columnas en precios" in data["invalidMessage"]
+    assert data["privateCatalog"] == 2
+    assert data["privateGroups"] == ["Aceite Girasol Natura 900 Ml", "Yerba Mate Playadito 1 Kg"]
+    assert data["privateComparison"] == 1

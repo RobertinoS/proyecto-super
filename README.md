@@ -6,6 +6,59 @@ Version: `v1.9.0` - acceso privado interno controlado, con autenticacion
 humana Supabase Auth/JWT aun experimental y toda publicacion publica
 desactivada.
 
+## Cierre v2.0.0 - piloto interno
+
+El repositorio esta en cierre para un piloto interno manual, privado y
+supervisado. El flujo objetivo es: extraccion Vea limitada, proceso y revision
+en FastAPI, aprobacion humana, entrega en bucket privado, URL temporal,
+descarga del CSV y comparacion en el dashboard. No es una aplicacion publica,
+multiusuario, autonoma ni un servicio SaaS.
+
+La guia operativa es `docs/PILOT_USER_GUIDE.md` y el guion demostrable es
+`docs/DEMO_SCRIPT.md`. Antes de declarar el release candidate se debe repetir
+el flujo fixture y live limitado en staging sobre el commit de cierre, y una
+persona interna debe completar la guia sin asistencia.
+
+El dashboard nunca recibe API keys, service roles ni URLs firmadas. Al final
+de cada ventana se deben restaurar fixture y todos los flags de publicacion,
+acceso interno y automatizacion a `false`. Las limitaciones aceptadas estan en
+`KNOWN_ISSUES.md` y todo trabajo posterior esta congelado en `BACKLOG_V2.md`.
+
+### Flujo rapido del piloto
+
+1. Siga `docs/PILOT_USER_GUIDE.md` para ejecutar una corrida limitada,
+   revisarla, aprobarla y descargar el CSV privado temporal.
+2. Inicie el dashboard con `python -m http.server 8026 --bind 127.0.0.1` y
+   abra `http://127.0.0.1:8026/dashboard/`.
+3. Cargue el CSV, arme una lista y calcule ranking, cobertura, faltantes y
+   ahorro. Restaure los flags seguros al cerrar la ventana.
+
+### Descripcion para portfolio
+
+Proyecto Super San Juan es un piloto interno de decision de compra que une
+extraccion limitada y trazable de precios, validacion y revision humana,
+entrega privada temporal de datasets y un dashboard local para comparar costo,
+cobertura, faltantes y conveniencia de una lista.
+
+### Cinco puntos para CV
+
+- Disene un flujo de datos de precios con controles de calidad, trazabilidad e
+  idempotencia.
+- Implemente servicios FastAPI para procesamiento, revision y acceso privado
+  de datasets.
+- Integre Supabase staging aislado, almacenamiento privado y auditoria durable.
+- Orqueste pruebas controladas con GitHub Actions y n8n sin exponer secretos.
+- Construí un dashboard local que convierte un CSV aprobado en comparaciones
+  accionables de compra.
+
+### Resumen para un usuario piloto
+
+El sistema permite revisar y aprobar una corrida limitada antes de usar sus
+precios. El CSV aprobado se descarga mediante un acceso temporal y se carga en
+un dashboard local para preparar una compra y comparar su costo. El piloto no
+publica precios, no ejecuta tareas automaticas y siempre vuelve a un estado
+seguro al finalizar.
+
 Sprint 16 quedo cerrado como `v1.8.0`. La validacion en staging aislado cubrio
 la migracion 003, FastAPI, n8n Test URL, revision humana, idempotencia y
 `PRIVATE_DRY_RUN` con tres filas. No se escribieron objetos en storage ni se
@@ -790,6 +843,8 @@ Ademas del dashboard standalone de Sprint 1/2, el repo conserva el sistema avanz
 - `database/precios_san_juan.sqlite`: base local ignorada por Git.
 - `data/export/*.json`: exports locales ignorados por Git.
 
-## Proximo sprint recomendado
+## Estado de producto
 
-Sprint 10: preparacion para datos reales operativos, fuentes oficiales/manuales por cadena, preferencias de usuario y calibracion de distancia/costo.
+El desarrollo esta congelado para el cierre del piloto interno v2.0.0. Las
+limitaciones y las ideas posteriores se registran, sin implementarse, en
+`KNOWN_ISSUES.md` y `BACKLOG_V2.md`.

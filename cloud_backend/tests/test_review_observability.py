@@ -1,12 +1,41 @@
 from __future__ import annotations
 
+import csv
+import io
+from dataclasses import replace
 from datetime import datetime, timedelta, timezone
 
 from fastapi.testclient import TestClient
 
 from cloud_backend.app.config import Settings
 from cloud_backend.app.main import create_app
+from cloud_backend.app.services.internal_dataset_access_service import ELIGIBLE_DATASET_STATUSES
 from cloud_backend.tests.test_api import API_KEY, FakeSource, auth, valid_row
+
+
+class RecordingPrivateStorage:
+    configured = True
+
+    def __init__(self) -> None:
+        self.uploads: list[tuple[str, str, str]] = []
+        self.datasets: list[dict] = []
+        self.publications: list[dict] = []
+        self.events: list[tuple] = []
+
+    def upload_bytes(self, bucket: str, path: str, content: bytes, content_type: str) -> None:
+        self.uploads.append((bucket, path, content_type))
+
+    def upload_json(self, bucket: str, path: str, payload: dict) -> None:
+        self.uploads.append((bucket, path, "application/json"))
+
+    def save_private_dataset(self, record: dict) -> None:
+        self.datasets.append(dict(record))
+
+    def save_publication_run(self, record: dict) -> None:
+        self.publications.append(dict(record))
+
+    def save_execution_event(self, execution_id: str, run_id: str, event_type: str, status: str, metadata: dict | None = None) -> None:
+        self.events.append((execution_id, run_id, event_type, status, metadata))
 
 
 def client_for(source: FakeSource | None = None) -> TestClient:
@@ -59,6 +88,39 @@ def test_human_approval_is_idempotent_and_private_publication_stays_dry_run():
     assert client.get("/datasets/latest-approved", headers=auth()).status_code == 200
     assert client.get(f"/datasets/{dataset['id']}", headers=auth()).status_code == 200
     assert client.get(f"/datasets/{dataset['id']}/download-url", headers=auth()).status_code == 409
+
+
+def test_effective_private_publication_emits_status_eligible_for_internal_access():
+    client = client_for()
+    run_id = ready_run(client)
+    assert client.post(f"/runs/{run_id}/request-approval", json={"actor": "reviewer-release"}, headers=auth()).status_code == 200
+    assert client.post(f"/runs/{run_id}/approve-dataset", json={"actor": "reviewer-release"}, headers=auth()).status_code == 200
+
+    publication = client.app.state.private_publication_service
+    publication.settings = replace(publication.settings, enable_private_publication=True)
+    storage = RecordingPrivateStorage()
+    publication.supabase = storage
+
+    dataset = publication.publish(run_id, "reviewer-release", dry_run=False)
+
+    assert dataset["status"] == "PUBLISHED_PRIVATE"
+    assert dataset["status"] in ELIGIBLE_DATASET_STATUSES
+    assert dataset["dry_run"] is False
+    assert len(storage.uploads) == 2
+    assert storage.datasets[0]["status"] == "PUBLISHED_PRIVATE"
+
+
+def test_private_publication_csv_keeps_the_dashboard_price_contract():
+    client = client_for()
+    run_id = ready_run(client)
+    rows = client.app.state.run_service.get(run_id)["processed"]
+    csv_text = client.app.state.private_publication_service._csv_bytes(rows).decode("utf-8")
+    headers = set(csv.DictReader(io.StringIO(csv_text)).fieldnames or [])
+
+    assert {
+        "comercio", "sucursal", "localidad", "producto", "marca", "categoria",
+        "presentacion", "precio", "fecha_relevamiento", "fuente",
+    }.issubset(headers)
 
 
 def test_critical_pending_reviews_block_dataset_approval_and_corrections_are_traced():

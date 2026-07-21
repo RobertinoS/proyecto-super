@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased - cierre v2.0.0 piloto interno
+
+- Corrige el estado de una publicacion privada efectiva a
+  `PUBLISHED_PRIVATE`, compatible con el acceso interno protegido.
+- Conserva el contrato base de precios del CSV privado y permite al dashboard
+  agrupar por nombre exacto del producto cuando falta el campo opcional de
+  matching.
+- Agrega auditoria de cierre, guia de piloto, guion de demo, evidencia, UAT,
+  limitaciones conocidas y backlog posterior al release.
+- Mantiene fixture, automatizacion, publicaciones y acceso interno apagados
+  por defecto. El release candidate requiere evidencia staging y UAT externa.
+
 ## v1.9.0 - Sprint 17A y Sprint 17B - acceso privado interno controlado
 
 ### Cierre y validacion staging

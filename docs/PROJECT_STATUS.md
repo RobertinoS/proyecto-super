@@ -1,6 +1,20 @@
 # Estado del proyecto
 
-Actualizado: 2026-07-20.
+Actualizado: 2026-07-21.
+
+## Cierre v2.0.0 - piloto interno en validacion
+
+Estado: desarrollo congelado en `release-v2-pilot`. Se resolvieron dos
+bloqueantes locales del flujo: el estado de publicacion privada efectiva es
+compatible con el acceso interno y el dashboard admite el CSV privado sin
+grupo de comparacion explicito. Las pruebas locales y la carga de tres precios
+fixture en dashboard son satisfactorias.
+
+Pendiente exclusivo antes de liberar un release candidate: desplegar un commit
+auditable de la rama de cierre en staging, repetir fixture y Vea live limitado,
+y ejecutar UAT siguiendo `docs/PILOT_USER_GUIDE.md`. No se agregaran funciones
+nuevas. Los flags finales exigidos son fixture y todos los gates en `false`.
+Rollback: `v1.9.0`.
 
 ## Release v1.9.0 - Sprint 17A y 17B integrados
 
